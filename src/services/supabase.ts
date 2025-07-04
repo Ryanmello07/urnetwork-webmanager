@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -8,13 +7,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Create Supabase client with proper configuration for anonymous access
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false,
-    detectSessionInUrl: false,
-  },
-});
+// Create Supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Initialize anonymous session - MUST be called when app starts
+export const initializeApp = async () => {
+  try {
+    // First check if we already have a session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // Sign in anonymously if no session exists
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      console.log('Anonymous session initialized');
+      return data;
+    }
+    
+    return session;
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+    throw error;
+  }
+};
 
 export interface WalletStatsRecord {
   id: string;
@@ -26,7 +41,6 @@ export interface WalletStatsRecord {
   updated_at: string;
 }
 
-// Modified to handle both authenticated and anonymous scenarios
 export const saveWalletStats = async (
   userId: string,
   networkName: string,
@@ -34,7 +48,12 @@ export const saveWalletStats = async (
   unpaidBytes: number
 ): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
-    // For anonymous access, we need to ensure the anon key is used
+    // Ensure we have a session before making the request
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      await initializeApp();
+    }
+
     const { data, error } = await supabase
       .from('wallet_stats')
       .insert({
@@ -46,15 +65,6 @@ export const saveWalletStats = async (
       .select()
       .single();
 
-    if (error) {
-      console.error('Supabase error:', error);
-      
-      // If auth error, try with service role key or handle accordingly
-      if (error.message?.includes('Auth session missing')) {
-        console.error('Authentication required. Please sign in first.');
-      }
-    }
-
     return { data, error };
   } catch (error) {
     console.error('Error saving wallet stats:', error);
@@ -62,8 +72,58 @@ export const saveWalletStats = async (
   }
 };
 
-// Alternative approach using direct REST API
-export const saveWalletStatsDirectly = async (
+export const getWalletStatsHistory = async (
+  userId: string,
+  limit: number = 100
+): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
+  try {
+    // Ensure we have a session before making the request
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      await initializeApp();
+    }
+
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    return { data, error };
+  } catch (error) {
+    console.error('Error fetching wallet stats history:', error);
+    return { data: null, error };
+  }
+};
+
+export const getLatestWalletStats = async (
+  userId: string
+): Promise<{ data: WalletStatsRecord | null; error: any }> => {
+  try {
+    // Ensure we have a session before making the request
+    const session = await supabase.auth.getSession();
+    if (!session.data.session) {
+      await initializeApp();
+    }
+
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(); // Use maybeSingle() to handle no results gracefully
+
+    return { data, error };
+  } catch (error) {
+    console.error('Error fetching latest wallet stats:', error);
+    return { data: null, error };
+  }
+};
+
+// Alternative: Direct API approach if anonymous auth doesn't work
+export const saveWalletStatsDirect = async (
   userId: string,
   networkName: string,
   paidBytes: number,
@@ -92,59 +152,36 @@ export const saveWalletStatsDirectly = async (
     }
 
     const data = await response.json();
-    return { data: data[0], error: null };
+    return { data: data[0] || null, error: null };
   } catch (error) {
     console.error('Error saving wallet stats directly:', error);
     return { data: null, error };
   }
 };
 
-export const getWalletStatsHistory = async (
-  userId: string,
-  limit: number = 100
-): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
-  try {
-    const { data, error } = await supabase
-      .from('wallet_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    return { data, error };
-  } catch (error) {
-    console.error('Error fetching wallet stats history:', error);
-    return { data: null, error };
-  }
+// Helper function to check current auth status
+export const checkAuthStatus = async () => {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  console.log('Current auth status:', { 
+    hasSession: !!session, 
+    userId: session?.user?.id,
+    error 
+  });
+  return { session, error };
 };
 
-export const getLatestWalletStats = async (
-  userId: string
-): Promise<{ data: WalletStatsRecord | null; error: any }> => {
-  try {
-    const { data, error } = await supabase
-      .from('wallet_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors when no rows exist
+/* 
+USAGE EXAMPLE:
 
-    return { data, error };
-  } catch (error) {
-    console.error('Error fetching latest wallet stats:', error);
-    return { data: null, error };
-  }
-};
+// In your app initialization (e.g., App.tsx or main.tsx):
+import { initializeApp } from './path-to-this-file';
 
-// Helper function to check if user is authenticated
-export const checkAuth = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session;
-};
+// Initialize once when app starts
+await initializeApp();
 
-// Sign in anonymously if your Supabase project supports it
-export const signInAnonymously = async () => {
-  const { data, error } = await supabase.auth.signInAnonymously();
-  return { data, error };
-};
+// Then use the functions normally:
+const result = await saveWalletStats('user123', 'network1', 1000, 500);
+
+// If anonymous auth is not enabled, use the direct method:
+const result = await saveWalletStatsDirect('user123', 'network1', 1000, 500);
+*/
