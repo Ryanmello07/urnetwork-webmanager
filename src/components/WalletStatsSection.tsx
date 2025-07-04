@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchWalletStats, fetchNetworkUser } from '../services/api';
-import { saveWalletStats, getWalletStatsHistory, type WalletStatsRecord } from '../services/supabase';
+import { saveWalletStats, getWalletStatsHistory, type WalletStatsRecord } from '../services/database';
 import type { NetworkUser } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -40,7 +40,7 @@ const WalletStatsSection: React.FC = () => {
     }
   }, [token]);
 
-  // Load wallet stats history from Supabase
+  // Load wallet stats history from database
   const loadStatsHistory = useCallback(async () => {
     if (!networkUser?.user_id) return;
     
@@ -66,7 +66,7 @@ const WalletStatsSection: React.FC = () => {
     }
   }, [networkUser?.user_id]);
 
-  // Fetch wallet stats from API and save to Supabase
+  // Fetch wallet stats from API and save to database
   const loadWalletStats = useCallback(async (showToast = true) => {
     if (!token || !networkUser?.network_name || !networkUser?.user_id) return;
     
@@ -88,7 +88,7 @@ const WalletStatsSection: React.FC = () => {
         setCurrentStats({ paid_mb: paidMB, unpaid_mb: unpaidMB });
         setLastUpdated(new Date().toISOString());
         
-        // Save to Supabase using the user ID and network name from networkUser
+        // Save to database using the user ID and network name from networkUser
         const { error: saveError } = await saveWalletStats(
           networkUser.user_id,
           networkUser.network_name,
