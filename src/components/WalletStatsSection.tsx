@@ -42,10 +42,8 @@ const WalletStatsSection: React.FC = () => {
 
   // Load wallet stats history from Supabase
   const loadStatsHistory = useCallback(async () => {
-    if (!networkUser?.user_id) return;
-    
     try {
-      const { data, error } = await getWalletStatsHistory(networkUser.user_id, 100);
+      const { data, error } = await getWalletStatsHistory(100);
       
       if (error) {
         console.error('Error loading stats history:', error);
@@ -64,11 +62,11 @@ const WalletStatsSection: React.FC = () => {
     } catch (err) {
       console.error('Error loading stats history:', err);
     }
-  }, [networkUser?.user_id]);
+  }, []);
 
   // Fetch wallet stats from API and save to Supabase
   const loadWalletStats = useCallback(async (showToast = true) => {
-    if (!token || !networkUser?.user_id) return;
+    if (!token || !networkUser?.network_name) return;
     
     setIsLoading(true);
     setError(null);
@@ -88,9 +86,8 @@ const WalletStatsSection: React.FC = () => {
         setCurrentStats({ paid_mb: paidMB, unpaid_mb: unpaidMB });
         setLastUpdated(new Date().toISOString());
         
-        // Save to Supabase
+        // Save to Supabase using the network name from networkUser
         const { error: saveError } = await saveWalletStats(
-          networkUser.user_id,
           networkUser.network_name,
           response.paid_bytes_provided,
           response.unpaid_bytes_provided
@@ -118,7 +115,7 @@ const WalletStatsSection: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token, networkUser, loadStatsHistory]);
+  }, [token, networkUser?.network_name, loadStatsHistory]);
 
   // Setup automatic refresh
   useEffect(() => {
@@ -126,7 +123,7 @@ const WalletStatsSection: React.FC = () => {
       clearInterval(intervalRef.current);
     }
 
-    if (isAutoRefreshEnabled && networkUser?.user_id) {
+    if (isAutoRefreshEnabled && networkUser?.network_name) {
       // Initial load
       loadWalletStats(false);
 
@@ -141,19 +138,17 @@ const WalletStatsSection: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [loadWalletStats, refreshInterval, isAutoRefreshEnabled, networkUser?.user_id]);
+  }, [loadWalletStats, refreshInterval, isAutoRefreshEnabled, networkUser?.network_name]);
 
   // Load network user on component mount
   useEffect(() => {
     loadNetworkUser();
   }, [loadNetworkUser]);
 
-  // Load stats history when network user is available
+  // Load stats history when component mounts (no longer dependent on networkUser.user_id)
   useEffect(() => {
-    if (networkUser?.user_id) {
-      loadStatsHistory();
-    }
-  }, [networkUser?.user_id, loadStatsHistory]);
+    loadStatsHistory();
+  }, [loadStatsHistory]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);

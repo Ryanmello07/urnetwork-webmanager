@@ -20,16 +20,22 @@ export interface WalletStatsRecord {
 }
 
 export const saveWalletStats = async (
-  userId: string,
   networkName: string,
   paidBytes: number,
   unpaidBytes: number
 ): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
+    // Get the current authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('User not authenticated') };
+    }
+
     const { data, error } = await supabase
       .from('wallet_stats')
       .insert({
-        user_id: userId,
+        user_id: user.id, // Use the authenticated Supabase user ID
         network_name: networkName,
         paid_bytes_provided: paidBytes,
         unpaid_bytes_provided: unpaidBytes,
@@ -45,14 +51,20 @@ export const saveWalletStats = async (
 };
 
 export const getWalletStatsHistory = async (
-  userId: string,
   limit: number = 100
 ): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
   try {
+    // Get the current authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('User not authenticated') };
+    }
+
     const { data, error } = await supabase
       .from('wallet_stats')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id) // Use the authenticated Supabase user ID
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -63,14 +75,19 @@ export const getWalletStatsHistory = async (
   }
 };
 
-export const getLatestWalletStats = async (
-  userId: string
-): Promise<{ data: WalletStatsRecord | null; error: any }> => {
+export const getLatestWalletStats = async (): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
+    // Get the current authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return { data: null, error: authError || new Error('User not authenticated') };
+    }
+
     const { data, error } = await supabase
       .from('wallet_stats')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id) // Use the authenticated Supabase user ID
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
