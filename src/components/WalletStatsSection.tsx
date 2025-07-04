@@ -1,26 +1,74 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign } from 'lucide-react';
+import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { fetchWalletStats } from '../services/api';
-import type { WalletStatsEntry } from '../services/api';
+import { fetchWalletStats, fetchNetworkUser } from '../services/api';
+import { saveWalletStats, getWalletStatsHistory, type WalletStatsRecord } from '../services/supabase';
+import type { NetworkUser } from '../services/api';
 import toast from 'react-hot-toast';
 
 const WalletStatsSection: React.FC = () => {
   const { token } = useAuth();
   const [currentStats, setCurrentStats] = useState({ paid_mb: 0, unpaid_mb: 0 });
-  const [statsHistory, setStatsHistory] = useState<WalletStatsEntry[]>([]);
+  const [statsHistory, setStatsHistory] = useState<WalletStatsRecord[]>([]);
+  const [networkUser, setNetworkUser] = useState<NetworkUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [refreshInterval, setRefreshInterval] = useState(5); // minutes
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showSettings, setShowSettings] = useState(false);
+  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const bytesToMB = (bytes: number) => bytes / (1024 * 1024);
 
-  const loadWalletStats = useCallback(async () => {
+  // Load network user info
+  const loadNetworkUser = useCallback(async () => {
     if (!token) return;
+    
+    try {
+      const response = await fetchNetworkUser(token);
+      
+      if (response.error) {
+        console.error('Failed to fetch network user:', response.error.message);
+        toast.error('Failed to fetch user information');
+      } else if (response.network_user) {
+        setNetworkUser(response.network_user);
+      }
+    } catch (err) {
+      console.error('Error fetching network user:', err);
+    }
+  }, [token]);
+
+  // Load wallet stats history from Supabase
+  const loadStatsHistory = useCallback(async () => {
+    if (!networkUser?.user_id) return;
+    
+    try {
+      const { data, error } = await getWalletStatsHistory(networkUser.user_id, 100);
+      
+      if (error) {
+        console.error('Error loading stats history:', error);
+      } else if (data) {
+        setStatsHistory(data);
+        
+        // Set current stats from the latest entry
+        if (data.length > 0) {
+          const latest = data[0];
+          setCurrentStats({
+            paid_mb: bytesToMB(latest.paid_bytes_provided),
+            unpaid_mb: bytesToMB(latest.unpaid_bytes_provided),
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error loading stats history:', err);
+    }
+  }, [networkUser?.user_id]);
+
+  // Fetch wallet stats from API and save to Supabase
+  const loadWalletStats = useCallback(async (showToast = true) => {
+    if (!token || !networkUser?.user_id) return;
     
     setIsLoading(true);
     setError(null);
@@ -30,36 +78,47 @@ const WalletStatsSection: React.FC = () => {
       
       if (response.error) {
         setError(response.error.message);
-        toast.error(response.error.message);
+        if (showToast) {
+          toast.error(response.error.message);
+        }
       } else {
         const paidMB = bytesToMB(response.paid_bytes_provided);
         const unpaidMB = bytesToMB(response.unpaid_bytes_provided);
         
         setCurrentStats({ paid_mb: paidMB, unpaid_mb: unpaidMB });
-        
-        // Add to history
-        const newEntry: WalletStatsEntry = {
-          timestamp: new Date().toISOString(),
-          paid_mb: paidMB,
-          unpaid_mb: unpaidMB,
-        };
-        
-        setStatsHistory(prev => {
-          const updated = [...prev, newEntry];
-          // Keep only last 100 entries to prevent memory issues
-          return updated.slice(-100);
-        });
-        
         setLastUpdated(new Date().toISOString());
+        
+        // Save to Supabase
+        const { error: saveError } = await saveWalletStats(
+          networkUser.user_id,
+          networkUser.network_name,
+          response.paid_bytes_provided,
+          response.unpaid_bytes_provided
+        );
+        
+        if (saveError) {
+          console.error('Error saving wallet stats:', saveError);
+          if (showToast) {
+            toast.error('Failed to save stats to database');
+          }
+        } else {
+          // Reload history to include the new entry
+          await loadStatsHistory();
+          if (showToast) {
+            toast.success('Wallet stats updated successfully');
+          }
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load wallet stats';
       setError(message);
-      toast.error(message);
+      if (showToast) {
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, networkUser, loadStatsHistory]);
 
   // Setup automatic refresh
   useEffect(() => {
@@ -67,20 +126,34 @@ const WalletStatsSection: React.FC = () => {
       clearInterval(intervalRef.current);
     }
 
-    // Initial load
-    loadWalletStats();
+    if (isAutoRefreshEnabled && networkUser?.user_id) {
+      // Initial load
+      loadWalletStats(false);
 
-    // Setup interval
-    intervalRef.current = setInterval(() => {
-      loadWalletStats();
-    }, refreshInterval * 60 * 1000);
+      // Setup interval
+      intervalRef.current = setInterval(() => {
+        loadWalletStats(false);
+      }, refreshInterval * 60 * 1000);
+    }
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [loadWalletStats, refreshInterval]);
+  }, [loadWalletStats, refreshInterval, isAutoRefreshEnabled, networkUser?.user_id]);
+
+  // Load network user on component mount
+  useEffect(() => {
+    loadNetworkUser();
+  }, [loadNetworkUser]);
+
+  // Load stats history when network user is available
+  useEffect(() => {
+    if (networkUser?.user_id) {
+      loadStatsHistory();
+    }
+  }, [networkUser?.user_id, loadStatsHistory]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -132,11 +205,17 @@ const WalletStatsSection: React.FC = () => {
     </div>
   );
 
-  const SimpleChart = ({ data }: { data: WalletStatsEntry[] }) => {
+  const SimpleChart = ({ data }: { data: WalletStatsRecord[] }) => {
     if (data.length === 0) return null;
 
-    const maxValue = Math.max(...data.map(d => Math.max(d.paid_mb, d.unpaid_mb)));
+    const maxValue = Math.max(...data.map(d => Math.max(
+      bytesToMB(d.paid_bytes_provided), 
+      bytesToMB(d.unpaid_bytes_provided)
+    )));
     const chartHeight = 200;
+
+    // Reverse data for chronological order in chart
+    const chartData = [...data].reverse();
 
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -157,15 +236,15 @@ const WalletStatsSection: React.FC = () => {
             ))}
             
             {/* Data lines */}
-            {data.length > 1 && (
+            {chartData.length > 1 && (
               <>
                 {/* Paid MB line */}
                 <polyline
                   fill="none"
                   stroke="#10b981"
                   strokeWidth="2"
-                  points={data.map((d, i) => 
-                    `${(i / (data.length - 1)) * 100}%,${chartHeight - (d.paid_mb / maxValue) * chartHeight}`
+                  points={chartData.map((d, i) => 
+                    `${(i / (chartData.length - 1)) * 100}%,${chartHeight - (bytesToMB(d.paid_bytes_provided) / maxValue) * chartHeight}`
                   ).join(' ')}
                 />
                 
@@ -174,25 +253,25 @@ const WalletStatsSection: React.FC = () => {
                   fill="none"
                   stroke="#f59e0b"
                   strokeWidth="2"
-                  points={data.map((d, i) => 
-                    `${(i / (data.length - 1)) * 100}%,${chartHeight - (d.unpaid_mb / maxValue) * chartHeight}`
+                  points={chartData.map((d, i) => 
+                    `${(i / (chartData.length - 1)) * 100}%,${chartHeight - (bytesToMB(d.unpaid_bytes_provided) / maxValue) * chartHeight}`
                   ).join(' ')}
                 />
               </>
             )}
             
             {/* Data points */}
-            {data.map((d, i) => (
+            {chartData.map((d, i) => (
               <g key={i}>
                 <circle
-                  cx={`${(i / (data.length - 1)) * 100}%`}
-                  cy={chartHeight - (d.paid_mb / maxValue) * chartHeight}
+                  cx={`${(i / (chartData.length - 1)) * 100}%`}
+                  cy={chartHeight - (bytesToMB(d.paid_bytes_provided) / maxValue) * chartHeight}
                   r="3"
                   fill="#10b981"
                 />
                 <circle
-                  cx={`${(i / (data.length - 1)) * 100}%`}
-                  cy={chartHeight - (d.unpaid_mb / maxValue) * chartHeight}
+                  cx={`${(i / (chartData.length - 1)) * 100}%`}
+                  cy={chartHeight - (bytesToMB(d.unpaid_bytes_provided) / maxValue) * chartHeight}
                   r="3"
                   fill="#f59e0b"
                 />
@@ -227,6 +306,14 @@ const WalletStatsSection: React.FC = () => {
           <p className="text-gray-600 mt-1">
             Real-time tracking of data transfer earnings
           </p>
+          {networkUser && (
+            <div className="flex items-center gap-2 mt-2">
+              <User size={16} className="text-gray-500" />
+              <span className="text-sm text-gray-600">
+                Network: {networkUser.network_name} ({networkUser.user_auth})
+              </span>
+            </div>
+          )}
           {lastUpdated && (
             <p className="text-sm text-gray-500 mt-1">
               Last updated: {formatDateTime(lastUpdated)}
@@ -244,7 +331,7 @@ const WalletStatsSection: React.FC = () => {
           </button>
           
           <button
-            onClick={loadWalletStats}
+            onClick={() => loadWalletStats(true)}
             disabled={isLoading}
             className="flex items-center gap-2 bg-green-100 text-green-700 hover:bg-green-200 px-4 py-2 rounded-md transition-colors"
           >
@@ -257,7 +344,19 @@ const WalletStatsSection: React.FC = () => {
       {showSettings && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-medium text-gray-800 mb-4">Settings</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="flex items-center space-x-2 mb-4">
+                <input
+                  type="checkbox"
+                  checked={isAutoRefreshEnabled}
+                  onChange={(e) => setIsAutoRefreshEnabled(e.target.checked)}
+                  className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Enable Auto Refresh</span>
+              </label>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Refresh Interval (minutes)
@@ -265,7 +364,8 @@ const WalletStatsSection: React.FC = () => {
               <select
                 value={refreshInterval}
                 onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                disabled={!isAutoRefreshEnabled}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
               >
                 <option value={1}>1 minute</option>
                 <option value={5}>5 minutes</option>
@@ -302,6 +402,16 @@ const WalletStatsSection: React.FC = () => {
           <div>
             <h3 className="font-medium text-red-800">Error loading wallet stats</h3>
             <p className="text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {!networkUser && !isLoading && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-md flex items-start gap-3">
+          <AlertCircle size={20} className="text-yellow-500 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-medium text-yellow-800">User Information Required</h3>
+            <p className="text-yellow-700">Loading user information to enable wallet stats tracking...</p>
           </div>
         </div>
       )}
@@ -364,19 +474,19 @@ const WalletStatsSection: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {statsHistory.slice().reverse().map((entry, index) => (
-                    <tr key={index} className={index === 0 ? 'bg-green-50' : ''}>
+                  {statsHistory.map((entry, index) => (
+                    <tr key={entry.id} className={index === 0 ? 'bg-green-50' : ''}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDateTime(entry.timestamp)}
+                        {formatDateTime(entry.created_at)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {entry.paid_mb.toFixed(2)}
+                        {bytesToMB(entry.paid_bytes_provided).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {entry.unpaid_mb.toFixed(2)}
+                        {bytesToMB(entry.unpaid_bytes_provided).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {(entry.paid_mb + entry.unpaid_mb).toFixed(2)}
+                        {(bytesToMB(entry.paid_bytes_provided) + bytesToMB(entry.unpaid_bytes_provided)).toFixed(2)}
                       </td>
                     </tr>
                   ))}

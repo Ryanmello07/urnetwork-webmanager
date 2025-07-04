@@ -1,4 +1,4 @@
-import type { AuthResponse, Client, ClientsResponse, RemoveClientResponse, Provider, StatsResponse, LeaderboardEntry, LeaderboardResponse, NetworkRanking, WalletStatsResponse } from './types';
+import type { AuthResponse, Client, ClientsResponse, RemoveClientResponse, Provider, StatsResponse, LeaderboardEntry, LeaderboardResponse, NetworkRanking, WalletStatsResponse, NetworkUserResponse } from './types';
 
 const API_BASE_URL = '/api';
 
@@ -28,6 +28,35 @@ export const login = async (authCode: string): Promise<AuthResponse> => {
     return {
       error: {
         message: error instanceof Error ? error.message : 'Authentication failed',
+      },
+    };
+  }
+};
+
+// Get network user API
+export const fetchNetworkUser = async (token: string): Promise<NetworkUserResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/network/user`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Fetch network user failed:', response.status, response.statusText);
+      const errorData = await response.text();
+      console.error('Error response:', errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Fetch network user error:', error);
+    return {
+      error: {
+        message: error instanceof Error ? error.message : 'Failed to fetch network user',
       },
     };
   }
@@ -296,5 +325,7 @@ export type {
   Device,
   WalletStats,
   WalletStatsResponse,
-  WalletStatsEntry
+  WalletStatsEntry,
+  NetworkUser,
+  NetworkUserResponse
 };

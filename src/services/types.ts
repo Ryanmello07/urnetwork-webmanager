@@ -5,6 +5,21 @@ export interface AuthResponse {
   };
 }
 
+export interface NetworkUser {
+  user_id: string;
+  user_auth: string;
+  verified: boolean;
+  auth_type: string;
+  network_name: string;
+}
+
+export interface NetworkUserResponse {
+  network_user?: NetworkUser;
+  error?: {
+    message: string;
+  };
+}
+
 export interface Client {
   client_id: string;
   device_id: string;
