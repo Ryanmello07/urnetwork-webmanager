@@ -7,25 +7,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-// Custom fetch function that adds Authorization header from localStorage
-const customFetch = (url: RequestInfo | URL, options: RequestInit = {}) => {
-  const byToken = localStorage.getItem('byToken');
-  
-  if (byToken) {
-    options.headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${byToken}`,
-    };
-  }
-  
-  return fetch(url, options);
-};
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  global: {
-    fetch: customFetch,
-  },
-});
+// Create Supabase client without custom fetch - let it handle its own auth
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface WalletStatsRecord {
   id: string;
