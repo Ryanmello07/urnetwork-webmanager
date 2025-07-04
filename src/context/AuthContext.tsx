@@ -27,16 +27,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load token from localStorage on initial load
   useEffect(() => {
-    const storedToken = localStorage.getItem('byToken');
-    if (storedToken) {
-      setToken(storedToken);
-      // Set the Supabase session with the stored token
-      supabase.auth.setSession({
-        access_token: storedToken,
-        refresh_token: '', // We don't have a refresh token in this case
-      });
-    }
-    setIsLoading(false);
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('byToken');
+      if (storedToken) {
+        try {
+          // Attempt to set the Supabase session with the stored token
+          await supabase.auth.setSession({
+            access_token: storedToken,
+            refresh_token: '', // We don't have a refresh token in this case
+          });
+          
+          // Verify that the session was actually established
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (session && !error) {
+            setToken(storedToken);
+          } else {
+            // Session is invalid, clear the stored token
+            localStorage.removeItem('byToken');
+            setToken(null);
+            await supabase.auth.signOut();
+          }
+        } catch (error) {
+          // If there's an error setting the session, clear the stored token
+          localStorage.removeItem('byToken');
+          setToken(null);
+          await supabase.auth.signOut();
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const handleLogin = async (authCode: string) => {
@@ -57,6 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           access_token: response.by_jwt,
           refresh_token: '', // We don't have a refresh token in this case
         });
+        
+        // Verify that the session was established
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!session || error) {
+          throw new Error('Failed to establish authentication session');
+        }
         
         toast.success('Successfully authenticated!');
       } else {
