@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { login } from '../services/api';
-import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -30,30 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('byToken');
       if (storedToken) {
-        try {
-          // Attempt to set the Supabase session with the stored token
-          await supabase.auth.setSession({
-            access_token: storedToken,
-            refresh_token: '', // We don't have a refresh token in this case
-          });
-          
-          // Verify that the session was actually established
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (session && !error) {
-            setToken(storedToken);
-          } else {
-            // Session is invalid, clear the stored token
-            localStorage.removeItem('byToken');
-            setToken(null);
-            await supabase.auth.signOut();
-          }
-        } catch (error) {
-          // If there's an error setting the session, clear the stored token
-          localStorage.removeItem('byToken');
-          setToken(null);
-          await supabase.auth.signOut();
-        }
+        setToken(storedToken);
       }
       setIsLoading(false);
     };
@@ -73,20 +49,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.by_jwt) {
         localStorage.setItem('byToken', response.by_jwt);
         setToken(response.by_jwt);
-        
-        // Set the Supabase session with the JWT token
-        await supabase.auth.setSession({
-          access_token: response.by_jwt,
-          refresh_token: '', // We don't have a refresh token in this case
-        });
-        
-        // Verify that the session was established
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (!session || error) {
-          throw new Error('Failed to establish authentication session');
-        }
-        
         toast.success('Successfully authenticated!');
       } else {
         throw new Error('Authentication failed');
@@ -95,8 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error(error instanceof Error ? error.message : 'Authentication failed');
       localStorage.removeItem('byToken');
       setToken(null);
-      // Clear Supabase session on error
-      await supabase.auth.signOut();
     } finally {
       setIsLoading(false);
     }
@@ -105,10 +65,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleLogout = async () => {
     localStorage.removeItem('byToken');
     setToken(null);
-    
-    // Sign out from Supabase
-    await supabase.auth.signOut();
-    
     toast.success('Logged out successfully');
   };
 
