@@ -15,7 +15,7 @@ export interface WalletStatsRecord {
 // Simple database operations using fetch to a backend endpoint
 // Since we can't use pg directly in the browser, we'll create a simple API layer
 
-const DB_API_BASE = env.DB_API_BASE;
+const DB_API_BASE = import.meta.env.DB_API_BASE;
 
 export const saveWalletStats = async (
   userId: string,
