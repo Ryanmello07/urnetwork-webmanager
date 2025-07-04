@@ -1,14 +1,13 @@
-import pg from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
-const { Pool } = pg;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Database configuration
-const pool = new Pool({
-  connectionString: import.meta.env.VITE_DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface WalletStatsRecord {
   id: string;
@@ -27,14 +26,23 @@ export const saveWalletStats = async (
   unpaidBytes: number
 ): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
-    const query = `
-      INSERT INTO wallet_stats (user_id, network_name, paid_bytes_provided, unpaid_bytes_provided)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
-    `;
-    
-    const result = await pool.query(query, [userId, networkName, paidBytes, unpaidBytes]);
-    return { data: result.rows[0] || null, error: null };
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .insert({
+        user_id: userId,
+        network_name: networkName,
+        paid_bytes_provided: paidBytes,
+        unpaid_bytes_provided: unpaidBytes
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving wallet stats:', error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
   } catch (error) {
     console.error('Error saving wallet stats:', error);
     return { data: null, error };
@@ -46,15 +54,19 @@ export const getWalletStatsHistory = async (
   limit: number = 100
 ): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
   try {
-    const query = `
-      SELECT * FROM wallet_stats 
-      WHERE user_id = $1 
-      ORDER BY created_at DESC 
-      LIMIT $2
-    `;
-    
-    const result = await pool.query(query, [userId, limit]);
-    return { data: result.rows, error: null };
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching wallet stats history:', error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
   } catch (error) {
     console.error('Error fetching wallet stats history:', error);
     return { data: null, error };
@@ -65,15 +77,20 @@ export const getLatestWalletStats = async (
   userId: string
 ): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
-    const query = `
-      SELECT * FROM wallet_stats 
-      WHERE user_id = $1 
-      ORDER BY created_at DESC 
-      LIMIT 1
-    `;
-    
-    const result = await pool.query(query, [userId]);
-    return { data: result.rows[0] || null, error: null };
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error('Error fetching latest wallet stats:', error);
+      return { data: null, error };
+    }
+
+    return { data, error: null };
   } catch (error) {
     console.error('Error fetching latest wallet stats:', error);
     return { data: null, error };
@@ -83,8 +100,16 @@ export const getLatestWalletStats = async (
 // Test database connection
 export const testConnection = async (): Promise<boolean> => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    console.log('Database connection successful:', result.rows[0]);
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('count', { count: 'exact', head: true });
+
+    if (error) {
+      console.error('Database connection failed:', error);
+      return false;
+    }
+
+    console.log('Database connection successful');
     return true;
   } catch (error) {
     console.error('Database connection failed:', error);
@@ -92,12 +117,7 @@ export const testConnection = async (): Promise<boolean> => {
   }
 };
 
-// Close database connection
+// Close database connection (not needed for Supabase client)
 export const closeConnection = async (): Promise<void> => {
-  try {
-    await pool.end();
-    console.log('Database connection closed');
-  } catch (error) {
-    console.error('Error closing database connection:', error);
-  }
+  console.log('Supabase client connection closed (no action needed)');
 };
