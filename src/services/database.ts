@@ -98,6 +98,27 @@ export const getLatestWalletStats = async (
   }
 };
 
+export const clearWalletStatsHistory = async (
+  userId: string
+): Promise<{ success: boolean; error: any }> => {
+  try {
+    const { error } = await supabase
+      .from('wallet_stats')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Supabase error clearing wallet stats history:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error clearing wallet stats history:', error);
+    return { success: false, error };
+  }
+};
+
 // Test database connection
 export const testConnection = async (): Promise<boolean> => {
   try {
