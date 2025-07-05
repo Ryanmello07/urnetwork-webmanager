@@ -258,12 +258,15 @@ const WalletStatsSection: React.FC = () => {
     const chartMin = Math.max(0, minValue - padding);
     const chartRange = chartMax - chartMin || 1; // Prevent division by zero
 
-    const chartHeight = 350;
-    const leftPadding = 80;
-    const rightPadding = 30;
-    const topPadding = 30;
-    const bottomPadding = 80;
-    const plotHeight = chartHeight - topPadding - bottomPadding;
+    // Fixed dimensions for consistent sizing
+    const containerWidth = 500;
+    const containerHeight = 300;
+    const leftPadding = 70;
+    const rightPadding = 20;
+    const topPadding = 20;
+    const bottomPadding = 60;
+    const plotWidth = containerWidth - leftPadding - rightPadding;
+    const plotHeight = containerHeight - topPadding - bottomPadding;
 
     // Generate Y-axis labels
     const yAxisSteps = 5;
@@ -274,27 +277,29 @@ const WalletStatsSection: React.FC = () => {
     }
 
     // Generate X-axis labels (show fewer points to avoid crowding)
-    const maxXLabels = 4;
-    const xAxisStep = Math.max(1, Math.floor(chartData.length / maxXLabels));
+    const maxXLabels = Math.min(4, chartData.length);
     const xAxisIndices = [];
-    for (let i = 0; i < chartData.length; i += xAxisStep) {
-      xAxisIndices.push(i);
-    }
-    // Always include the last point
-    if (xAxisIndices[xAxisIndices.length - 1] !== chartData.length - 1) {
-      xAxisIndices.push(chartData.length - 1);
+    if (chartData.length <= maxXLabels) {
+      // Show all points if we have few data points
+      for (let i = 0; i < chartData.length; i++) {
+        xAxisIndices.push(i);
+      }
+    } else {
+      // Distribute points evenly
+      for (let i = 0; i < maxXLabels; i++) {
+        const index = Math.floor((i / (maxXLabels - 1)) * (chartData.length - 1));
+        xAxisIndices.push(index);
+      }
     }
 
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
-        <div className="w-full">
+        <div className="w-full overflow-hidden">
           <svg 
-            width="100%" 
-            height={chartHeight} 
-            viewBox={`0 0 600 ${chartHeight}`}
-            className="border border-gray-200 rounded"
-            preserveAspectRatio="xMidYMid meet"
+            width={containerWidth} 
+            height={containerHeight} 
+            className="border border-gray-200 rounded mx-auto block"
           >
             {/* Background */}
             <rect width="100%" height="100%" fill="#fafafa" />
@@ -303,7 +308,7 @@ const WalletStatsSection: React.FC = () => {
             <rect 
               x={leftPadding} 
               y={topPadding} 
-              width={600 - leftPadding - rightPadding} 
+              width={plotWidth} 
               height={plotHeight} 
               fill="white" 
               stroke="#e5e7eb" 
@@ -317,17 +322,17 @@ const WalletStatsSection: React.FC = () => {
                   <line
                     x1={leftPadding}
                     y1={y}
-                    x2={600 - rightPadding}
+                    x2={leftPadding + plotWidth}
                     y2={y}
                     stroke="#f3f4f6"
                     strokeWidth="1"
                   />
                   <text
-                    x={leftPadding - 10}
-                    y={y + 4}
+                    x={leftPadding - 5}
+                    y={y + 3}
                     textAnchor="end"
                     className="text-xs fill-gray-500"
-                    fontSize="11"
+                    fontSize="10"
                   >
                     {formatValue(value)}
                   </text>
@@ -337,7 +342,7 @@ const WalletStatsSection: React.FC = () => {
             
             {/* Vertical grid lines */}
             {xAxisIndices.map((dataIndex) => {
-              const x = leftPadding + (dataIndex / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
+              const x = leftPadding + (dataIndex / Math.max(1, chartData.length - 1)) * plotWidth;
               return (
                 <line
                   key={dataIndex}
@@ -356,11 +361,11 @@ const WalletStatsSection: React.FC = () => {
               <polyline
                 fill="none"
                 stroke={color}
-                strokeWidth="3"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 points={chartData.map((d, i) => {
-                  const x = leftPadding + (i / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
+                  const x = leftPadding + (i / Math.max(1, chartData.length - 1)) * plotWidth;
                   const value = bytesToMB(d[dataKey]);
                   const y = topPadding + plotHeight - ((value - chartMin) / chartRange) * plotHeight;
                   return `${x},${y}`;
@@ -370,7 +375,7 @@ const WalletStatsSection: React.FC = () => {
             
             {/* Data points */}
             {chartData.map((d, i) => {
-              const x = leftPadding + (i / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
+              const x = leftPadding + (i / Math.max(1, chartData.length - 1)) * plotWidth;
               const value = bytesToMB(d[dataKey]);
               const y = topPadding + plotHeight - ((value - chartMin) / chartRange) * plotHeight;
               
@@ -379,7 +384,7 @@ const WalletStatsSection: React.FC = () => {
                   <circle
                     cx={x}
                     cy={y}
-                    r="5"
+                    r="4"
                     fill={color}
                     stroke="white"
                     strokeWidth="2"
@@ -388,7 +393,7 @@ const WalletStatsSection: React.FC = () => {
                   <circle
                     cx={x}
                     cy={y}
-                    r="10"
+                    r="8"
                     fill="transparent"
                     className="cursor-pointer"
                   >
@@ -401,7 +406,7 @@ const WalletStatsSection: React.FC = () => {
             {/* X-axis labels */}
             {xAxisIndices.map((dataIndex) => {
               const d = chartData[dataIndex];
-              const x = leftPadding + (dataIndex / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
+              const x = leftPadding + (dataIndex / Math.max(1, chartData.length - 1)) * plotWidth;
               const date = new Date(d.created_at);
               const label = date.toLocaleDateString('en-US', { 
                 month: 'short', 
@@ -414,11 +419,10 @@ const WalletStatsSection: React.FC = () => {
                 <text
                   key={dataIndex}
                   x={x}
-                  y={chartHeight - 20}
+                  y={containerHeight - 15}
                   textAnchor="middle"
                   className="text-xs fill-gray-500"
-                  fontSize="10"
-                  transform={`rotate(-45, ${x}, ${chartHeight - 20})`}
+                  fontSize="9"
                 >
                   {label}
                 </text>
@@ -427,23 +431,23 @@ const WalletStatsSection: React.FC = () => {
             
             {/* Y-axis label */}
             <text
-              x={20}
-              y={chartHeight / 2}
+              x={15}
+              y={containerHeight / 2}
               textAnchor="middle"
-              className="text-sm fill-gray-700 font-medium"
-              fontSize="12"
-              transform={`rotate(-90, 20, ${chartHeight / 2})`}
+              className="text-xs fill-gray-700 font-medium"
+              fontSize="10"
+              transform={`rotate(-90, 15, ${containerHeight / 2})`}
             >
               Data Transfer (MB)
             </text>
             
             {/* X-axis label */}
             <text
-              x={300}
-              y={chartHeight - 5}
+              x={containerWidth / 2}
+              y={containerHeight - 5}
               textAnchor="middle"
-              className="text-sm fill-gray-700 font-medium"
-              fontSize="12"
+              className="text-xs fill-gray-700 font-medium"
+              fontSize="10"
             >
               Time
             </text>
