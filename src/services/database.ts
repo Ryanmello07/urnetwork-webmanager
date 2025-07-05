@@ -1,6 +1,4 @@
-// Direct PostgreSQL connection for wallet stats
-// Note: This runs in the browser, so we'll use a simple fetch-based approach
-// to avoid Node.js-specific dependencies like 'pg'
+import { createClient } from '@supabase/supabase-js';
 
 export interface WalletStatsRecord {
   id: string;
@@ -12,10 +10,15 @@ export interface WalletStatsRecord {
   updated_at: string;
 }
 
-// Simple database operations using fetch to a backend endpoint
-// Since we can't use pg directly in the browser, we'll create a simple API layer
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const DB_API_BASE = import.meta.env.DB_API_BASE;
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const saveWalletStats = async (
   userId: string,
@@ -24,24 +27,22 @@ export const saveWalletStats = async (
   unpaidBytes: number
 ): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
-    const response = await fetch(`${DB_API_BASE}/wallet-stats`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .insert({
         user_id: userId,
         network_name: networkName,
         paid_bytes_provided: paidBytes,
         unpaid_bytes_provided: unpaidBytes
       })
-    });
+      .select()
+      .single();
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (error) {
+      console.error('Supabase error saving wallet stats:', error);
+      return { data: null, error };
     }
 
-    const data = await response.json();
     return { data, error: null };
   } catch (error) {
     console.error('Error saving wallet stats:', error);
@@ -54,19 +55,19 @@ export const getWalletStatsHistory = async (
   limit: number = 100
 ): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
   try {
-    const response = await fetch(`${DB_API_BASE}/wallet-stats/${userId}?limit=${limit}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (error) {
+      console.error('Supabase error fetching wallet stats history:', error);
+      return { data: null, error };
     }
 
-    const data = await response.json();
-    return { data, error: null };
+    return { data: data || [], error: null };
   } catch (error) {
     console.error('Error fetching wallet stats history:', error);
     return { data: null, error };
@@ -77,18 +78,19 @@ export const getLatestWalletStats = async (
   userId: string
 ): Promise<{ data: WalletStatsRecord | null; error: any }> => {
   try {
-    const response = await fetch(`${DB_API_BASE}/wallet-stats/${userId}/latest`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    const { data, error } = await supabase
+      .from('wallet_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (error) {
+      console.error('Supabase error fetching latest wallet stats:', error);
+      return { data: null, error };
     }
 
-    const data = await response.json();
     return { data, error: null };
   } catch (error) {
     console.error('Error fetching latest wallet stats:', error);
@@ -99,12 +101,12 @@ export const getLatestWalletStats = async (
 // Test database connection
 export const testConnection = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${DB_API_BASE}/test`, {
-      method: 'GET',
-    });
+    const { error } = await supabase
+      .from('wallet_stats')
+      .select('count', { count: 'exact', head: true });
 
-    if (!response.ok) {
-      console.error('Database connection failed:', response.status);
+    if (error) {
+      console.error('Database connection failed:', error);
       return false;
     }
 
@@ -116,7 +118,7 @@ export const testConnection = async (): Promise<boolean> => {
   }
 };
 
-// Close database connection (not needed for fetch-based approach)
+// Close database connection (not needed for Supabase client)
 export const closeConnection = async (): Promise<void> => {
-  console.log('Database connection closed (no action needed for fetch-based approach)');
+  console.log('Database connection closed (no action needed for Supabase client)');
 };
