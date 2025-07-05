@@ -233,91 +233,206 @@ const WalletStatsSection: React.FC = () => {
     </div>
   );
 
-  const SimpleChart = ({ data }: { data: WalletStatsRecord[] }) => {
+  const formatValue = (value: number) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}GB`;
+    }
+    return `${value.toFixed(1)}MB`;
+  };
+
+  const Chart = ({ data, title, dataKey, color }: { 
+    data: WalletStatsRecord[]; 
+    title: string; 
+    dataKey: 'paid_bytes_provided' | 'unpaid_bytes_provided';
+    color: string;
+  }) => {
     if (data.length === 0) return null;
 
-    const maxValue = Math.max(...data.map(d => Math.max(
-      bytesToMB(d.paid_bytes_provided), 
-      bytesToMB(d.unpaid_bytes_provided)
-    )));
-    const chartHeight = 200;
-
-    // Reverse data for chronological order in chart
     const chartData = [...data].reverse();
+    const values = chartData.map(d => bytesToMB(d[dataKey]));
+    const maxValue = Math.max(...values, 1); // Ensure minimum of 1 for scaling
+    const minValue = Math.min(...values);
+    const range = maxValue - minValue;
+    const padding = range * 0.1; // 10% padding
+    const chartMax = maxValue + padding;
+    const chartMin = Math.max(0, minValue - padding);
+    const chartRange = chartMax - chartMin;
+
+    const chartHeight = 300;
+    const chartWidth = 800;
+    const leftPadding = 80;
+    const rightPadding = 20;
+    const topPadding = 20;
+    const bottomPadding = 60;
+    const plotWidth = chartWidth - leftPadding - rightPadding;
+    const plotHeight = chartHeight - topPadding - bottomPadding;
+
+    // Generate Y-axis labels
+    const yAxisSteps = 5;
+    const yAxisLabels = [];
+    for (let i = 0; i <= yAxisSteps; i++) {
+      const value = chartMin + (chartRange * i / yAxisSteps);
+      yAxisLabels.push(value);
+    }
+
+    // Generate X-axis labels (show every few points to avoid crowding)
+    const xAxisStep = Math.max(1, Math.floor(chartData.length / 6));
+    const xAxisLabels = chartData.filter((_, i) => i % xAxisStep === 0 || i === chartData.length - 1);
 
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-medium text-gray-800 mb-4">Data Transfer History</h3>
-        <div className="relative" style={{ height: chartHeight }}>
-          <svg width="100%" height={chartHeight} className="overflow-visible">
-            {/* Grid lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
-              <line
-                key={ratio}
-                x1="0"
-                y1={chartHeight * ratio}
-                x2="100%"
-                y2={chartHeight * ratio}
-                stroke="#e5e7eb"
-                strokeWidth="1"
-              />
-            ))}
+        <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
+        <div className="relative overflow-x-auto">
+          <svg width={chartWidth} height={chartHeight} className="border border-gray-200 rounded">
+            {/* Background */}
+            <rect width={chartWidth} height={chartHeight} fill="#fafafa" />
             
-            {/* Data lines */}
+            {/* Plot area background */}
+            <rect 
+              x={leftPadding} 
+              y={topPadding} 
+              width={plotWidth} 
+              height={plotHeight} 
+              fill="white" 
+              stroke="#e5e7eb" 
+            />
+            
+            {/* Horizontal grid lines */}
+            {yAxisLabels.map((value, i) => {
+              const y = topPadding + plotHeight - (i / yAxisSteps) * plotHeight;
+              return (
+                <g key={i}>
+                  <line
+                    x1={leftPadding}
+                    y1={y}
+                    x2={leftPadding + plotWidth}
+                    y2={y}
+                    stroke="#f3f4f6"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x={leftPadding - 10}
+                    y={y + 4}
+                    textAnchor="end"
+                    className="text-xs fill-gray-500"
+                  >
+                    {formatValue(value)}
+                  </text>
+                </g>
+              );
+            })}
+            
+            {/* Vertical grid lines */}
+            {xAxisLabels.map((_, i) => {
+              const originalIndex = chartData.findIndex(d => d.id === xAxisLabels[i].id);
+              const x = leftPadding + (originalIndex / (chartData.length - 1)) * plotWidth;
+              return (
+                <line
+                  key={i}
+                  x1={x}
+                  y1={topPadding}
+                  x2={x}
+                  y2={topPadding + plotHeight}
+                  stroke="#f3f4f6"
+                  strokeWidth="1"
+                />
+              );
+            })}
+            
+            {/* Data line */}
             {chartData.length > 1 && (
-              <>
-                {/* Paid MB line */}
-                <polyline
-                  fill="none"
-                  stroke="#10b981"
-                  strokeWidth="2"
-                  points={chartData.map((d, i) => 
-                    `${(i / (chartData.length - 1)) * 100}%,${chartHeight - (bytesToMB(d.paid_bytes_provided) / maxValue) * chartHeight}`
-                  ).join(' ')}
-                />
-                
-                {/* Unpaid MB line */}
-                <polyline
-                  fill="none"
-                  stroke="#f59e0b"
-                  strokeWidth="2"
-                  points={chartData.map((d, i) => 
-                    `${(i / (chartData.length - 1)) * 100}%,${chartHeight - (bytesToMB(d.unpaid_bytes_provided) / maxValue) * chartHeight}`
-                  ).join(' ')}
-                />
-              </>
+              <polyline
+                fill="none"
+                stroke={color}
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={chartData.map((d, i) => {
+                  const x = leftPadding + (i / (chartData.length - 1)) * plotWidth;
+                  const value = bytesToMB(d[dataKey]);
+                  const y = topPadding + plotHeight - ((value - chartMin) / chartRange) * plotHeight;
+                  return `${x},${y}`;
+                }).join(' ')}
+              />
             )}
             
             {/* Data points */}
-            {chartData.map((d, i) => (
-              <g key={i}>
-                <circle
-                  cx={`${(i / (chartData.length - 1)) * 100}%`}
-                  cy={chartHeight - (bytesToMB(d.paid_bytes_provided) / maxValue) * chartHeight}
-                  r="3"
-                  fill="#10b981"
-                />
-                <circle
-                  cx={`${(i / (chartData.length - 1)) * 100}%`}
-                  cy={chartHeight - (bytesToMB(d.unpaid_bytes_provided) / maxValue) * chartHeight}
-                  r="3"
-                  fill="#f59e0b"
-                />
-              </g>
-            ))}
+            {chartData.map((d, i) => {
+              const x = leftPadding + (i / (chartData.length - 1)) * plotWidth;
+              const value = bytesToMB(d[dataKey]);
+              const y = topPadding + plotHeight - ((value - chartMin) / chartRange) * plotHeight;
+              
+              return (
+                <g key={i}>
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="4"
+                    fill={color}
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                  {/* Hover tooltip area */}
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="8"
+                    fill="transparent"
+                    className="cursor-pointer"
+                  >
+                    <title>{`${formatValue(value)} at ${formatDateTime(d.created_at)}`}</title>
+                  </circle>
+                </g>
+              );
+            })}
+            
+            {/* X-axis labels */}
+            {xAxisLabels.map((d, i) => {
+              const originalIndex = chartData.findIndex(item => item.id === d.id);
+              const x = leftPadding + (originalIndex / (chartData.length - 1)) * plotWidth;
+              const date = new Date(d.created_at);
+              const label = date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+              
+              return (
+                <text
+                  key={i}
+                  x={x}
+                  y={chartHeight - 10}
+                  textAnchor="middle"
+                  className="text-xs fill-gray-500"
+                  transform={`rotate(-45, ${x}, ${chartHeight - 10})`}
+                >
+                  {label}
+                </text>
+              );
+            })}
+            
+            {/* Y-axis label */}
+            <text
+              x={20}
+              y={chartHeight / 2}
+              textAnchor="middle"
+              className="text-sm fill-gray-700 font-medium"
+              transform={`rotate(-90, 20, ${chartHeight / 2})`}
+            >
+              Data Transfer (MB)
+            </text>
+            
+            {/* X-axis label */}
+            <text
+              x={chartWidth / 2}
+              y={chartHeight - 5}
+              textAnchor="middle"
+              className="text-sm fill-gray-700 font-medium"
+            >
+              Time
+            </text>
           </svg>
-          
-          {/* Legend */}
-          <div className="flex justify-center mt-4 space-x-6">
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-600">Paid MB</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-              <span className="text-sm text-gray-600">Unpaid MB</span>
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -491,7 +606,22 @@ const WalletStatsSection: React.FC = () => {
               />
             </div>
 
-            <SimpleChart data={statsHistory} />
+            {statsHistory.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Chart 
+                  data={statsHistory} 
+                  title="Paid Data Transfer History" 
+                  dataKey="paid_bytes_provided"
+                  color="#10b981"
+                />
+                <Chart 
+                  data={statsHistory} 
+                  title="Unpaid Data Transfer History" 
+                  dataKey="unpaid_bytes_provided"
+                  color="#f59e0b"
+                />
+              </div>
+            )}
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
