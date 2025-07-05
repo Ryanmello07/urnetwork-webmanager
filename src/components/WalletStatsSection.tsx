@@ -253,18 +253,16 @@ const WalletStatsSection: React.FC = () => {
     const maxValue = Math.max(...values, 1); // Ensure minimum of 1 for scaling
     const minValue = Math.min(...values);
     const range = maxValue - minValue;
-    const padding = range * 0.1; // 10% padding
+    const padding = range > 0 ? range * 0.1 : maxValue * 0.1; // 10% padding
     const chartMax = maxValue + padding;
     const chartMin = Math.max(0, minValue - padding);
-    const chartRange = chartMax - chartMin;
+    const chartRange = chartMax - chartMin || 1; // Prevent division by zero
 
-    const chartHeight = 300;
-    const chartWidth = 800;
+    const chartHeight = 350;
     const leftPadding = 80;
-    const rightPadding = 20;
-    const topPadding = 20;
-    const bottomPadding = 60;
-    const plotWidth = chartWidth - leftPadding - rightPadding;
+    const rightPadding = 30;
+    const topPadding = 30;
+    const bottomPadding = 80;
     const plotHeight = chartHeight - topPadding - bottomPadding;
 
     // Generate Y-axis labels
@@ -275,23 +273,37 @@ const WalletStatsSection: React.FC = () => {
       yAxisLabels.push(value);
     }
 
-    // Generate X-axis labels (show every few points to avoid crowding)
-    const xAxisStep = Math.max(1, Math.floor(chartData.length / 6));
-    const xAxisLabels = chartData.filter((_, i) => i % xAxisStep === 0 || i === chartData.length - 1);
+    // Generate X-axis labels (show fewer points to avoid crowding)
+    const maxXLabels = 4;
+    const xAxisStep = Math.max(1, Math.floor(chartData.length / maxXLabels));
+    const xAxisIndices = [];
+    for (let i = 0; i < chartData.length; i += xAxisStep) {
+      xAxisIndices.push(i);
+    }
+    // Always include the last point
+    if (xAxisIndices[xAxisIndices.length - 1] !== chartData.length - 1) {
+      xAxisIndices.push(chartData.length - 1);
+    }
 
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
-        <div className="relative overflow-x-auto">
-          <svg width={chartWidth} height={chartHeight} className="border border-gray-200 rounded">
+        <div className="w-full">
+          <svg 
+            width="100%" 
+            height={chartHeight} 
+            viewBox={`0 0 600 ${chartHeight}`}
+            className="border border-gray-200 rounded"
+            preserveAspectRatio="xMidYMid meet"
+          >
             {/* Background */}
-            <rect width={chartWidth} height={chartHeight} fill="#fafafa" />
+            <rect width="100%" height="100%" fill="#fafafa" />
             
             {/* Plot area background */}
             <rect 
               x={leftPadding} 
               y={topPadding} 
-              width={plotWidth} 
+              width={600 - leftPadding - rightPadding} 
               height={plotHeight} 
               fill="white" 
               stroke="#e5e7eb" 
@@ -305,7 +317,7 @@ const WalletStatsSection: React.FC = () => {
                   <line
                     x1={leftPadding}
                     y1={y}
-                    x2={leftPadding + plotWidth}
+                    x2={600 - rightPadding}
                     y2={y}
                     stroke="#f3f4f6"
                     strokeWidth="1"
@@ -315,6 +327,7 @@ const WalletStatsSection: React.FC = () => {
                     y={y + 4}
                     textAnchor="end"
                     className="text-xs fill-gray-500"
+                    fontSize="11"
                   >
                     {formatValue(value)}
                   </text>
@@ -323,12 +336,11 @@ const WalletStatsSection: React.FC = () => {
             })}
             
             {/* Vertical grid lines */}
-            {xAxisLabels.map((_, i) => {
-              const originalIndex = chartData.findIndex(d => d.id === xAxisLabels[i].id);
-              const x = leftPadding + (originalIndex / (chartData.length - 1)) * plotWidth;
+            {xAxisIndices.map((dataIndex) => {
+              const x = leftPadding + (dataIndex / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
               return (
                 <line
-                  key={i}
+                  key={dataIndex}
                   x1={x}
                   y1={topPadding}
                   x2={x}
@@ -348,7 +360,7 @@ const WalletStatsSection: React.FC = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 points={chartData.map((d, i) => {
-                  const x = leftPadding + (i / (chartData.length - 1)) * plotWidth;
+                  const x = leftPadding + (i / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
                   const value = bytesToMB(d[dataKey]);
                   const y = topPadding + plotHeight - ((value - chartMin) / chartRange) * plotHeight;
                   return `${x},${y}`;
@@ -358,7 +370,7 @@ const WalletStatsSection: React.FC = () => {
             
             {/* Data points */}
             {chartData.map((d, i) => {
-              const x = leftPadding + (i / (chartData.length - 1)) * plotWidth;
+              const x = leftPadding + (i / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
               const value = bytesToMB(d[dataKey]);
               const y = topPadding + plotHeight - ((value - chartMin) / chartRange) * plotHeight;
               
@@ -367,7 +379,7 @@ const WalletStatsSection: React.FC = () => {
                   <circle
                     cx={x}
                     cy={y}
-                    r="4"
+                    r="5"
                     fill={color}
                     stroke="white"
                     strokeWidth="2"
@@ -376,7 +388,7 @@ const WalletStatsSection: React.FC = () => {
                   <circle
                     cx={x}
                     cy={y}
-                    r="8"
+                    r="10"
                     fill="transparent"
                     className="cursor-pointer"
                   >
@@ -387,9 +399,9 @@ const WalletStatsSection: React.FC = () => {
             })}
             
             {/* X-axis labels */}
-            {xAxisLabels.map((d, i) => {
-              const originalIndex = chartData.findIndex(item => item.id === d.id);
-              const x = leftPadding + (originalIndex / (chartData.length - 1)) * plotWidth;
+            {xAxisIndices.map((dataIndex) => {
+              const d = chartData[dataIndex];
+              const x = leftPadding + (dataIndex / (chartData.length - 1)) * (600 - leftPadding - rightPadding);
               const date = new Date(d.created_at);
               const label = date.toLocaleDateString('en-US', { 
                 month: 'short', 
@@ -400,12 +412,13 @@ const WalletStatsSection: React.FC = () => {
               
               return (
                 <text
-                  key={i}
+                  key={dataIndex}
                   x={x}
-                  y={chartHeight - 10}
+                  y={chartHeight - 20}
                   textAnchor="middle"
                   className="text-xs fill-gray-500"
-                  transform={`rotate(-45, ${x}, ${chartHeight - 10})`}
+                  fontSize="10"
+                  transform={`rotate(-45, ${x}, ${chartHeight - 20})`}
                 >
                   {label}
                 </text>
@@ -418,6 +431,7 @@ const WalletStatsSection: React.FC = () => {
               y={chartHeight / 2}
               textAnchor="middle"
               className="text-sm fill-gray-700 font-medium"
+              fontSize="12"
               transform={`rotate(-90, 20, ${chartHeight / 2})`}
             >
               Data Transfer (MB)
@@ -425,10 +439,11 @@ const WalletStatsSection: React.FC = () => {
             
             {/* X-axis label */}
             <text
-              x={chartWidth / 2}
+              x={300}
               y={chartHeight - 5}
               textAnchor="middle"
               className="text-sm fill-gray-700 font-medium"
+              fontSize="12"
             >
               Time
             </text>
@@ -607,7 +622,7 @@ const WalletStatsSection: React.FC = () => {
             </div>
 
             {statsHistory.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <Chart 
                   data={statsHistory} 
                   title="Paid Data Transfer History" 
