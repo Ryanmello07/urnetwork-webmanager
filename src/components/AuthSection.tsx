@@ -27,7 +27,7 @@ const AuthSection: React.FC = () => {
             </div>
             <h2 className="text-white text-center text-2xl font-bold mb-2">Secure Authentication</h2>
             <p className="text-blue-100 text-center text-sm">
-              Enter your authentication code to access the network management dashboard
+              Enter your authentication code to access the urnetwork client management dashboard
             </p>
           </div>
           
