@@ -24,13 +24,13 @@ const WalletStatsSection: React.FC = () => {
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const bytesToMB = (bytes: number) => bytes / (1024 * 1024);
+  const bytesToMB = (bytes: number) => bytes / (1000000);
 
   // Format bytes to appropriate unit (MB, GB, TB)
   const formatBytes = (bytes: number): string => {
-    const mb = bytes / (1024 * 1024);
-    const gb = mb / 1024;
-    const tb = gb / 1024;
+    const mb = bytes / (1000000);
+    const gb = mb / 1000;
+    const tb = gb / 1000;
 
     if (tb >= 1) {
       return `${tb.toFixed(2)} TB`;
@@ -43,8 +43,8 @@ const WalletStatsSection: React.FC = () => {
 
   // Format MB value to appropriate unit
   const formatMBValue = (mb: number): string => {
-    const gb = mb / 1024;
-    const tb = gb / 1024;
+    const gb = mb / 1000;
+    const tb = gb / 1000;
 
     if (tb >= 1) {
       return `${tb.toFixed(2)} TB`;
@@ -277,8 +277,8 @@ const WalletStatsSection: React.FC = () => {
   );
 
   const formatValue = (value: number) => {
-    if (value >= 1024) {
-      return `${(value / 1024).toFixed(1)}GB`;
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}GB`;
     }
     return `${value.toFixed(1)}MB`;
   };
