@@ -28,7 +28,7 @@ const WalletStatsSection: React.FC = () => {
 
   // Format bytes to appropriate unit (MB, GB, TB)
   const formatBytes = (bytes: number): string => {
-    const mb = bytes / (1024 * 1024);
+    const mb = bytes / (1048576);
     const gb = mb / 1024;
     const tb = gb / 1024;
 
