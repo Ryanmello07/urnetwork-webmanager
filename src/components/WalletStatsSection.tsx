@@ -26,6 +26,35 @@ const WalletStatsSection: React.FC = () => {
 
   const bytesToMB = (bytes: number) => bytes / (1024 * 1024);
 
+  // Format bytes to appropriate unit (MB, GB, TB)
+  const formatBytes = (bytes: number): string => {
+    const mb = bytes / (1024 * 1024);
+    const gb = mb / 1024;
+    const tb = gb / 1024;
+
+    if (tb >= 1) {
+      return `${tb.toFixed(2)} TB`;
+    } else if (gb >= 1) {
+      return `${gb.toFixed(2)} GB`;
+    } else {
+      return `${mb.toFixed(2)} MB`;
+    }
+  };
+
+  // Format MB value to appropriate unit
+  const formatMBValue = (mb: number): string => {
+    const gb = mb / 1024;
+    const tb = gb / 1024;
+
+    if (tb >= 1) {
+      return `${tb.toFixed(2)} TB`;
+    } else if (gb >= 1) {
+      return `${gb.toFixed(2)} GB`;
+    } else {
+      return `${mb.toFixed(2)} MB`;
+    }
+  };
+
   // Update storage info
   const updateStorageInfo = useCallback(() => {
     const info = getStorageInfo();
@@ -648,19 +677,19 @@ const WalletStatsSection: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard
                 title="Current Paid Data"
-                value={`${currentStats.paid_mb.toFixed(2)} MB`}
+                value={formatMBValue(currentStats.paid_mb)}
                 icon={DollarSign}
                 color="bg-green-500"
               />
               <StatCard
                 title="Current Unpaid Data"
-                value={`${currentStats.unpaid_mb.toFixed(2)} MB`}
+                value={formatMBValue(currentStats.unpaid_mb)}
                 icon={Clock}
                 color="bg-yellow-500"
               />
               <StatCard
                 title="Total Data"
-                value={`${(currentStats.paid_mb + currentStats.unpaid_mb).toFixed(2)} MB`}
+                value={formatMBValue(currentStats.paid_mb + currentStats.unpaid_mb)}
                 icon={Database}
                 color="bg-blue-500"
               />
@@ -701,13 +730,13 @@ const WalletStatsSection: React.FC = () => {
                         Timestamp
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Paid MB
+                        Paid Data
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Unpaid MB
+                        Unpaid Data
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total MB
+                        Total Data
                       </th>
                     </tr>
                   </thead>
@@ -718,13 +747,13 @@ const WalletStatsSection: React.FC = () => {
                           {formatDateTime(entry.created_at)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {bytesToMB(entry.paid_bytes_provided).toFixed(2)}
+                          {formatBytes(entry.paid_bytes_provided)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {bytesToMB(entry.unpaid_bytes_provided).toFixed(2)}
+                          {formatBytes(entry.unpaid_bytes_provided)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {(bytesToMB(entry.paid_bytes_provided) + bytesToMB(entry.unpaid_bytes_provided)).toFixed(2)}
+                          {formatBytes(entry.paid_bytes_provided + entry.unpaid_bytes_provided)}
                         </td>
                       </tr>
                     ))}
