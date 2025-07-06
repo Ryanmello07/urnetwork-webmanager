@@ -24,7 +24,7 @@ const WalletStatsSection: React.FC = () => {
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const bytesToMB = (bytes: number) => bytes / (1024 * 1024);
+  const bytesToMB = (bytes: number) => bytes / (1048576);
 
   // Format bytes to appropriate unit (MB, GB, TB)
   const formatBytes = (bytes: number): string => {
