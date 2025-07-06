@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, RefreshCw, AlertCircle } from 'lucide-react';
+import { Users, RefreshCw, AlertCircle, Network } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchClients } from '../services/api';
 import ClientsList from './ClientsList';
@@ -51,17 +51,23 @@ const ClientsSection: React.FC = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Users className="text-blue-600" />
+          <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
+              <Users className="text-white" size={28} />
+            </div>
             Client Management
           </h2>
-          <p className="text-gray-600 mt-1">View and manage connected clients</p>
+          <p className="text-gray-400 mt-2">View and manage connected network clients</p>
+          <div className="flex items-center gap-2 mt-2">
+            <Network size={16} className="text-blue-400" />
+            <span className="text-sm text-gray-500">{clients.length} clients connected</span>
+          </div>
         </div>
         
         <button
           onClick={loadClients}
           disabled={isLoading}
-          className="flex items-center gap-2 bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-md transition-colors self-start"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-all duration-200 border border-blue-500 hover:shadow-lg"
         >
           <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
           Refresh Clients
@@ -69,26 +75,30 @@ const ClientsSection: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start gap-3">
-          <AlertCircle size={20} className="text-red-500 mt-0.5 flex-shrink-0" />
+        <div className="bg-red-900/50 border border-red-700 p-4 rounded-xl flex items-start gap-3">
+          <AlertCircle size={20} className="text-red-400 mt-0.5 flex-shrink-0" />
           <div>
-            <h3 className="font-medium text-red-800">Error loading clients</h3>
-            <p className="text-red-700">{error}</p>
+            <h3 className="font-medium text-red-300">Error loading clients</h3>
+            <p className="text-red-200">{error}</p>
           </div>
         </div>
       )}
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-blue-500"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse"></div>
+          </div>
         </div>
       ) : (
         <>
           <ClientsList clients={clients} onClientRemoved={handleClientRemoved} />
           
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mt-8">
-            <div className="bg-indigo-50 px-6 py-4 border-b border-indigo-100">
-              <h3 className="font-medium text-indigo-800">Remove Client Manually</h3>
+          <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 border-b border-gray-600">
+              <h3 className="font-medium text-white">Remove Client Manually</h3>
+              <p className="text-indigo-100 text-sm mt-1">Enter a client ID to remove it from the network</p>
             </div>
             <div className="p-6">
               <RemoveClientForm onClientRemoved={handleClientRemoved} />

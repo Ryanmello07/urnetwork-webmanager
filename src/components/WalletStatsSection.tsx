@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive } from 'lucide-react';
+import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchWalletStats, fetchNetworkUser } from '../services/api';
 import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
@@ -257,19 +257,19 @@ const WalletStatsSection: React.FC = () => {
     ].filter((tz, index, arr) => arr.indexOf(tz) === index);
   };
 
-  const StatCard = ({ title, value, icon: Icon, color }: { 
+  const StatCard = ({ title, value, icon: Icon, gradient }: { 
     title: string; 
     value: string; 
     icon: React.ElementType; 
-    color: string;
+    gradient: string;
   }) => (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700 hover:border-gray-600 transition-all duration-300">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500">{title}</p>
-          <p className="text-2xl font-semibold mt-1">{value}</p>
+          <p className="text-sm text-gray-400">{title}</p>
+          <p className="text-2xl font-semibold mt-1 text-white">{value}</p>
         </div>
-        <div className={`${color} p-3 rounded-full`}>
+        <div className={`${gradient} p-3 rounded-xl shadow-lg`}>
           <Icon className="h-6 w-6 text-white" />
         </div>
       </div>
@@ -293,21 +293,19 @@ const WalletStatsSection: React.FC = () => {
 
     const chartData = [...data].reverse();
     const values = chartData.map(d => bytesToMB(d[dataKey]));
-    const maxValue = Math.max(...values, 1); // Ensure minimum of 1 for scaling
+    const maxValue = Math.max(...values, 1);
     const minValue = Math.min(...values);
     const range = maxValue - minValue;
-    const padding = range > 0 ? range * 0.1 : maxValue * 0.1; // 10% padding
+    const padding = range > 0 ? range * 0.1 : maxValue * 0.1;
     const chartMax = maxValue + padding;
     const chartMin = Math.max(0, minValue - padding);
-    const chartRange = chartMax - chartMin || 1; // Prevent division by zero
+    const chartRange = chartMax - chartMin || 1;
 
-    // Responsive dimensions that fill the container
     const leftPadding = 80;
     const rightPadding = 30;
     const topPadding = 30;
     const bottomPadding = 80;
 
-    // Generate Y-axis labels
     const yAxisSteps = 5;
     const yAxisLabels = [];
     for (let i = 0; i <= yAxisSteps; i++) {
@@ -315,16 +313,13 @@ const WalletStatsSection: React.FC = () => {
       yAxisLabels.push(value);
     }
 
-    // Generate X-axis labels (show fewer points to avoid crowding)
     const maxXLabels = Math.min(5, chartData.length);
     const xAxisIndices = [];
     if (chartData.length <= maxXLabels) {
-      // Show all points if we have few data points
       for (let i = 0; i < chartData.length; i++) {
         xAxisIndices.push(i);
       }
     } else {
-      // Distribute points evenly
       for (let i = 0; i < maxXLabels; i++) {
         const index = Math.floor((i / (maxXLabels - 1)) * (chartData.length - 1));
         xAxisIndices.push(index);
@@ -332,20 +327,16 @@ const WalletStatsSection: React.FC = () => {
     }
 
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 h-full">
-        <h3 className="text-lg font-medium text-gray-800 mb-6">{title}</h3>
+      <div className="bg-gray-800 rounded-xl shadow-2xl p-6 h-full border border-gray-700">
+        <h3 className="text-lg font-medium text-gray-100 mb-6">{title}</h3>
         <div className="w-full h-80">
           <svg 
             width="100%" 
             height="100%" 
             viewBox="0 0 600 320"
             preserveAspectRatio="xMidYMid meet"
-            className="border border-gray-200 rounded"
+            className="border border-gray-600 rounded bg-gray-900"
           >
-            {/* Background */}
-            <rect width="100%" height="100%" fill="#fafafa" />
-            
-            {/* Calculate plot area dimensions */}
             <defs>
               <clipPath id={`plotArea-${dataKey}`}>
                 <rect 
@@ -355,20 +346,22 @@ const WalletStatsSection: React.FC = () => {
                   height={320 - topPadding - bottomPadding} 
                 />
               </clipPath>
+              <linearGradient id={`gradient-${dataKey}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
+                <stop offset="100%" stopColor={color} stopOpacity="0.1"/>
+              </linearGradient>
             </defs>
             
-            {/* Plot area background */}
             <rect 
               x={leftPadding} 
               y={topPadding} 
               width={600 - leftPadding - rightPadding} 
               height={320 - topPadding - bottomPadding} 
-              fill="white" 
-              stroke="#e5e7eb" 
+              fill="url(#gradient-${dataKey})" 
+              stroke="#374151" 
               strokeWidth="1"
             />
             
-            {/* Horizontal grid lines */}
             {yAxisLabels.map((value, i) => {
               const y = topPadding + (320 - topPadding - bottomPadding) - (i / yAxisSteps) * (320 - topPadding - bottomPadding);
               return (
@@ -378,14 +371,14 @@ const WalletStatsSection: React.FC = () => {
                     y1={y}
                     x2={600 - rightPadding}
                     y2={y}
-                    stroke="#f3f4f6"
+                    stroke="#4b5563"
                     strokeWidth="1"
                   />
                   <text
                     x={leftPadding - 8}
                     y={y + 4}
                     textAnchor="end"
-                    className="text-xs fill-gray-600"
+                    className="text-xs fill-gray-400"
                     fontSize="11"
                   >
                     {formatValue(value)}
@@ -394,7 +387,6 @@ const WalletStatsSection: React.FC = () => {
               );
             })}
             
-            {/* Vertical grid lines */}
             {xAxisIndices.map((dataIndex) => {
               const x = leftPadding + (dataIndex / Math.max(1, chartData.length - 1)) * (600 - leftPadding - rightPadding);
               return (
@@ -404,13 +396,12 @@ const WalletStatsSection: React.FC = () => {
                   y1={topPadding}
                   x2={x}
                   y2={320 - bottomPadding}
-                  stroke="#f3f4f6"
+                  stroke="#4b5563"
                   strokeWidth="1"
                 />
               );
             })}
             
-            {/* Data line */}
             {chartData.length > 1 && (
               <polyline
                 fill="none"
@@ -428,7 +419,6 @@ const WalletStatsSection: React.FC = () => {
               />
             )}
             
-            {/* Data points */}
             {chartData.map((d, i) => {
               const x = leftPadding + (i / Math.max(1, chartData.length - 1)) * (600 - leftPadding - rightPadding);
               const value = bytesToMB(d[dataKey]);
@@ -441,10 +431,9 @@ const WalletStatsSection: React.FC = () => {
                     cy={y}
                     r="5"
                     fill={color}
-                    stroke="white"
+                    stroke="#1f2937"
                     strokeWidth="2"
                   />
-                  {/* Hover tooltip area */}
                   <circle
                     cx={x}
                     cy={y}
@@ -458,7 +447,6 @@ const WalletStatsSection: React.FC = () => {
               );
             })}
             
-            {/* X-axis labels */}
             {xAxisIndices.map((dataIndex) => {
               const d = chartData[dataIndex];
               const x = leftPadding + (dataIndex / Math.max(1, chartData.length - 1)) * (600 - leftPadding - rightPadding);
@@ -476,7 +464,7 @@ const WalletStatsSection: React.FC = () => {
                   x={x}
                   y={320 - bottomPadding + 20}
                   textAnchor="middle"
-                  className="text-xs fill-gray-600"
+                  className="text-xs fill-gray-400"
                   fontSize="10"
                 >
                   {label}
@@ -484,24 +472,22 @@ const WalletStatsSection: React.FC = () => {
               );
             })}
             
-            {/* Y-axis label */}
             <text
               x={20}
               y={160}
               textAnchor="middle"
-              className="text-xs fill-gray-700 font-medium"
+              className="text-xs fill-gray-300 font-medium"
               fontSize="11"
               transform="rotate(-90, 20, 160)"
             >
               Data Transfer (MB)
             </text>
             
-            {/* X-axis label */}
             <text
               x={300}
               y={310}
               textAnchor="middle"
-              className="text-xs fill-gray-700 font-medium"
+              className="text-xs fill-gray-300 font-medium"
               fontSize="11"
             >
               Time
@@ -517,27 +503,30 @@ const WalletStatsSection: React.FC = () => {
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <Wallet className="text-green-600" />
+            <h2 className="text-3xl font-bold text-white flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl">
+                <Wallet className="text-white" size={28} />
+              </div>
               Wallet Statistics
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-400 mt-2">
               Real-time tracking of data transfer earnings (stored locally)
             </p>
             {networkUser && (
-              <div className="flex items-center gap-2 mt-2">
-                <User size={16} className="text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  Network: {networkUser.network_name} ({networkUser.user_auth})
+              <div className="flex items-center gap-2 mt-3">
+                <User size={16} className="text-blue-400" />
+                <span className="text-sm text-gray-300">
+                  Network: <span className="text-blue-400 font-medium">{networkUser.network_name}</span> ({networkUser.user_auth})
                 </span>
               </div>
             )}
             {lastUpdated && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                <Activity size={14} />
                 Last updated: {formatDateTime(lastUpdated)}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-2">
               <HardDrive size={14} className="text-gray-400" />
               <span className="text-xs text-gray-500">
                 {storageInfo.totalRecords} records • {storageInfo.storageSize} used
@@ -545,10 +534,10 @@ const WalletStatsSection: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-md transition-colors"
+              className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600"
             >
               <Settings size={16} />
               Settings
@@ -557,10 +546,10 @@ const WalletStatsSection: React.FC = () => {
             <button
               onClick={() => setShowClearModal(true)}
               disabled={statsHistory.length === 0}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 statsHistory.length === 0
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-red-600 text-white hover:bg-red-700'
+                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600'
+                  : 'bg-red-600 text-white hover:bg-red-700 border border-red-500 hover:shadow-lg'
               }`}
             >
               <Trash2 size={16} />
@@ -570,7 +559,7 @@ const WalletStatsSection: React.FC = () => {
             <button
               onClick={() => loadWalletStats(true)}
               disabled={isLoading}
-              className="flex items-center gap-2 bg-green-100 text-green-700 hover:bg-green-200 px-4 py-2 rounded-md transition-colors"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 border border-green-500 hover:shadow-lg"
             >
               <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
               Refresh
@@ -579,30 +568,33 @@ const WalletStatsSection: React.FC = () => {
         </div>
 
         {showSettings && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Settings</h3>
+          <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+            <h3 className="text-lg font-medium text-gray-100 mb-6 flex items-center gap-2">
+              <Settings size={20} />
+              Configuration Settings
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="flex items-center space-x-2 mb-4">
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                <label className="flex items-center space-x-3 mb-4">
                   <input
                     type="checkbox"
                     checked={isAutoRefreshEnabled}
                     onChange={(e) => setIsAutoRefreshEnabled(e.target.checked)}
-                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800"
                   />
-                  <span className="text-sm font-medium text-gray-700">Enable Auto Refresh</span>
+                  <span className="text-sm font-medium text-gray-200">Enable Auto Refresh</span>
                 </label>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                   Refresh Interval (minutes)
                 </label>
                 <select
                   value={refreshInterval}
                   onChange={(e) => setRefreshInterval(Number(e.target.value))}
                   disabled={!isAutoRefreshEnabled}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-800 text-gray-200"
                 >
                   <option value={1}>1 minute</option>
                   <option value={5}>5 minutes</option>
@@ -613,14 +605,14 @@ const WalletStatsSection: React.FC = () => {
                 </select>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                   Timezone
                 </label>
                 <select
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-200"
                 >
                   {getTimezoneOptions().map((tz) => (
                     <option key={tz} value={tz}>
@@ -631,9 +623,9 @@ const WalletStatsSection: React.FC = () => {
               </div>
             </div>
             
-            <div className="mt-6 p-4 bg-blue-50 rounded-md">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">Storage Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
+            <div className="mt-6 p-4 bg-blue-900/30 rounded-lg border border-blue-700/50">
+              <h4 className="text-sm font-medium text-blue-300 mb-2">Storage Information</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-200">
                 <div>
                   <span className="font-medium">Total Records:</span> {storageInfo.totalRecords}
                 </div>
@@ -641,7 +633,7 @@ const WalletStatsSection: React.FC = () => {
                   <span className="font-medium">Storage Used:</span> {storageInfo.storageSize}
                 </div>
               </div>
-              <p className="text-xs text-blue-600 mt-2">
+              <p className="text-xs text-blue-300 mt-2">
                 Data is stored locally in your browser. Maximum 1000 records are kept automatically.
               </p>
             </div>
@@ -649,28 +641,31 @@ const WalletStatsSection: React.FC = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start gap-3">
-            <AlertCircle size={20} className="text-red-500 mt-0.5 flex-shrink-0" />
+          <div className="bg-red-900/50 border border-red-700 p-4 rounded-xl flex items-start gap-3">
+            <AlertCircle size={20} className="text-red-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-medium text-red-800">Error loading wallet stats</h3>
-              <p className="text-red-700">{error}</p>
+              <h3 className="font-medium text-red-300">Error loading wallet stats</h3>
+              <p className="text-red-200">{error}</p>
             </div>
           </div>
         )}
 
         {!networkUser && !isLoading && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-md flex items-start gap-3">
-            <AlertCircle size={20} className="text-yellow-500 mt-0.5 flex-shrink-0" />
+          <div className="bg-yellow-900/50 border border-yellow-700 p-4 rounded-xl flex items-start gap-3">
+            <AlertCircle size={20} className="text-yellow-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-medium text-yellow-800">User Information Required</h3>
-              <p className="text-yellow-700">Loading user information to enable wallet stats tracking...</p>
+              <h3 className="font-medium text-yellow-300">User Information Required</h3>
+              <p className="text-yellow-200">Loading user information to enable wallet stats tracking...</p>
             </div>
           </div>
         )}
 
         {isLoading && statsHistory.length === 0 ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-green-500"></div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500/20 to-blue-500/20 animate-pulse"></div>
+            </div>
           </div>
         ) : (
           <div className="space-y-8">
@@ -679,25 +674,25 @@ const WalletStatsSection: React.FC = () => {
                 title="Current Paid Data"
                 value={formatMBValue(currentStats.paid_mb)}
                 icon={DollarSign}
-                color="bg-green-500"
+                gradient="bg-gradient-to-r from-green-600 to-emerald-600"
               />
               <StatCard
                 title="Current Unpaid Data"
                 value={formatMBValue(currentStats.unpaid_mb)}
                 icon={Clock}
-                color="bg-yellow-500"
+                gradient="bg-gradient-to-r from-yellow-600 to-orange-600"
               />
               <StatCard
                 title="Total Data"
                 value={formatMBValue(currentStats.paid_mb + currentStats.unpaid_mb)}
                 icon={Database}
-                color="bg-blue-500"
+                gradient="bg-gradient-to-r from-blue-600 to-indigo-600"
               />
               <StatCard
                 title="Data Points"
                 value={statsHistory.length.toString()}
                 icon={TrendingUp}
-                color="bg-purple-500"
+                gradient="bg-gradient-to-r from-purple-600 to-pink-600"
               />
             </div>
 
@@ -718,41 +713,41 @@ const WalletStatsSection: React.FC = () => {
               </div>
             )}
 
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="font-medium text-gray-800">History Timeline</h3>
+            <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+              <div className="px-6 py-4 bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-600">
+                <h3 className="font-medium text-gray-100">History Timeline</h3>
               </div>
               <div className="max-h-96 overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gray-900 sticky top-0">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Timestamp
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Paid Data
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Unpaid Data
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                         Total Data
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-gray-800 divide-y divide-gray-700">
                     {statsHistory.map((entry, index) => (
-                      <tr key={entry.id} className={index === 0 ? 'bg-green-50' : ''}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <tr key={entry.id} className={index === 0 ? 'bg-green-900/20 border-l-4 border-green-500' : 'hover:bg-gray-700/50'}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           {formatDateTime(entry.created_at)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">
                           {formatBytes(entry.paid_bytes_provided)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-medium">
                           {formatBytes(entry.unpaid_bytes_provided)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
                           {formatBytes(entry.paid_bytes_provided + entry.unpaid_bytes_provided)}
                         </td>
                       </tr>
@@ -761,8 +756,11 @@ const WalletStatsSection: React.FC = () => {
                 </table>
                 
                 {statsHistory.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 italic">No data collected yet. Data will appear after the first API call.</p>
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Database className="text-gray-500" size={24} />
+                    </div>
+                    <p className="text-gray-400 italic">No data collected yet. Data will appear after the first API call.</p>
                   </div>
                 )}
               </div>
@@ -777,14 +775,14 @@ const WalletStatsSection: React.FC = () => {
         onConfirm={handleClearHistory}
         title="Clear Wallet History"
         isLoading={isClearing}
-        icon={<AlertTriangle className="h-6 w-6 text-red-600" />}
+        icon={<AlertTriangle className="h-6 w-6 text-red-400" />}
       >
-        <p>Are you sure you want to clear all wallet statistics history?</p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-gray-300">Are you sure you want to clear all wallet statistics history?</p>
+        <p className="text-sm text-gray-400 mt-2">
           This will permanently delete all {statsHistory.length} data points from localStorage. This action cannot be undone.
         </p>
-        <div className="mt-4 p-3 bg-red-50 rounded-md">
-          <p className="text-sm text-red-800 font-medium">
+        <div className="mt-4 p-3 bg-red-900/50 rounded-lg border border-red-700">
+          <p className="text-sm text-red-300 font-medium">
             ⚠️ This will delete all historical data stored locally in your browser
           </p>
         </div>

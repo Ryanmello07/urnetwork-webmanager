@@ -49,19 +49,19 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
       <div 
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto animate-scaleIn"
+        className="bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-auto animate-scaleIn border border-gray-700"
       >
-        <div className="flex items-start justify-between p-4 border-b border-gray-200">
+        <div className="flex items-start justify-between p-6 border-b border-gray-700">
           <div className="flex items-center space-x-3">
-            {icon && icon}
-            <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+            {icon && <div className="flex-shrink-0">{icon}</div>}
+            <h3 className="text-lg font-medium text-gray-100">{title}</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 transition-colors"
+            className="text-gray-400 hover:text-gray-200 focus:outline-none focus:text-gray-200 transition-colors p-1 rounded-lg hover:bg-gray-700"
             disabled={isLoading}
           >
             <X size={20} />
@@ -76,7 +76,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md transition-colors"
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors border border-gray-600"
               disabled={isLoading}
             >
               Cancel
@@ -84,14 +84,14 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className={`px-4 py-2 bg-red-600 text-white rounded-md transition-colors ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700'
+              className={`px-4 py-2 bg-red-600 text-white rounded-lg transition-all duration-200 ${
+                isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700 hover:shadow-lg'
               }`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white\" xmlns="http://www.w3.org/2000/svg\" fill="none\" viewBox="0 0 24 24">
-                    <circle className="opacity-25\" cx="12\" cy="12\" r="10\" stroke="currentColor\" strokeWidth="4"></circle>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   Processing...
