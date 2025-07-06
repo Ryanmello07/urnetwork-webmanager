@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle } from 'lucide-react';
+import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchWalletStats, fetchNetworkUser } from '../services/api';
-import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, type WalletStatsRecord } from '../services/database';
+import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
 import type { NetworkUser } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
@@ -21,9 +21,16 @@ const WalletStatsSection: React.FC = () => {
   const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true);
   const [showClearModal, setShowClearModal] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const bytesToMB = (bytes: number) => bytes / (1024 * 1024);
+
+  // Update storage info
+  const updateStorageInfo = useCallback(() => {
+    const info = getStorageInfo();
+    setStorageInfo(info);
+  }, []);
 
   // Load network user info
   const loadNetworkUser = useCallback(async () => {
@@ -43,7 +50,7 @@ const WalletStatsSection: React.FC = () => {
     }
   }, [token]);
 
-  // Load wallet stats history from database
+  // Load wallet stats history from localStorage
   const loadStatsHistory = useCallback(async () => {
     if (!networkUser?.user_id) return;
     
@@ -54,6 +61,7 @@ const WalletStatsSection: React.FC = () => {
         console.error('Error loading stats history:', error);
       } else if (data) {
         setStatsHistory(data);
+        updateStorageInfo();
         
         // Set current stats from the latest entry
         if (data.length > 0) {
@@ -67,9 +75,9 @@ const WalletStatsSection: React.FC = () => {
     } catch (err) {
       console.error('Error loading stats history:', err);
     }
-  }, [networkUser?.user_id]);
+  }, [networkUser?.user_id, updateStorageInfo]);
 
-  // Fetch wallet stats from API and save to database
+  // Fetch wallet stats from API and save to localStorage
   const loadWalletStats = useCallback(async (showToast = true) => {
     if (!token || !networkUser?.network_name || !networkUser?.user_id) return;
     
@@ -91,7 +99,7 @@ const WalletStatsSection: React.FC = () => {
         setCurrentStats({ paid_mb: paidMB, unpaid_mb: unpaidMB });
         setLastUpdated(new Date().toISOString());
         
-        // Save to database using the user ID and network name from networkUser
+        // Save to localStorage using the user ID and network name from networkUser
         const { error: saveError } = await saveWalletStats(
           networkUser.user_id,
           networkUser.network_name,
@@ -102,7 +110,7 @@ const WalletStatsSection: React.FC = () => {
         if (saveError) {
           console.error('Error saving wallet stats:', saveError);
           if (showToast) {
-            toast.error('Failed to save stats to database');
+            toast.error('Failed to save stats to localStorage');
           }
         } else {
           // Reload history to include the new entry
@@ -137,6 +145,7 @@ const WalletStatsSection: React.FC = () => {
       } else {
         setStatsHistory([]);
         setCurrentStats({ paid_mb: 0, unpaid_mb: 0 });
+        updateStorageInfo();
         toast.success('History cleared successfully');
       }
     } catch (err) {
@@ -182,6 +191,11 @@ const WalletStatsSection: React.FC = () => {
       loadStatsHistory();
     }
   }, [loadStatsHistory, networkUser?.user_id]);
+
+  // Update storage info on mount
+  useEffect(() => {
+    updateStorageInfo();
+  }, [updateStorageInfo]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -479,7 +493,7 @@ const WalletStatsSection: React.FC = () => {
               Wallet Statistics
             </h2>
             <p className="text-gray-600 mt-1">
-              Real-time tracking of data transfer earnings
+              Real-time tracking of data transfer earnings (stored locally)
             </p>
             {networkUser && (
               <div className="flex items-center gap-2 mt-2">
@@ -494,6 +508,12 @@ const WalletStatsSection: React.FC = () => {
                 Last updated: {formatDateTime(lastUpdated)}
               </p>
             )}
+            <div className="flex items-center gap-2 mt-1">
+              <HardDrive size={14} className="text-gray-400" />
+              <span className="text-xs text-gray-500">
+                {storageInfo.totalRecords} records • {storageInfo.storageSize} used
+              </span>
+            </div>
           </div>
           
           <div className="flex gap-2">
@@ -580,6 +600,21 @@ const WalletStatsSection: React.FC = () => {
                   ))}
                 </select>
               </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-blue-50 rounded-md">
+              <h4 className="text-sm font-medium text-blue-800 mb-2">Storage Information</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
+                <div>
+                  <span className="font-medium">Total Records:</span> {storageInfo.totalRecords}
+                </div>
+                <div>
+                  <span className="font-medium">Storage Used:</span> {storageInfo.storageSize}
+                </div>
+              </div>
+              <p className="text-xs text-blue-600 mt-2">
+                Data is stored locally in your browser. Maximum 1000 records are kept automatically.
+              </p>
             </div>
           </div>
         )}
@@ -717,11 +752,11 @@ const WalletStatsSection: React.FC = () => {
       >
         <p>Are you sure you want to clear all wallet statistics history?</p>
         <p className="text-sm text-gray-500 mt-2">
-          This will permanently delete all {statsHistory.length} data points from the database. This action cannot be undone.
+          This will permanently delete all {statsHistory.length} data points from localStorage. This action cannot be undone.
         </p>
         <div className="mt-4 p-3 bg-red-50 rounded-md">
           <p className="text-sm text-red-800 font-medium">
-            ⚠️ This will delete all historical data for your account
+            ⚠️ This will delete all historical data stored locally in your browser
           </p>
         </div>
       </ConfirmModal>
