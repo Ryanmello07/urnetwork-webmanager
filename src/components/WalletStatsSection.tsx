@@ -277,8 +277,8 @@ const WalletStatsSection: React.FC = () => {
   );
 
   const formatValue = (value: number) => {
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}GB`;
+    if (value >= 1024) {
+      return `${(value / 1024).toFixed(1)}GB`;
     }
     return `${value.toFixed(1)}MB`;
   };
