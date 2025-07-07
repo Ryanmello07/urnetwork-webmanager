@@ -100,7 +100,7 @@ const ProvidersSection: React.FC = () => {
             <Globe size={16} className="text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-400">City</p>
-              <p className="text-sm font-medium text-gray-200">{location.city}</p>
+              <p className="text-sm font-medium text-gray-200">{location.city || 'N/A'}</p>
             </div>
           </div>
           
@@ -108,7 +108,7 @@ const ProvidersSection: React.FC = () => {
             <MapPin size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-400">Country</p>
-              <p className="text-sm text-gray-200">{location.country}</p>
+              <p className="text-sm text-gray-200">{location.country || 'N/A'}</p>
             </div>
           </div>
           
@@ -116,9 +116,29 @@ const ProvidersSection: React.FC = () => {
             <Users size={16} className="text-purple-400 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-400">Provider Count</p>
-              <p className="text-sm font-medium text-purple-300">{location.provider_count}</p>
+              <p className="text-sm font-medium text-purple-300">{location.provider_count || 0}</p>
             </div>
           </div>
+          
+          {location.region && (
+            <div className="flex items-start gap-3">
+              <Globe size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-gray-400">Region</p>
+                <p className="text-sm text-gray-200">{location.region}</p>
+              </div>
+            </div>
+          )}
+          
+          {location.country_code && (
+            <div className="flex items-start gap-3">
+              <MapPin size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-gray-400">Country Code</p>
+                <p className="text-sm text-gray-200 font-mono">{location.country_code}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -160,7 +180,7 @@ const ProvidersSection: React.FC = () => {
             <Users size={16} className="text-purple-400 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-400">Provider Count</p>
-              <p className="text-sm font-medium text-purple-300">{group.provider_count}</p>
+              <p className="text-sm font-medium text-purple-300">{group.provider_count || 0}</p>
             </div>
           </div>
           
@@ -171,6 +191,16 @@ const ProvidersSection: React.FC = () => {
               <p className="text-xs text-gray-300 font-mono">{group.location_group_id.substring(0, 8)}...</p>
             </div>
           </div>
+          
+          {group.match_distance !== undefined && (
+            <div className="flex items-start gap-3">
+              <MapPin size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-gray-400">Match Distance</p>
+                <p className="text-sm text-gray-200">{group.match_distance.toFixed(2)}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -253,6 +283,7 @@ const ProvidersSection: React.FC = () => {
             <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <Globe className="text-blue-400" size={20} />
               All Locations
+             <span className="text-sm text-gray-400 font-normal">({locations.length})</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {locations.map((location) => (
@@ -260,6 +291,40 @@ const ProvidersSection: React.FC = () => {
               ))}
             </div>
           </div>
+          
+          {devices.length > 0 && (
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                <Users className="text-green-400" size={20} />
+                Provider Devices
+                <span className="text-sm text-gray-400 font-normal">({devices.length})</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {devices.slice(0, 20).map((device) => (
+                  <div key={device.client_id} className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Users size={16} className="text-green-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-200 truncate" title={device.device_name}>
+                          {device.device_name || 'Unnamed Device'}
+                        </p>
+                        <p className="text-xs text-gray-400 font-mono truncate" title={device.client_id}>
+                          {device.client_id.substring(0, 12)}...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {devices.length > 20 && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-400">
+                    Showing 20 of {devices.length} devices
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {locations.length === 0 && groups.length === 0 && !isLoading && (
             <div className="bg-gray-800 rounded-xl shadow-2xl p-8 text-center border border-gray-700">
