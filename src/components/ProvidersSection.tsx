@@ -90,19 +90,6 @@ const ProvidersSection: React.FC = () => {
       <div className="p-4">
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <MapPin size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-gray-400">Location</p>
-              <p className="text-sm font-medium text-gray-200">
-                {location.city && location.country 
-                  ? `${location.city}, ${location.country}`
-                  : location.country || location.city || 'Unknown Location'
-                }
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
             <Users size={16} className="text-purple-400 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm text-gray-400">Provider Count</p>
