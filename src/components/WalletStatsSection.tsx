@@ -199,7 +199,7 @@ const WalletStatsSection: React.FC = () => {
       // Setup interval
       intervalRef.current = setInterval(() => {
         loadWalletStats(false);
-      }, refreshInterval * 60);
+      }, refreshInterval * 60 * 1000);
     }
 
     return () => {
