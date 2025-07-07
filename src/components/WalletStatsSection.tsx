@@ -596,7 +596,7 @@ const WalletStatsSection: React.FC = () => {
                   disabled={!isAutoRefreshEnabled}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-800 text-gray-200"
                 >
-                  <option value={0.001}>LIVE (Spams API :3)</option>
+                  <option value={0.01}>LIVE (Spams API :3)</option>
                   <option value={1}>1 minute</option>
                   <option value={5}>5 minutes</option>
                   <option value={10}>10 minutes</option>
