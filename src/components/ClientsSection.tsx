@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Users, RefreshCw, AlertCircle, Network, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Users, RefreshCw, AlertCircle, Network, ChevronLeft, ChevronRight, Filter, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchClients } from '../services/api';
 import ClientsList from './ClientsList';
 import RemoveClientForm from './RemoveClientForm';
+import BulkDeleteForm from './BulkDeleteForm';
 import type { Client } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -109,6 +110,10 @@ const ClientsSection: React.FC = () => {
     setAllClients((prevClients) => prevClients.filter(client => client.client_id !== clientId));
   };
 
+  // Handle bulk client removal from the list
+  const handleClientsRemoved = (clientIds: string[]) => {
+    setAllClients((prevClients) => prevClients.filter(client => !clientIds.includes(client.client_id)));
+  };
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -273,6 +278,21 @@ const ClientsSection: React.FC = () => {
               </div>
             </div>
           )}
+          
+          <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+            <div className="bg-gradient-to-r from-red-600 to-pink-600 px-6 py-4 border-b border-gray-600">
+              <div className="flex items-center gap-3">
+                <Trash2 size={20} className="text-white" />
+                <div>
+                  <h3 className="font-medium text-white">Bulk Delete Offline Clients</h3>
+                  <p className="text-red-100 text-sm mt-1">Remove multiple offline clients based on their last authentication time</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <BulkDeleteForm clients={allClients} onClientsRemoved={handleClientsRemoved} />
+            </div>
+          </div>
           
           <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 border-b border-gray-600">
