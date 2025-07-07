@@ -81,7 +81,7 @@ const AuthSection: React.FC = () => {
           
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-500">
-              Preview Application • Data Locally Stored
+              Preview Application • Data Stored Locally
             </p>
           </div>
         </form>
