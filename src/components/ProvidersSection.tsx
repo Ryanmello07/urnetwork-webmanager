@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Search, RefreshCw, AlertCircle, Globe, Star, Users } from 'lucide-react';
+import { MapPin, Search, RefreshCw, AlertCircle, Globe, Users } from 'lucide-react';
 import { fetchProviderLocations, findProviderLocations } from '../services/api';
-import type { Location, LocationGroup, Device } from '../services/api';
+import type { Location, Device } from '../services/api';
 import toast from 'react-hot-toast';
 import debounce from 'lodash/debounce';
 
 const ProvidersSection: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locations, setLocations] = useState<Location[]>([]);
-  const [groups, setGroups] = useState<LocationGroup[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,14 +33,8 @@ const ProvidersSection: React.FC = () => {
           .sort((a, b) => b.provider_count - a.provider_count)
           .slice(0, 50); // Limit to 50 results
 
-        // Sort groups by provider count in descending order
-        const sortedGroups = [...response.groups]
-          .sort((a, b) => b.provider_count - a.provider_count)
-          .slice(0, 10); // Limit to 10 featured groups
-
         // Update state in a single batch
         setLocations(sortedLocations);
-        setGroups(sortedGroups);
         setDevices(response.devices.slice(0, 50));
       }
     } catch (err) {
@@ -97,18 +90,15 @@ const ProvidersSection: React.FC = () => {
       <div className="p-4">
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <Globe size={16} className="text-blue-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-gray-400">City</p>
-              <p className="text-sm font-medium text-gray-200">{location.city || 'N/A'}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
             <MapPin size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm text-gray-400">Country</p>
-              <p className="text-sm text-gray-200">{location.country || 'N/A'}</p>
+              <p className="text-sm text-gray-400">Location</p>
+              <p className="text-sm font-medium text-gray-200">
+                {location.city && location.country 
+                  ? `${location.city}, ${location.country}`
+                  : location.country || location.city || 'Unknown Location'
+                }
+              </p>
             </div>
           </div>
           
@@ -132,72 +122,10 @@ const ProvidersSection: React.FC = () => {
           
           {location.country_code && (
             <div className="flex items-start gap-3">
-              <MapPin size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
+              <Globe size={16} className="text-orange-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm text-gray-400">Country Code</p>
                 <p className="text-sm text-gray-200 font-mono">{location.country_code}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  ));
-
-  const GroupCard = React.memo<{ group: LocationGroup }>(({ group }) => (
-    <div className={`bg-gray-800 rounded-xl shadow-2xl overflow-hidden transition-all duration-300 border transform hover:scale-105 ${
-      group.promoted 
-        ? 'border-purple-500 hover:border-purple-400 hover:shadow-purple-500/20' 
-        : 'border-gray-700 hover:border-gray-600'
-    }`}>
-      <div className={`px-4 py-3 border-b border-gray-600 ${
-        group.promoted 
-          ? 'bg-gradient-to-r from-purple-700 to-purple-800' 
-          : 'bg-gradient-to-r from-gray-700 to-gray-800'
-      }`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {group.promoted && <Star size={16} className="text-yellow-400" />}
-            <h3 className="font-medium text-gray-100 truncate flex-1" title={group.name}>
-              {group.name}
-            </h3>
-          </div>
-          <span className={`text-xs font-medium px-2 py-1 rounded border ${
-            group.promoted
-              ? 'bg-purple-900 text-purple-300 border-purple-700'
-              : 'bg-gray-900 text-gray-300 border-gray-700'
-          }`}>
-            {group.provider_count} Providers
-          </span>
-        </div>
-        {group.promoted && (
-          <span className="text-xs text-purple-200 font-medium mt-1 block">Featured Group</span>
-        )}
-      </div>
-      <div className="p-4">
-        <div className="space-y-3">
-          <div className="flex items-start gap-3">
-            <Users size={16} className="text-purple-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-gray-400">Provider Count</p>
-              <p className="text-sm font-medium text-purple-300">{group.provider_count || 0}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <Globe size={16} className="text-blue-400 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-gray-400">Group ID</p>
-              <p className="text-xs text-gray-300 font-mono">{group.location_group_id.substring(0, 8)}...</p>
-            </div>
-          </div>
-          
-          {group.match_distance !== undefined && (
-            <div className="flex items-start gap-3">
-              <MapPin size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-gray-400">Match Distance</p>
-                <p className="text-sm text-gray-200">{group.match_distance.toFixed(2)}</p>
               </div>
             </div>
           )}
@@ -219,7 +147,7 @@ const ProvidersSection: React.FC = () => {
           <p className="text-gray-400 mt-2">Browse and search provider locations worldwide</p>
           <div className="flex items-center gap-2 mt-2">
             <Globe size={16} className="text-purple-400" />
-            <span className="text-sm text-gray-500">{locations.length} locations • {groups.length} groups</span>
+            <span className="text-sm text-gray-500">{locations.length} locations available</span>
           </div>
         </div>
         
@@ -265,24 +193,10 @@ const ProvidersSection: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-8">
-          {groups.length > 0 && (
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                <Star className="text-yellow-400" size={20} />
-                Featured Groups
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups.map((group) => (
-                  <GroupCard key={group.location_group_id} group={group} />
-                ))}
-              </div>
-            </div>
-          )}
-
           <div>
             <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <Globe className="text-blue-400" size={20} />
-              All Locations
+              Provider Locations
              <span className="text-sm text-gray-400 font-normal">({locations.length})</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -326,7 +240,7 @@ const ProvidersSection: React.FC = () => {
             </div>
           )}
 
-          {locations.length === 0 && groups.length === 0 && !isLoading && (
+          {locations.length === 0 && !isLoading && (
             <div className="bg-gray-800 rounded-xl shadow-2xl p-8 text-center border border-gray-700">
               <div className="max-w-md mx-auto">
                 <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
