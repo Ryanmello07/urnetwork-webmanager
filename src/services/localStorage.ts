@@ -54,17 +54,19 @@ export const saveWalletStats = async (
 
 export const getWalletStatsHistory = async (
   userId: string,
-  limit: number = 100
+  limit: number = 1000
 ): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
   try {
     const allData = getStoredWalletStats();
     
-    // Filter by user ID and apply limit
+    // Filter by user ID and apply limit (use all data if limit is 1000 or higher)
     const userData = allData
-      .filter(record => record.user_id === userId)
-      .slice(0, limit);
+      .filter(record => record.user_id === userId);
     
-    return { data: userData, error: null };
+    // Only apply limit if it's less than the total available data
+    const limitedData = limit >= 1000 ? userData : userData.slice(0, limit);
+    
+    return { data: limitedData, error: null };
   } catch (error) {
     console.error('Error fetching wallet stats from localStorage:', error);
     return { data: null, error };

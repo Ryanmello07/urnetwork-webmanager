@@ -111,7 +111,7 @@ const WalletStatsSection: React.FC = () => {
     if (!networkUser?.user_id) return;
     
     try {
-      const { data, error } = await getWalletStatsHistory(networkUser.user_id, 100);
+      const { data, error } = await getWalletStatsHistory(networkUser.user_id, 1000);
       
       if (error) {
         console.error('Error loading stats history:', error);
