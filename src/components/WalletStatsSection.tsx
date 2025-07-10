@@ -49,7 +49,7 @@ const WalletStatsSection: React.FC = () => {
   
   // Chart settings
   const [maxDataPoints, setMaxDataPoints] = useState(50);
-  const [showDataPoints, setShowDataPoints] = useState(true);
+  const [showDataPoints, setShowDataPoints] = useState(false);
 
   const bytesToMB = (bytes: number) => bytes / (1000000);
 
