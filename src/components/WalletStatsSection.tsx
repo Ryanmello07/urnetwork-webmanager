@@ -46,6 +46,10 @@ const WalletStatsSection: React.FC = () => {
   const [isClearing, setIsClearing] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Chart settings
+  const [maxDataPoints, setMaxDataPoints] = useState(50);
+  const [showDataPoints, setShowDataPoints] = useState(true);
 
   const bytesToMB = (bytes: number) => bytes / (1000000);
 
@@ -303,7 +307,8 @@ const WalletStatsSection: React.FC = () => {
   const createChartData = (dataKey: 'paid_bytes_provided' | 'unpaid_bytes_provided', color: string, label: string) => {
     if (statsHistory.length === 0) return null;
 
-    const sortedData = [...statsHistory].reverse(); // Reverse to show chronological order
+    // Reverse to show chronological order and limit data points
+    const sortedData = [...statsHistory].reverse().slice(-maxDataPoints);
     
     return {
       labels: sortedData.map(record => {
@@ -326,8 +331,8 @@ const WalletStatsSection: React.FC = () => {
           pointBackgroundColor: color,
           pointBorderColor: '#1f2937',
           pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          pointRadius: showDataPoints ? 4 : 0,
+          pointHoverRadius: showDataPoints ? 6 : 4,
         },
       ],
     };
@@ -507,6 +512,40 @@ const WalletStatsSection: React.FC = () => {
               
               <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
                 <label className="block text-sm font-medium text-gray-200 mb-2">
+                  Maximum Data Points
+                </label>
+                <select
+                  value={maxDataPoints}
+                  onChange={(e) => setMaxDataPoints(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-200"
+                >
+                  <option value={10}>10 points</option>
+                  <option value={25}>25 points</option>
+                  <option value={50}>50 points</option>
+                  <option value={100}>100 points</option>
+                  <option value={200}>200 points</option>
+                  <option value={500}>500 points</option>
+                  <option value={1000}>All points (1000 max)</option>
+                </select>
+              </div>
+              
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                <label className="flex items-center space-x-3 mb-4">
+                  <input
+                    type="checkbox"
+                    checked={showDataPoints}
+                    onChange={(e) => setShowDataPoints(e.target.checked)}
+                    className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800"
+                  />
+                  <span className="text-sm font-medium text-gray-200">Show Data Points</span>
+                </label>
+                <p className="text-xs text-gray-400">
+                  When disabled, charts show as smooth lines. Hover to see data values.
+                </p>
+              </div>
+              
+              <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                   Timezone
                 </label>
                 <select
@@ -525,16 +564,19 @@ const WalletStatsSection: React.FC = () => {
             
             <div className="mt-6 p-4 bg-blue-900/30 rounded-lg border border-blue-700/50">
               <h4 className="text-sm font-medium text-blue-300 mb-2">Storage Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-200">
                 <div>
                   <span className="font-medium">Total Records:</span> {storageInfo.totalRecords}
                 </div>
                 <div>
                   <span className="font-medium">Storage Used:</span> {storageInfo.storageSize}
                 </div>
+                <div>
+                  <span className="font-medium">Showing:</span> {Math.min(maxDataPoints, statsHistory.length)} of {statsHistory.length}
+                </div>
               </div>
               <p className="text-xs text-blue-300 mt-2">
-                Data is stored locally in your browser. Maximum 1000 records are kept automatically.
+                Data is stored locally in your browser. Maximum 1000 records are kept automatically. Chart displays up to {maxDataPoints} most recent points.
               </p>
             </div>
           </div>
@@ -589,8 +631,8 @@ const WalletStatsSection: React.FC = () => {
                 gradient="bg-gradient-to-r from-blue-600 to-indigo-600"
               />
               <StatCard
-                title="Data Points"
-                value={statsHistory.length.toString()}
+                title={`Data Points (${Math.min(maxDataPoints, statsHistory.length)}/${statsHistory.length})`}
+                value={showDataPoints ? 'Visible' : 'Hidden'}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-r from-purple-600 to-pink-600"
               />
