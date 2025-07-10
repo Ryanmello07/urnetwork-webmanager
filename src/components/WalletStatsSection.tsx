@@ -525,7 +525,7 @@ const WalletStatsSection: React.FC = () => {
                   <option value={100}>100 points</option>
                   <option value={200}>200 points</option>
                   <option value={500}>500 points</option>
-                  <option value={1000}>All points (1000 max)</option>
+                  <option value={statsHistory.length || 1000}>All points ({statsHistory.length} max)</option>
                 </select>
               </div>
               
@@ -631,8 +631,8 @@ const WalletStatsSection: React.FC = () => {
                 gradient="bg-gradient-to-r from-blue-600 to-indigo-600"
               />
               <StatCard
-                title={`Data Points (${Math.min(maxDataPoints, statsHistory.length)}/${statsHistory.length})`}
-                value={showDataPoints ? 'Visible' : 'Hidden'}
+                title="Data Points"
+                value={`${Math.min(maxDataPoints, statsHistory.length)}/${statsHistory.length}`}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-r from-purple-600 to-pink-600"
               />
