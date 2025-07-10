@@ -308,7 +308,8 @@ const WalletStatsSection: React.FC = () => {
     if (statsHistory.length === 0) return null;
 
     // Reverse to show chronological order and limit data points
-    const sortedData = [...statsHistory].reverse().slice(-maxDataPoints);
+    const actualMaxPoints = maxDataPoints === 1000 ? statsHistory.length : Math.min(maxDataPoints, statsHistory.length);
+    const sortedData = [...statsHistory].reverse().slice(-actualMaxPoints);
     
     return {
       labels: sortedData.map(record => {
@@ -525,7 +526,7 @@ const WalletStatsSection: React.FC = () => {
                   <option value={100}>100 points</option>
                   <option value={200}>200 points</option>
                   <option value={500}>500 points</option>
-                  <option value={statsHistory.length || 1000}>All points ({statsHistory.length} max)</option>
+                  <option value={1000}>All points (up to 1000)</option>
                 </select>
               </div>
               
@@ -572,11 +573,11 @@ const WalletStatsSection: React.FC = () => {
                   <span className="font-medium">Storage Used:</span> {storageInfo.storageSize}
                 </div>
                 <div>
-                  <span className="font-medium">Showing:</span> {Math.min(maxDataPoints, statsHistory.length)} of {statsHistory.length}
+                  <span className="font-medium">Showing:</span> {maxDataPoints === 1000 ? statsHistory.length : Math.min(maxDataPoints, statsHistory.length)} of {statsHistory.length}
                 </div>
               </div>
               <p className="text-xs text-blue-300 mt-2">
-                Data is stored locally in your browser. Maximum 1000 records are kept automatically. Chart displays up to {maxDataPoints} most recent points.
+                Data is stored locally in your browser. Maximum 1000 records are kept automatically. Chart displays up to {maxDataPoints === 1000 ? statsHistory.length : maxDataPoints} most recent points.
               </p>
             </div>
           </div>
@@ -632,7 +633,7 @@ const WalletStatsSection: React.FC = () => {
               />
               <StatCard
                 title="Data Points"
-                value={`${Math.min(maxDataPoints, statsHistory.length)}/${statsHistory.length}`}
+                value={`${maxDataPoints === 1000 ? statsHistory.length : Math.min(maxDataPoints, statsHistory.length)}/${statsHistory.length}`}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-r from-purple-600 to-pink-600"
               />
