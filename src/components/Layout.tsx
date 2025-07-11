@@ -59,8 +59,8 @@ const Layout: React.FC = () => {
             {!isAuthenticated && <AuthSection />}
             {isAuthenticated && (
               <div className="space-y-8">
-                <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 rounded-xl">
-                  <div className="container mx-auto px-6 py-6">
+                <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 -mx-4">
+                  <div className="px-6 py-6">
                     <div className="flex justify-between items-center gap-4">
                       <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
                         <div className="p-3 bg-blue-600 rounded-xl shadow-lg">
