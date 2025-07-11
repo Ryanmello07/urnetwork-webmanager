@@ -88,71 +88,72 @@ const Layout: React.FC = () => {
       )}
       <main className="flex-grow container mx-auto px-4 py-8">
         {isLoading ? (
-                <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl">
-                  {isMobile ? (
-                    <div className="p-2">
-                      <div className="relative">
-                        <button
-                          onClick={() => setShowMobileMenu(!showMobileMenu)}
-                          className={`w-full flex items-center justify-between py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-${activeTabData?.color}-600 to-${activeTabData?.color}-500 text-white shadow-lg`}
-                        >
-                          <span>{activeTabData?.label}</span>
-                          <ChevronDown 
-                            size={16} 
-                            className={`transition-transform duration-200 ${showMobileMenu ? 'rotate-180' : ''}`}
-                          />
-                        </button>
-                        
-                        {showMobileMenu && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-fadeIn">
-                            {tabs.map((tab) => (
-                              <button
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
-                                className={`w-full text-left py-3 px-4 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg ${
-                                  activeTab === tab.id
-                                    ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
-                                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
-                                }`}
-                              >
-                                {tab.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <nav className="flex space-x-1 p-2">
+      {isAuthenticated && (
+        <>
+          <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl">
+            {isMobile ? (
+              <div className="p-2">
+                <div className="relative">
+                  <button
+                    onClick={() => setShowMobileMenu(!showMobileMenu)}
+                    className={`w-full flex items-center justify-between py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-${activeTabData?.color}-600 to-${activeTabData?.color}-500 text-white shadow-lg`}
+                  >
+                    <span>{activeTabData?.label}</span>
+                    <ChevronDown 
+                      size={16} 
+                      className={`transition-transform duration-200 ${showMobileMenu ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  
+                  {showMobileMenu && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-fadeIn">
                       {tabs.map((tab) => (
                         <button
                           key={tab.id}
-                          onClick={() => setActiveTab(tab.id as any)}
-                          className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                          onClick={() => handleTabChange(tab.id)}
+                          className={`w-full text-left py-3 px-4 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg ${
                             activeTab === tab.id
-                              ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white shadow-lg transform scale-105`
+                              ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
                               : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
                           }`}
                         >
                           {tab.label}
                         </button>
                       ))}
-                    </nav>
+                    </div>
                   )}
                 </div>
-                
-                <div className="animate-fadeIn">
-                  {activeTab === 'clients' && <ClientsSection />}
-                  {activeTab === 'stats' && <StatsSection />}
-                  {activeTab === 'leaderboard' && <LeaderboardSection />}
-                  {activeTab === 'providers' && <ProvidersSection />}
-                  {activeTab === 'wallet' && <WalletStatsSection />}
-                  {activeTab === 'account' && <AccountSettingsSection />}
-                </div>
               </div>
+            ) : (
+              <nav className="flex space-x-1 p-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white shadow-lg transform scale-105`
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
             )}
-          </>
-        )}
+          </div>
+          
+          <div className="animate-fadeIn">
+            {activeTab === 'clients' && <ClientsSection />}
+            {activeTab === 'stats' && <StatsSection />}
+            {activeTab === 'leaderboard' && <LeaderboardSection />}
+            {activeTab === 'providers' && <ProvidersSection />}
+            {activeTab === 'wallet' && <WalletStatsSection />}
+            {activeTab === 'account' && <AccountSettingsSection />}
+          </div>
+        </>
+      )}
+      {!isAuthenticated && <AuthSection />}
       </main>
       <footer className="bg-gray-800 border-t border-gray-700 text-gray-300 py-6">
         <div className="container mx-auto px-4 text-center">
