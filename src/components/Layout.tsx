@@ -64,17 +64,6 @@ const Layout: React.FC = () => {
               
               <div className="flex items-center space-x-2 md:space-x-3">
                 <button
-                  onClick={() => setActiveTab('account')}
-                  className={`flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border shadow-lg hover:shadow-xl flex-shrink-0 ${
-                    activeTab === 'account'
-                      ? 'bg-gray-600 text-white border-gray-500'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600 hover:border-gray-500'
-                  }`}
-                >
-                  <Settings size={14} className="md:w-4 md:h-4" />
-                  <span className="text-sm md:text-base hidden sm:inline">Account</span>
-                </button>
-                <button
                   onClick={logout}
                   className="flex items-center space-x-1 md:space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
                 >
