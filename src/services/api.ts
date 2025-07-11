@@ -36,7 +36,7 @@ export const login = async (authCode: string): Promise<AuthResponse> => {
 // Email/Password login API
 export const loginWithPassword = async (userAuth: string, password: string): Promise<PasswordLoginResponse> => {
   try {
-    const response = await fetch('https://api.bringyour.com/auth/login-with-password', {
+    const response = await fetch(`${API_BASE_URL}/auth/login-with-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
