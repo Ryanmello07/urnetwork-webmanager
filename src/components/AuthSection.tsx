@@ -209,6 +209,7 @@ const AuthSection: React.FC = () => {
               Preview Application • Data Stored Locally
             </p>
           </div>
+        </div>
       </div>
     </div>
   );
