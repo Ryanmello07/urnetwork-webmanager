@@ -177,3 +177,13 @@ export interface WalletStatsEntry {
   paid_mb: number;
   unpaid_mb: number;
 }
+
+export interface CreateAuthCodeResponse {
+  auth_code?: string;
+  duration_minutes?: number;
+  uses?: number;
+  error?: {
+    auth_code_limit_exceeded?: boolean;
+    message: string;
+  };
+}

@@ -1,8 +1,12 @@
 import React from 'react';
-import { LogOut, TerminalSquare } from 'lucide-react';
+import { LogOut, TerminalSquare, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onAccountSettings?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onAccountSettings }) => {
   const { isAuthenticated, logout } = useAuth();
 
   return (
@@ -22,13 +26,24 @@ const Header: React.FC = () => {
           </div>
           
           {isAuthenticated && (
-            <button
-              onClick={logout}
-              className="flex items-center space-x-1 md:space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
-            >
-              <LogOut size={14} className="md:w-4 md:h-4" />
-              <span className="text-sm md:text-base">Logout</span>
-            </button>
+            <div className="flex items-center space-x-2 md:space-x-3">
+              {onAccountSettings && (
+                <button
+                  onClick={onAccountSettings}
+                  className="flex items-center space-x-1 md:space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
+                >
+                  <Settings size={14} className="md:w-4 md:h-4" />
+                  <span className="text-sm md:text-base hidden sm:inline">Account</span>
+                </button>
+              )}
+              <button
+                onClick={logout}
+                className="flex items-center space-x-1 md:space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
+              >
+                <LogOut size={14} className="md:w-4 md:h-4" />
+                <span className="text-sm md:text-base">Logout</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

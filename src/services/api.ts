@@ -308,6 +308,39 @@ export const fetchWalletStats = async (token: string): Promise<WalletStatsRespon
   }
 };
 
+// Create authentication code API
+export const createAuthCode = async (token: string, durationMinutes: number, uses: number): Promise<CreateAuthCodeResponse> => {
+  try {
+    const response = await fetch('https://api.bringyour.com/auth/code-create', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        duration_minutes: durationMinutes,
+        uses: uses,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Create auth code failed:', response.status, response.statusText);
+      const errorData = await response.text();
+      console.error('Error response:', errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Create auth code error:', error);
+    return {
+      error: {
+        message: error instanceof Error ? error.message : 'Failed to create authentication code',
+      },
+    };
+  }
+};
+
 export type { 
   AuthResponse, 
   Client, 
@@ -327,5 +360,6 @@ export type {
   WalletStatsResponse,
   WalletStatsEntry,
   NetworkUser,
-  NetworkUserResponse
+  NetworkUserResponse,
+  CreateAuthCodeResponse
 };
