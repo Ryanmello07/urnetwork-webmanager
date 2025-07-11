@@ -98,7 +98,7 @@ const AccountSettingsSection: React.FC = () => {
             <Key size={20} className="text-white" />
             <div>
               <h3 className="font-medium text-white">Generate Authentication Token</h3>
-              <p className="text-blue-100 text-sm mt-1">Create temporary authentication codes for secure access</p>
+              <p className="text-blue-100 text-sm mt-1">Create temporary authentication codes for secure access to development applications</p>
             </div>
           </div>
         </div>
@@ -118,7 +118,6 @@ const AccountSettingsSection: React.FC = () => {
                 <li>Codes expire after the specified duration</li>
                 <li>Each code has a limited number of uses</li>
                 <li>Keep codes secure and don't share them publicly</li>
-                <li>There may be limits on how many codes you can create</li>
               </ul>
             </div>
           </div>
