@@ -146,7 +146,7 @@ const Layout: React.FC = () => {
                   )}
                 </div>
                 
-                <div className="animate-fadeIn">
+                <div className="animate-fadeIn mt-8">
                   {activeTab === 'clients' && <ClientsSection />}
                   {activeTab === 'stats' && <StatsSection />}
                   {activeTab === 'leaderboard' && <LeaderboardSection />}
