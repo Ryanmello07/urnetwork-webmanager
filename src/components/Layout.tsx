@@ -46,47 +46,48 @@ const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900">
-      <main className="flex-grow container mx-auto px-4 py-8">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-blue-500"></div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse"></div>
+      {isAuthenticated && (
+        <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700">
+          <div className="px-6 py-6">
+            <div className="flex justify-between items-center gap-4">
+              <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
+                <div className="p-3 bg-blue-600 rounded-xl shadow-lg">
+                  <TerminalSquare size={24} className="text-white md:w-8 md:h-8" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate">
+                    URnetwork Client Manager
+                  </h1>
+                  <p className="text-sm md:text-base text-gray-400 hidden sm:block">Advanced Network Management</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3 md:space-x-4">
+                <button
+                  onClick={() => setActiveTab('account')}
+                  className={`flex items-center space-x-2 px-4 md:px-6 py-3 rounded-lg transition-all duration-200 border shadow-lg hover:shadow-xl flex-shrink-0 ${
+                    activeTab === 'account'
+                      ? 'bg-gray-600 text-white border-gray-500'
+                      : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600 hover:border-gray-500'
+                  }`}
+                >
+                  <Settings size={16} className="md:w-5 md:h-5" />
+                  <span className="text-base md:text-lg hidden sm:inline">Account</span>
+                </button>
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-4 md:px-6 py-3 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
+                >
+                  <LogOut size={16} className="md:w-5 md:h-5" />
+                  <span className="text-base md:text-lg">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
-        ) : (
-          <>
-            {!isAuthenticated && <AuthSection />}
-            {isAuthenticated && (
-              <div className="space-y-8">
-                <header className="bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 -mx-4">
-                  <div className="px-6 py-6">
-                    <div className="flex justify-between items-center gap-4">
-                      <div className="flex items-center space-x-3 md:space-x-4 min-w-0 flex-1">
-                        <div className="p-3 bg-blue-600 rounded-xl shadow-lg">
-                          <TerminalSquare size={24} className="text-white md:w-8 md:h-8" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate">
-                            URnetwork Client Manager
-                          </h1>
-                          <p className="text-sm md:text-base text-gray-400 hidden sm:block">Advanced Network Management</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3 md:space-x-4">
-                        <button
-                          onClick={logout}
-                          className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-4 md:px-6 py-3 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
-                        >
-                          <LogOut size={16} className="md:w-5 md:h-5" />
-                          <span className="text-base md:text-lg">Logout</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </header>
-                
+        </header>
+      )}
+      <main className="flex-grow container mx-auto px-4 py-8">
+        {isLoading ? (
                 <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl">
                   {isMobile ? (
                     <div className="p-2">
