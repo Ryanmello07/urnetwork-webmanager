@@ -311,7 +311,7 @@ export const fetchWalletStats = async (token: string): Promise<WalletStatsRespon
 // Create authentication code API
 export const createAuthCode = async (token: string, durationMinutes: number, uses: number): Promise<CreateAuthCodeResponse> => {
   try {
-    const response = await fetch('https://api.bringyour.com/auth/code-create', {
+    const response = await fetch(`${API_BASE_URL}/auth/code-create`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
