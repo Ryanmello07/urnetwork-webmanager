@@ -63,3 +63,26 @@ body {
 .gradient-dark-yellow {
   background: linear-gradient(135deg, #92400e 0%, #d97706 100%);
 }
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Ensure text doesn't overflow on mobile */
+  h1, h2, h3 {
+    word-break: break-word;
+  }
+  
+  /* Better button spacing on mobile */
+  .space-x-3 > * + * {
+    margin-left: 0.5rem;
+  }
+  
+  /* Improve table responsiveness */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}

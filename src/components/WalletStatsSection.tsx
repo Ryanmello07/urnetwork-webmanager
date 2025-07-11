@@ -439,10 +439,10 @@ const WalletStatsSection: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600"
+              className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600"
             >
               <Settings size={16} />
               Settings
@@ -451,7 +451,7 @@ const WalletStatsSection: React.FC = () => {
             <button
               onClick={() => setShowClearModal(true)}
               disabled={statsHistory.length === 0}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 statsHistory.length === 0
                   ? 'bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600'
                   : 'bg-red-600 text-white hover:bg-red-700 border border-red-500 hover:shadow-lg'
@@ -464,7 +464,7 @@ const WalletStatsSection: React.FC = () => {
             <button
               onClick={() => loadWalletStats(true)}
               disabled={isLoading}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 border border-green-500 hover:shadow-lg"
+              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 border border-green-500 hover:shadow-lg"
             >
               <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
               Refresh
@@ -478,7 +478,7 @@ const WalletStatsSection: React.FC = () => {
               <Settings size={20} />
               Configuration Settings
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
                 <label className="flex items-center space-x-3 mb-4">
                   <input
@@ -640,14 +640,14 @@ const WalletStatsSection: React.FC = () => {
             </div>
 
             {statsHistory.length > 0 && (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {paidChartData && (
                   <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
                     <h3 className="text-lg font-medium text-gray-100 mb-6 flex items-center gap-2">
                       <DollarSign size={20} className="text-green-400" />
                       Paid Data Transfer History
                     </h3>
-                    <div className="h-80">
+                    <div className="h-64 md:h-80">
                       <Line data={paidChartData} options={chartOptions} />
                     </div>
                   </div>
@@ -659,7 +659,7 @@ const WalletStatsSection: React.FC = () => {
                       <Clock size={20} className="text-yellow-400" />
                       Unpaid Data Transfer History
                     </h3>
-                    <div className="h-80">
+                    <div className="h-64 md:h-80">
                       <Line data={unpaidChartData} options={chartOptions} />
                     </div>
                   </div>

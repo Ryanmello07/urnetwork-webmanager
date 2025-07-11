@@ -159,8 +159,8 @@ const ClientsSection: React.FC = () => {
 
       {/* Filters and Sorting */}
       <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex items-center gap-2">
               <Filter size={16} className="text-gray-400" />
               <span className="text-sm font-medium text-gray-300">Filter:</span>
@@ -176,7 +176,7 @@ const ClientsSection: React.FC = () => {
             </select>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <span className="text-sm font-medium text-gray-300">Sort by:</span>
             <select
               value={sortBy}
@@ -214,16 +214,16 @@ const ClientsSection: React.FC = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="text-sm text-gray-400">
                   Showing {((currentPage - 1) * clientsPerPage) + 1} to {Math.min(currentPage * clientsPerPage, totalClients)} of {totalClients} clients
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2 overflow-x-auto">
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 flex-shrink-0 ${
                       currentPage === 1
                         ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                         : 'bg-blue-600 text-white hover:bg-blue-700 border border-blue-500'
@@ -250,7 +250,7 @@ const ClientsSection: React.FC = () => {
                         <button
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
-                          className={`px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                          className={`px-3 py-2 rounded-lg text-sm transition-all duration-200 flex-shrink-0 ${
                             currentPage === pageNum
                               ? 'bg-blue-600 text-white border border-blue-500'
                               : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
@@ -265,7 +265,7 @@ const ClientsSection: React.FC = () => {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 flex-shrink-0 ${
                       currentPage === totalPages
                         ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                         : 'bg-blue-600 text-white hover:bg-blue-700 border border-blue-500'
