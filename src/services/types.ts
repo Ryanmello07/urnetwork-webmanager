@@ -5,6 +5,19 @@ export interface AuthResponse {
   };
 }
 
+export interface PasswordLoginResponse {
+  verification_required?: {
+    user_auth: string;
+  };
+  network?: {
+    by_jwt: string;
+    name: string;
+  };
+  error?: {
+    message: string;
+  };
+}
+
 export interface NetworkUser {
   user_id: string;
   user_auth: string;

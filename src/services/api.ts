@@ -33,6 +33,38 @@ export const login = async (authCode: string): Promise<AuthResponse> => {
   }
 };
 
+// Email/Password login API
+export const loginWithPassword = async (userAuth: string, password: string): Promise<PasswordLoginResponse> => {
+  try {
+    const response = await fetch('https://api.bringyour.com/auth/login-with-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_auth: userAuth,
+        password: password,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Password login failed:', response.status, response.statusText);
+      const errorData = await response.text();
+      console.error('Error response:', errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Password login error:', error);
+    return {
+      error: {
+        message: error instanceof Error ? error.message : 'Password authentication failed',
+      },
+    };
+  }
+};
+
 // Get network user API
 export const fetchNetworkUser = async (token: string): Promise<NetworkUserResponse> => {
   try {

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { login } from '../services/api';
+import { login, loginWithPassword } from '../services/api';
+import type { PasswordLoginResponse } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface AuthContextType {
@@ -7,6 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (authCode: string) => Promise<void>;
+  loginWithPassword: (userAuth: string, password: string) => Promise<PasswordLoginResponse>;
   logout: () => void;
 }
 
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => {},
+  loginWithPassword: async () => ({ error: { message: 'Not implemented' } }),
   logout: () => {},
 });
 
@@ -62,6 +65,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const handlePasswordLogin = async (userAuth: string, password: string): Promise<PasswordLoginResponse> => {
+    setIsLoading(true);
+    try {
+      const response = await loginWithPassword(userAuth, password);
+      
+      if (response.error) {
+        toast.error(response.error.message);
+        return response;
+      }
+      
+      if (response.verification_required) {
+        toast.info('Verification required. Please check your email or phone.');
+        return response;
+      }
+      
+      if (response.network?.by_jwt) {
+        localStorage.setItem('byToken', response.network.by_jwt);
+        setToken(response.network.by_jwt);
+        toast.success(`Successfully authenticated as ${response.network.name}!`);
+        return response;
+      }
+      
+      throw new Error('Authentication failed');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Password authentication failed';
+      toast.error(errorMessage);
+      return {
+        error: {
+          message: errorMessage,
+        },
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     localStorage.removeItem('byToken');
     setToken(null);
@@ -75,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!token,
         isLoading,
         login: handleLogin,
+        loginWithPassword: handlePasswordLogin,
         logout: handleLogout,
       }}
     >
