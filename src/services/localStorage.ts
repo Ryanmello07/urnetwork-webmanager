@@ -12,7 +12,7 @@ const WALLET_STATS_KEY = 'wallet_stats_history';
 
 // Generate a simple UUID-like string
 const generateId = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 };
 
 export const saveWalletStats = async (
@@ -20,7 +20,7 @@ export const saveWalletStats = async (
   networkName: string,
   paidBytes: number,
   unpaidBytes: number
-): Promise<{ data: WalletStatsRecord | null; error: any }> => {
+): Promise<{ data: WalletStatsRecord | null; error: unknown }> => {
   try {
     const now = new Date().toISOString();
     const newRecord: WalletStatsRecord = {
@@ -55,7 +55,7 @@ export const saveWalletStats = async (
 export const getWalletStatsHistory = async (
   userId: string,
   limit: number = 1000
-): Promise<{ data: WalletStatsRecord[] | null; error: any }> => {
+): Promise<{ data: WalletStatsRecord[] | null; error: unknown }> => {
   try {
     const allData = getStoredWalletStats();
     
@@ -75,7 +75,7 @@ export const getWalletStatsHistory = async (
 
 export const getLatestWalletStats = async (
   userId: string
-): Promise<{ data: WalletStatsRecord | null; error: any }> => {
+): Promise<{ data: WalletStatsRecord | null; error: unknown }> => {
   try {
     const allData = getStoredWalletStats();
     
@@ -92,7 +92,7 @@ export const getLatestWalletStats = async (
 
 export const clearWalletStatsHistory = async (
   userId: string
-): Promise<{ success: boolean; error: any }> => {
+): Promise<{ success: boolean; error: unknown }> => {
   try {
     const allData = getStoredWalletStats();
     

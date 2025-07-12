@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { login, loginWithPassword } from '../services/api';
-import type { PasswordLoginResponse } from '../services/api';
 import toast from 'react-hot-toast';
+import { PasswordLoginResponse } from '../services/types';
 
 interface AuthContextType {
   token: string | null;
@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (response.verification_required) {
-        toast.info('Verification required. Please check your email or phone.');
+        toast.error('Verification required. Please check your email or phone.');
         return response;
       }
       

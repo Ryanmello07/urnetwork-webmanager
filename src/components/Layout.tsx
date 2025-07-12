@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { TerminalSquare, Settings, LogOut } from 'lucide-react';
+import { TerminalSquare, LogOut } from 'lucide-react';
 import AuthSection from './AuthSection';
 import ClientsSection from './ClientsSection';
 import StatsSection from './StatsSection';
@@ -10,9 +10,11 @@ import WalletStatsSection from './WalletStatsSection';
 import AccountSettingsSection from './AccountSettingsSection';
 import { ChevronDown } from 'lucide-react';
 
+type TabType = 'clients' | 'stats' | 'leaderboard' | 'providers' | 'wallet' | 'account';
+
 const Layout: React.FC = () => {
   const { isAuthenticated, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'clients' | 'stats' | 'leaderboard' | 'providers' | 'wallet' | 'account'>('clients');
+  const [activeTab, setActiveTab] = useState<TabType>('clients');
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -39,8 +41,8 @@ const Layout: React.FC = () => {
 
   const activeTabData = tabs.find(tab => tab.id === activeTab);
 
-  const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId as any);
+  const handleTabChange = (tabId: TabType) => {
+    setActiveTab(tabId);
     setShowMobileMenu(false);
   };
 
@@ -102,7 +104,7 @@ const Layout: React.FC = () => {
                             {tabs.map((tab) => (
                               <button
                                 key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
+                                onClick={() => handleTabChange(tab.id as TabType)}
                                 className={`w-full text-left py-3 px-4 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg ${
                                   activeTab === tab.id
                                     ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
@@ -121,7 +123,7 @@ const Layout: React.FC = () => {
                       {tabs.map((tab) => (
                         <button
                           key={tab.id}
-                          onClick={() => setActiveTab(tab.id as any)}
+                          onClick={() => setActiveTab(tab.id as TabType)}
                           className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                             activeTab === tab.id
                               ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white shadow-lg transform scale-105`

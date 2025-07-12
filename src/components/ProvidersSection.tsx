@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Search, RefreshCw, AlertCircle, Globe, Users } from 'lucide-react';
 import { fetchProviderLocations, findProviderLocations } from '../services/api';
-import type { Location, Device } from '../services/api';
+import type { Device } from '../services/api';
 import toast from 'react-hot-toast';
 import debounce from 'lodash/debounce';
+import { ProviderLocation } from '../services/types';
 
 const ProvidersSection: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setLocations] = useState<ProviderLocation[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +32,7 @@ const ProvidersSection: React.FC = () => {
         // Sort locations by provider count in descending order
         const sortedLocations = [...response.locations]
           .sort((a, b) => b.provider_count - a.provider_count)
-          .slice(0, 50); // Limit to 50 results
+          .slice(0, 50) as ProviderLocation[]; // Limit to 50 results
 
         // Update state in a single batch
         setLocations(sortedLocations);
@@ -47,6 +48,7 @@ const ProvidersSection: React.FC = () => {
   }, [isLoading]);
 
   // Memoize and configure debounce with a longer delay
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSearch = useCallback(
     debounce((query: string) => {
       if (query.trim().length >= 2) {
@@ -61,7 +63,7 @@ const ProvidersSection: React.FC = () => {
     return () => {
       debouncedSearch.cancel();
     };
-  }, []);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -75,7 +77,7 @@ const ProvidersSection: React.FC = () => {
   };
 
   // Memoize card components
-  const LocationCard = React.memo<{ location: Location }>(({ location }) => (
+  const LocationCard = React.memo<{ location: ProviderLocation }>(({ location }) => (
     <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 border border-gray-700 hover:border-gray-600 transform hover:scale-105">
       <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
         <div className="flex items-center justify-between">

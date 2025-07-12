@@ -9,15 +9,17 @@ import type { Client } from '../services/api';
 import toast from 'react-hot-toast';
 
 const ClientsSection: React.FC = () => {
+  type FilterStatus = 'all' | 'online' | 'offline';
+  type SortMode = 'status' | 'auth_time' | 'create_time';
+
   const { token } = useAuth();
-  const [clients, setClients] = useState<Client[]>([]);
   const [allClients, setAllClients] = useState<Client[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [clientsPerPage] = useState(100);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'status' | 'auth_time' | 'create_time'>('status');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'online' | 'offline'>('all');
+  const [sortBy, setSortBy] = useState<SortMode>('status');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
 
   // Sort clients function
   const sortClients = (clientsToSort: Client[], sortType: string) => {
@@ -98,7 +100,7 @@ const ClientsSection: React.FC = () => {
   // Load clients on initial render
   useEffect(() => {
     loadClients();
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset to first page when sort or filter changes
   useEffect(() => {
@@ -167,7 +169,7 @@ const ClientsSection: React.FC = () => {
             </div>
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as any)}
+              onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
               className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Clients ({allClients.length})</option>
@@ -180,7 +182,7 @@ const ClientsSection: React.FC = () => {
             <span className="text-sm font-medium text-gray-300">Sort by:</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as SortMode)}
               className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="status">Status (Online First)</option>

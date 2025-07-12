@@ -29,7 +29,7 @@ const AccountSettingsSection: React.FC = () => {
       } else {
         toast.success('Authentication code generated successfully!');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Failed to generate authentication code');
     } finally {
       setIsGenerating(false);
@@ -48,7 +48,7 @@ const AccountSettingsSection: React.FC = () => {
       setTimeout(() => {
         setCopiedToClipboard(false);
       }, 3000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy to clipboard');
     }
   };

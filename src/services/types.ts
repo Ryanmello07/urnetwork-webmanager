@@ -142,7 +142,7 @@ export interface LocationGroup {
   match_distance: number;
 }
 
-export interface Location {
+export interface ProviderLocation {
   location_id: string;
   location_type: string;
   name: string;
@@ -165,7 +165,7 @@ export interface Device {
 export interface ProviderLocationsResponse {
   specs: LocationSpec[];
   groups: LocationGroup[];
-  locations: Location[];
+  locations: ProviderLocation[];
   devices: Device[];
   error?: {
     message: string;

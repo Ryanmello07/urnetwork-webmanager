@@ -47,7 +47,7 @@ const LeaderboardSection: React.FC = () => {
 
   useEffect(() => {
     loadLeaderboard();
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatMibCount = (mibCount: number) => {
     if (mibCount >= 1024) {
