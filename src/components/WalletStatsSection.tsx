@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, ComponentProps } from 'react';
 import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchWalletStats, fetchNetworkUser } from '../services/api';
@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
@@ -45,7 +46,7 @@ const WalletStatsSection: React.FC = () => {
   const [showClearModal, setShowClearModal] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Chart settings
   const [maxDataPoints, setMaxDataPoints] = useState(50);
@@ -339,7 +340,7 @@ const WalletStatsSection: React.FC = () => {
     };
   };
 
-  const chartOptions = {
+  const chartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -359,7 +360,7 @@ const WalletStatsSection: React.FC = () => {
         borderColor: '#4b5563',
         borderWidth: 1,
         callbacks: {
-          label: function(context: any) {
+          label: function(context) {
             const value = context.parsed.y;
             return `${context.dataset.label}: ${formatMBValue(value)}`;
           },
@@ -388,8 +389,8 @@ const WalletStatsSection: React.FC = () => {
           font: {
             size: 11,
           },
-          callback: function(value: any) {
-            return formatMBValue(value);
+          callback: function(value) {
+            return formatMBValue(typeof value === 'string' ? parseInt(value) : value);
           },
         },
       },
@@ -535,7 +536,7 @@ const WalletStatsSection: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={showDataPoints}
-                    onChange={(e) => setShowDataPoints(e.target.unchecked)}
+                    onChange={(e) => setShowDataPoints(!e.target.checked)}
                     className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800"
                   />
                   <span className="text-sm font-medium text-gray-200">Show Data Points</span>
@@ -648,7 +649,7 @@ const WalletStatsSection: React.FC = () => {
                       Paid Data Transfer History
                     </h3>
                     <div className="h-64 md:h-80">
-                      <Line data={paidChartData} options={chartOptions} />
+                      <Line data={paidChartData} options={chartOptions as ComponentProps<typeof Line>["options"]} />
                     </div>
                   </div>
                 )}
@@ -660,7 +661,7 @@ const WalletStatsSection: React.FC = () => {
                       Unpaid Data Transfer History
                     </h3>
                     <div className="h-64 md:h-80">
-                      <Line data={unpaidChartData} options={chartOptions} />
+                      <Line data={unpaidChartData} options={chartOptions as ComponentProps<typeof Line>["options"]} />
                     </div>
                   </div>
                 )}

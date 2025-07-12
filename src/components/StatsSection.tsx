@@ -39,7 +39,7 @@ const StatsSection: React.FC = () => {
 
   useEffect(() => {
     loadStats();
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const calculateTotals = () => {
     return stats.reduce((acc, provider) => ({
