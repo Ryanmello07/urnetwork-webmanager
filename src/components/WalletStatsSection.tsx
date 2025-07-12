@@ -536,7 +536,7 @@ const WalletStatsSection: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={showDataPoints}
-                    onChange={(e) => setShowDataPoints(e.target.unchecked)}
+                    onChange={(e) => setShowDataPoints(!e.target.checked)}
                     className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800"
                   />
                   <span className="text-sm font-medium text-gray-200">Show Data Points</span>
