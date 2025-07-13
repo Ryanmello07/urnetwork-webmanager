@@ -12,6 +12,7 @@ const ProvidersSection: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
   // Memoize the loadLocations function
   const loadLocations = useCallback(async (query?: string) => {
@@ -29,10 +30,58 @@ const ProvidersSection: React.FC = () => {
         setError(response.error.message);
         toast.error(response.error.message);
       } else {
-        // Sort locations by provider count in descending order
-        const sortedLocations = [...response.locations]
-          .sort((a, b) => b.provider_count - a.provider_count)
-          .slice(0, 50) as ProviderLocation[]; // Limit to 50 results
+        let sortedLocations: ProviderLocation[];
+        
+        if (query && query.trim().length > 0) {
+          // When searching, prioritize exact matches first, then partial matches, then by provider count
+          const queryLower = query.toLowerCase().trim();
+          
+          sortedLocations = [...response.locations].sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+            const aCity = a.city?.toLowerCase() || '';
+            const bCity = b.city?.toLowerCase() || '';
+            const aRegion = a.region?.toLowerCase() || '';
+            const bRegion = b.region?.toLowerCase() || '';
+            const aCountry = a.country?.toLowerCase() || '';
+            const bCountry = b.country?.toLowerCase() || '';
+            
+            // Check for exact matches (highest priority)
+            const aExactMatch = aName === queryLower || aCity === queryLower || 
+                               aRegion === queryLower || aCountry === queryLower;
+            const bExactMatch = bName === queryLower || bCity === queryLower || 
+                               bRegion === queryLower || bCountry === queryLower;
+            
+            if (aExactMatch && !bExactMatch) return -1;
+            if (!aExactMatch && bExactMatch) return 1;
+            
+            // Check for starts with matches (second priority)
+            const aStartsWith = aName.startsWith(queryLower) || aCity.startsWith(queryLower) || 
+                               aRegion.startsWith(queryLower) || aCountry.startsWith(queryLower);
+            const bStartsWith = bName.startsWith(queryLower) || bCity.startsWith(queryLower) || 
+                               bRegion.startsWith(queryLower) || bCountry.startsWith(queryLower);
+            
+            if (aStartsWith && !bStartsWith) return -1;
+            if (!aStartsWith && bStartsWith) return 1;
+            
+            // Check for contains matches (third priority)
+            const aContains = aName.includes(queryLower) || aCity.includes(queryLower) || 
+                             aRegion.includes(queryLower) || aCountry.includes(queryLower);
+            const bContains = bName.includes(queryLower) || bCity.includes(queryLower) || 
+                             bRegion.includes(queryLower) || bCountry.includes(queryLower);
+            
+            if (aContains && !bContains) return -1;
+            if (!aContains && bContains) return 1;
+            
+            // If same match type, sort by provider count (descending)
+            return b.provider_count - a.provider_count;
+          }).slice(0, 50) as ProviderLocation[];
+        } else {
+          // When not searching, sort by provider count in descending order (default behavior)
+          sortedLocations = [...response.locations]
+            .sort((a, b) => b.provider_count - a.provider_count)
+            .slice(0, 50) as ProviderLocation[];
+        }
 
         // Update state in a single batch
         setLocations(sortedLocations);
@@ -68,10 +117,13 @@ const ProvidersSection: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
+    setIsSearchActive(query.trim().length > 0);
     
     if (query.trim().length === 0) {
+      setIsSearchActive(false);
       loadLocations();
     } else if (query.trim().length >= 2) {
+      setIsSearchActive(true);
       debouncedSearch(query);
     }
   };
@@ -134,9 +186,17 @@ const ProvidersSection: React.FC = () => {
             Provider Locations
           </h2>
           <p className="text-gray-400 mt-2">Browse and search provider locations worldwide</p>
+          {isSearchActive && (
+            <p className="text-sm text-blue-400 mt-1">
+              Search results prioritized by exact matches, then partial matches
+            </p>
+          )}
           <div className="flex items-center gap-2 mt-2">
             <Globe size={16} className="text-purple-400" />
-            <span className="text-sm text-gray-500">{locations.length} locations available</span>
+            <span className="text-sm text-gray-500">
+              {locations.length} locations {isSearchActive ? 'found' : 'available'}
+              {isSearchActive ? '' : ' (sorted by provider count)'}
+            </span>
           </div>
         </div>
         
