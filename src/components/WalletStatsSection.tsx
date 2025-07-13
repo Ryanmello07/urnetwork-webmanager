@@ -39,18 +39,58 @@ const WalletStatsSection: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [refreshInterval, setRefreshInterval] = useState(5); // minutes
-  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showSettings, setShowSettings] = useState(false);
-  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true);
   const [showClearModal, setShowClearModal] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Chart settings
-  const [maxDataPoints, setMaxDataPoints] = useState(50);
-  const [showDataPoints, setShowDataPoints] = useState(false);
+  // Settings with localStorage persistence
+  const [refreshInterval, setRefreshInterval] = useState(() => {
+    const saved = localStorage.getItem('walletStats_refreshInterval');
+    return saved ? parseInt(saved) : 5;
+  });
+  
+  const [timezone, setTimezone] = useState(() => {
+    const saved = localStorage.getItem('walletStats_timezone');
+    return saved || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  });
+  
+  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(() => {
+    const saved = localStorage.getItem('walletStats_autoRefresh');
+    return saved ? JSON.parse(saved) : true;
+  });
+  
+  const [maxDataPoints, setMaxDataPoints] = useState(() => {
+    const saved = localStorage.getItem('walletStats_maxDataPoints');
+    return saved ? parseInt(saved) : 50;
+  });
+  
+  const [showDataPoints, setShowDataPoints] = useState(() => {
+    const saved = localStorage.getItem('walletStats_showDataPoints');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('walletStats_refreshInterval', refreshInterval.toString());
+  }, [refreshInterval]);
+
+  useEffect(() => {
+    localStorage.setItem('walletStats_timezone', timezone);
+  }, [timezone]);
+
+  useEffect(() => {
+    localStorage.setItem('walletStats_autoRefresh', JSON.stringify(isAutoRefreshEnabled));
+  }, [isAutoRefreshEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('walletStats_maxDataPoints', maxDataPoints.toString());
+  }, [maxDataPoints]);
+
+  useEffect(() => {
+    localStorage.setItem('walletStats_showDataPoints', JSON.stringify(showDataPoints));
+  }, [showDataPoints]);
 
   const bytesToMB = (bytes: number) => bytes / (1000000);
 
