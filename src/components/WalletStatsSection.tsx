@@ -256,11 +256,14 @@ const WalletStatsSection: React.FC = () => {
 
   // Setup automatic refresh
   useEffect(() => {
+    // Clear any existing interval first
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
 
-    if (isAutoRefreshEnabled && networkUser?.network_name && networkUser?.user_id) {
+    // Only setup interval if auto-refresh is enabled and we have the required user data
+    if (isAutoRefreshEnabled && networkUser?.network_name && networkUser?.user_id && token) {
       // Initial load
       loadWalletStats(false);
 
@@ -270,12 +273,14 @@ const WalletStatsSection: React.FC = () => {
       }, refreshInterval * 60 * 1000);
     }
 
+    // Cleanup function
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [loadWalletStats, refreshInterval, isAutoRefreshEnabled, networkUser?.network_name, networkUser?.user_id]);
+  }, [refreshInterval, isAutoRefreshEnabled, networkUser?.network_name, networkUser?.user_id, token, loadWalletStats]);
 
   // Load network user on component mount
   useEffect(() => {
