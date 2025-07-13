@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { TerminalSquare, LogOut } from 'lucide-react';
 import AuthSection from './AuthSection';
@@ -10,13 +11,27 @@ import WalletStatsSection from './WalletStatsSection';
 import AccountSettingsSection from './AccountSettingsSection';
 import { ChevronDown } from 'lucide-react';
 
-type TabType = 'clients' | 'stats' | 'leaderboard' | 'providers' | 'wallet' | 'account';
+type TabType = 'clients' | 'stats' | 'leaderboard' | 'providers' | 'wallet-stats' | 'account';
 
 const Layout: React.FC = () => {
   const { isAuthenticated, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabType>('clients');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Get current tab from URL
+  const getCurrentTab = (): TabType => {
+    const path = location.pathname;
+    if (path === '/stats') return 'stats';
+    if (path === '/leaderboard') return 'leaderboard';
+    if (path === '/providers') return 'providers';
+    if (path === '/wallet-stats') return 'wallet-stats';
+    if (path === '/account') return 'account';
+    return 'clients'; // default
+  };
+
+  const activeTab = getCurrentTab();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -35,14 +50,15 @@ const Layout: React.FC = () => {
     { id: 'stats', label: 'Statistics', color: 'green' },
     { id: 'leaderboard', label: 'Leaderboard', color: 'yellow' },
     { id: 'providers', label: 'Providers', color: 'purple' },
-    { id: 'wallet', label: 'Wallet Stats', color: 'indigo' },
+    { id: 'wallet-stats', label: 'Wallet Stats', color: 'indigo' },
     { id: 'account', label: 'Account Settings', color: 'gray' },
   ];
 
   const activeTabData = tabs.find(tab => tab.id === activeTab);
 
   const handleTabChange = (tabId: TabType) => {
-    setActiveTab(tabId);
+    const path = tabId === 'clients' ? '/' : `/${tabId}`;
+    navigate(path);
     setShowMobileMenu(false);
   };
 
@@ -138,16 +154,22 @@ const Layout: React.FC = () => {
                 </div>
                 
                 <div className="animate-fadeIn mt-8">
-                  {activeTab === 'clients' && <ClientsSection />}
-                  {activeTab === 'stats' && <StatsSection />}
-                  {activeTab === 'leaderboard' && <LeaderboardSection />}
-                  {activeTab === 'providers' && <ProvidersSection />}
-                  {activeTab === 'wallet' && <WalletStatsSection />}
-                  {activeTab === 'account' && <AccountSettingsSection />}
+                  <Routes>
+                    <Route path="/" element={<ClientsSection />} />
+                    <Route path="/stats" element={<StatsSection />} />
+                    <Route path="/leaderboard" element={<LeaderboardSection />} />
+                    <Route path="/providers" element={<ProvidersSection />} />
+                    <Route path="/wallet-stats" element={<WalletStatsSection />} />
+                    <Route path="/account" element={<AccountSettingsSection />} />
+                  </Routes>
                 </div>
               </>
             )}
-            {!isAuthenticated && <AuthSection />}
+            {!isAuthenticated && (
+              <Routes>
+                <Route path="*" element={<AuthSection />} />
+              </Routes>
+            )}
           </>
         )}
       </main>
