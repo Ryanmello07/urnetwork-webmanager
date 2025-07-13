@@ -70,12 +70,6 @@ const WalletStatsSection: React.FC = () => {
     const saved = localStorage.getItem('walletStats_showDataPoints');
     return saved ? JSON.parse(saved) : false;
   });
-  
-  // Update storage info
-  const updateStorageInfo = useCallback(() => {
-    const info = getStorageInfo();
-    setStorageInfo(info);
-  }, []);
 
   // Save settings to localStorage whenever they change
   useEffect(() => {
@@ -98,75 +92,8 @@ const WalletStatsSection: React.FC = () => {
     localStorage.setItem('walletStats_showDataPoints', JSON.stringify(showDataPoints));
   }, [showDataPoints]);
 
-  // Load wallet stats function
-  const loadWalletStats = useCallback(async (showToast = true) => {
-    if (!token || !networkUser?.network_name || !networkUser?.user_id) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await fetchWalletStats(token);
-      
-      if (response.error) {
-        setError(response.error.message);
-        if (showToast) {
-          toast.error(response.error.message);
-        }
-      } else {
-        const paidMB = bytesToMB(response.paid_bytes_provided);
-        const unpaidMB = bytesToMB(response.unpaid_bytes_provided);
-        
-        setCurrentStats({ paid_mb: paidMB, unpaid_mb: unpaidMB });
-        setLastUpdated(new Date().toISOString());
-        
-        // Save to localStorage using the user ID and network name from networkUser
-        const { error: saveError } = await saveWalletStats(
-          networkUser.user_id,
-          networkUser.network_name,
-          response.paid_bytes_provided,
-          response.unpaid_bytes_provided
-        );
-        
-        if (saveError) {
-          console.error('Error saving wallet stats:', saveError);
-          if (showToast) {
-            toast.error('Failed to save stats to localStorage');
-          }
-        } else {
-          // Reload history to include the new entry
-          if (networkUser?.user_id) {
-            try {
-              const { data, error } = await getWalletStatsHistory(networkUser.user_id, 1000);
-              
-              if (error) {
-                console.error('Error loading stats history:', error);
-              } else if (data) {
-                setStatsHistory(data);
-                updateStorageInfo();
-              }
-            } catch (err) {
-              console.error('Error loading stats history:', err);
-            }
-          }
-          
-          if (showToast) {
-            toast.success('Wallet stats updated successfully');
-          }
-        }
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load wallet stats';
-      setError(message);
-      if (showToast) {
-        toast.error(message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token, networkUser, updateStorageInfo]);
-
   const bytesToMB = (bytes: number) => bytes / (1000000);
+
   // Format bytes to appropriate unit (MB, GB, TB)
   const formatBytes = (bytes: number): string => {
     const mb = bytes / (1000000);
@@ -195,6 +122,12 @@ const WalletStatsSection: React.FC = () => {
       return `${mb.toFixed(2)} MB`;
     }
   };
+
+  // Update storage info
+  const updateStorageInfo = useCallback(() => {
+    const info = getStorageInfo();
+    setStorageInfo(info);
+  }, []);
 
   // Load network user info
   const loadNetworkUser = useCallback(async () => {
@@ -239,8 +172,61 @@ const WalletStatsSection: React.FC = () => {
     } catch (err) {
       console.error('Error loading stats history:', err);
     }
-  }, [networkUser, updateStorageInfo]);
+  }, [networkUser?.user_id, updateStorageInfo]);
 
+  // Fetch wallet stats from API and save to localStorage
+  const loadWalletStats = useCallback(async (showToast = true) => {
+    if (!token || !networkUser?.network_name || !networkUser?.user_id) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetchWalletStats(token);
+      
+      if (response.error) {
+        setError(response.error.message);
+        if (showToast) {
+          toast.error(response.error.message);
+        }
+      } else {
+        const paidMB = bytesToMB(response.paid_bytes_provided);
+        const unpaidMB = bytesToMB(response.unpaid_bytes_provided);
+        
+        setCurrentStats({ paid_mb: paidMB, unpaid_mb: unpaidMB });
+        setLastUpdated(new Date().toISOString());
+        
+        // Save to localStorage using the user ID and network name from networkUser
+        const { error: saveError } = await saveWalletStats(
+          networkUser.user_id,
+          networkUser.network_name,
+          response.paid_bytes_provided,
+          response.unpaid_bytes_provided
+        );
+        
+        if (saveError) {
+          console.error('Error saving wallet stats:', saveError);
+          if (showToast) {
+            toast.error('Failed to save stats to localStorage');
+          }
+        } else {
+          // Reload history to include the new entry
+          await loadStatsHistory();
+          if (showToast) {
+            toast.success('Wallet stats updated successfully');
+          }
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load wallet stats';
+      setError(message);
+      if (showToast) {
+        toast.error(message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token, networkUser?.network_name, networkUser?.user_id, loadStatsHistory]);
 
   // Clear wallet stats history
   const handleClearHistory = async () => {
@@ -272,10 +258,13 @@ const WalletStatsSection: React.FC = () => {
   useEffect(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
-      intervalRef.current = null;
     }
 
-    if (isAutoRefreshEnabled && token && networkUser?.network_name && networkUser?.user_id) {
+    if (isAutoRefreshEnabled && networkUser?.network_name && networkUser?.user_id) {
+      // Initial load
+      loadWalletStats(false);
+
+      // Setup interval
       intervalRef.current = setInterval(() => {
         loadWalletStats(false);
       }, refreshInterval * 60 * 1000);
@@ -284,10 +273,9 @@ const WalletStatsSection: React.FC = () => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        intervalRef.current = null;
       }
     };
-  }, [refreshInterval, isAutoRefreshEnabled, token, networkUser?.network_name, networkUser?.user_id, loadWalletStats]);
+  }, [loadWalletStats, refreshInterval, isAutoRefreshEnabled, networkUser?.network_name, networkUser?.user_id]);
 
   // Load network user on component mount
   useEffect(() => {
@@ -515,7 +503,6 @@ const WalletStatsSection: React.FC = () => {
             </button>
             
             <button
-              onClick={() => loadWalletStatsStable(true)}
               onClick={() => loadWalletStats(true)}
               disabled={isLoading}
               className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 border border-green-500 hover:shadow-lg"
