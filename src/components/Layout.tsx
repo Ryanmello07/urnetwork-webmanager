@@ -65,7 +65,7 @@ const Layout: React.FC = () => {
                   <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate">
                     URnetwork<span className="hidden md:inline">&nbsp;Client Manager</span>
                   </h1>
-                  <p className="text-xs text-gray-400 hidden sm:block">Advanced Network Management</p>
+                  <p className="text-xs text-gray-400 hidden md:block">Advanced Network Management</p>
                 </div>
               </div>
               
