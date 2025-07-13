@@ -79,6 +79,12 @@ const WalletStatsSection: React.FC = () => {
     networkUser
   });
   
+  // Update storage info
+  const updateStorageInfo = useCallback(() => {
+    const info = getStorageInfo();
+    setStorageInfo(info);
+  }, []);
+
   // Update the ref whenever settings change
   useEffect(() => {
     settingsRef.current = {
@@ -209,12 +215,6 @@ const WalletStatsSection: React.FC = () => {
       return `${mb.toFixed(2)} MB`;
     }
   };
-
-  // Update storage info
-  const updateStorageInfo = useCallback(() => {
-    const info = getStorageInfo();
-    setStorageInfo(info);
-  }, []);
 
   // Load network user info
   const loadNetworkUser = useCallback(async () => {
