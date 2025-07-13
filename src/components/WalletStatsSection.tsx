@@ -31,6 +31,49 @@ ChartJS.register(
   Filler
 );
 
+// Settings interface for localStorage
+interface WalletStatsSettings {
+  refreshInterval: number;
+  timezone: string;
+  isAutoRefreshEnabled: boolean;
+  maxDataPoints: number;
+  showDataPoints: boolean;
+}
+
+// Default settings
+const DEFAULT_SETTINGS: WalletStatsSettings = {
+  refreshInterval: 5,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  isAutoRefreshEnabled: true,
+  maxDataPoints: 50,
+  showDataPoints: false,
+};
+
+// LocalStorage key for settings
+const WALLET_SETTINGS_KEY = 'wallet_stats_settings';
+
+// Helper functions for localStorage
+const saveSettingsToStorage = (settings: WalletStatsSettings): void => {
+  try {
+    localStorage.setItem(WALLET_SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.error('Failed to save wallet settings to localStorage:', error);
+  }
+};
+
+const loadSettingsFromStorage = (): WalletStatsSettings => {
+  try {
+    const stored = localStorage.getItem(WALLET_SETTINGS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Merge with defaults to handle missing properties in stored settings
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    }
+  } catch (error) {
+    console.error('Failed to load wallet settings from localStorage:', error);
+  }
+  return DEFAULT_SETTINGS;
+};
 const WalletStatsSection: React.FC = () => {
   const { token } = useAuth();
   const [currentStats, setCurrentStats] = useState({ paid_mb: 0, unpaid_mb: 0 });
@@ -39,18 +82,28 @@ const WalletStatsSection: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [refreshInterval, setRefreshInterval] = useState(5); // minutes
-  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showSettings, setShowSettings] = useState(false);
-  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true);
   const [showClearModal, setShowClearModal] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settingsInitialized = useRef(false);
   
-  // Chart settings
-  const [maxDataPoints, setMaxDataPoints] = useState(50);
-  const [showDataPoints, setShowDataPoints] = useState(false);
+  // Settings state - initialized from localStorage
+  const [settings, setSettings] = useState<WalletStatsSettings>(() => {
+    const loadedSettings = loadSettingsFromStorage();
+    settingsInitialized.current = true;
+    return loadedSettings;
+  });
+
+  // Helper function to update settings and save to localStorage
+  const updateSettings = useCallback((newSettings: Partial<WalletStatsSettings>) => {
+    setSettings(prevSettings => {
+      const updatedSettings = { ...prevSettings, ...newSettings };
+      saveSettingsToStorage(updatedSettings);
+      return updatedSettings;
+    });
+  }, []);
 
   const bytesToMB = (bytes: number) => bytes / (1000000);
 
@@ -216,18 +269,21 @@ const WalletStatsSection: React.FC = () => {
 
   // Setup automatic refresh
   useEffect(() => {
+    // Don't setup interval if settings haven't been initialized yet
+    if (!settingsInitialized.current) return;
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
 
-    if (isAutoRefreshEnabled && networkUser?.network_name && networkUser?.user_id) {
+    if (settings.isAutoRefreshEnabled && networkUser?.network_name && networkUser?.user_id) {
       // Initial load
       loadWalletStats(false);
 
       // Setup interval
       intervalRef.current = setInterval(() => {
         loadWalletStats(false);
-      }, refreshInterval * 60 * 1000);
+      }, settings.refreshInterval * 60 * 1000);
     }
 
     return () => {
@@ -235,7 +291,7 @@ const WalletStatsSection: React.FC = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [loadWalletStats, refreshInterval, isAutoRefreshEnabled, networkUser?.network_name, networkUser?.user_id]);
+  }, [loadWalletStats, settings.refreshInterval, settings.isAutoRefreshEnabled, networkUser?.network_name, networkUser?.user_id]);
 
   // Load network user on component mount
   useEffect(() => {
@@ -257,7 +313,7 @@ const WalletStatsSection: React.FC = () => {
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
-      timeZone: timezone,
+      timeZone: settings.timezone,
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -309,7 +365,7 @@ const WalletStatsSection: React.FC = () => {
     if (statsHistory.length === 0) return null;
 
     // Reverse to show chronological order and limit data points
-    const actualMaxPoints = maxDataPoints === 1000 ? statsHistory.length : Math.min(maxDataPoints, statsHistory.length);
+    const actualMaxPoints = settings.maxDataPoints === 1000 ? statsHistory.length : Math.min(settings.maxDataPoints, statsHistory.length);
     const sortedData = [...statsHistory].reverse().slice(-actualMaxPoints);
     
     return {
@@ -333,8 +389,8 @@ const WalletStatsSection: React.FC = () => {
           pointBackgroundColor: color,
           pointBorderColor: '#1f2937',
           pointBorderWidth: 2,
-          pointRadius: showDataPoints ? 4 : 0,
-          pointHoverRadius: showDataPoints ? 6 : 4,
+          pointRadius: settings.showDataPoints ? 4 : 0,
+          pointHoverRadius: settings.showDataPoints ? 6 : 4,
         },
       ],
     };
@@ -484,8 +540,8 @@ const WalletStatsSection: React.FC = () => {
                 <label className="flex items-center space-x-3 mb-4">
                   <input
                     type="checkbox"
-                    checked={isAutoRefreshEnabled}
-                    onChange={(e) => setIsAutoRefreshEnabled(e.target.checked)}
+                    checked={settings.isAutoRefreshEnabled}
+                    onChange={(e) => updateSettings({ isAutoRefreshEnabled: e.target.checked })}
                     className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800"
                   />
                   <span className="text-sm font-medium text-gray-200">Enable Auto Refresh</span>
@@ -497,9 +553,9 @@ const WalletStatsSection: React.FC = () => {
                   Refresh Interval (minutes)
                 </label>
                 <select
-                  value={refreshInterval}
-                  onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                  disabled={!isAutoRefreshEnabled}
+                  value={settings.refreshInterval}
+                  onChange={(e) => updateSettings({ refreshInterval: Number(e.target.value) })}
+                  disabled={!settings.isAutoRefreshEnabled}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-800 text-gray-200"
                 >
                   <option value={0.01}>LIVE (Spams API :3)</option>
@@ -517,8 +573,8 @@ const WalletStatsSection: React.FC = () => {
                   Maximum Data Points
                 </label>
                 <select
-                  value={maxDataPoints}
-                  onChange={(e) => setMaxDataPoints(Number(e.target.value))}
+                  value={settings.maxDataPoints}
+                  onChange={(e) => updateSettings({ maxDataPoints: Number(e.target.value) })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-200"
                 >
                   <option value={10}>10 points</option>
@@ -535,8 +591,8 @@ const WalletStatsSection: React.FC = () => {
                 <label className="flex items-center space-x-3 mb-4">
                   <input
                     type="checkbox"
-                    checked={showDataPoints}
-                    onChange={(e) => setShowDataPoints(!e.target.checked)}
+                    checked={settings.showDataPoints}
+                    onChange={(e) => updateSettings({ showDataPoints: e.target.checked })}
                     className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800"
                   />
                   <span className="text-sm font-medium text-gray-200">Show Data Points</span>
@@ -551,8 +607,8 @@ const WalletStatsSection: React.FC = () => {
                   Timezone
                 </label>
                 <select
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
+                  value={settings.timezone}
+                  onChange={(e) => updateSettings({ timezone: e.target.value })}
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-200"
                 >
                   {getTimezoneOptions().map((tz) => (
@@ -574,11 +630,11 @@ const WalletStatsSection: React.FC = () => {
                   <span className="font-medium">Storage Used:</span> {storageInfo.storageSize}
                 </div>
                 <div>
-                  <span className="font-medium">Showing:</span> {maxDataPoints === 1000 ? statsHistory.length : Math.min(maxDataPoints, statsHistory.length)} of {statsHistory.length}
+                  <span className="font-medium">Showing:</span> {settings.maxDataPoints === 1000 ? statsHistory.length : Math.min(settings.maxDataPoints, statsHistory.length)} of {statsHistory.length}
                 </div>
               </div>
               <p className="text-xs text-blue-300 mt-2">
-                Data is stored locally in your browser. Maximum 1000 records are kept automatically. Chart displays up to {maxDataPoints === 1000 ? statsHistory.length : maxDataPoints} most recent points.
+                Data is stored locally in your browser. Maximum 1000 records are kept automatically. Chart displays up to {settings.maxDataPoints === 1000 ? statsHistory.length : settings.maxDataPoints} most recent points.
               </p>
             </div>
           </div>
@@ -634,7 +690,7 @@ const WalletStatsSection: React.FC = () => {
               />
               <StatCard
                 title="Data Points"
-                value={`${maxDataPoints === 1000 ? statsHistory.length : Math.min(maxDataPoints, statsHistory.length)}/${statsHistory.length}`}
+                value={`${settings.maxDataPoints === 1000 ? statsHistory.length : Math.min(settings.maxDataPoints, statsHistory.length)}/${statsHistory.length}`}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-r from-purple-600 to-pink-600"
               />
