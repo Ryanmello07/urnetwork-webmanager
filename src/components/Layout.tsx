@@ -139,7 +139,7 @@ const Layout: React.FC = () => {
                       {tabs.map((tab) => (
                         <button
                           key={tab.id}
-                          onClick={() => setActiveTab(tab.id as TabType)}
+                          onClick={() => handleTabChange(tab.id as TabType)}
                           className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                             activeTab === tab.id
                               ? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white shadow-lg transform scale-105`
