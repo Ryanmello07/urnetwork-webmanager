@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { TerminalSquare, LogOut } from 'lucide-react';
@@ -10,15 +10,16 @@ import ProvidersSection from './ProvidersSection';
 import WalletStatsSection from './WalletStatsSection';
 import AccountSettingsSection from './AccountSettingsSection';
 import { ChevronDown } from 'lucide-react';
-
-type TabType = 'clients' | 'stats' | 'leaderboard' | 'providers' | 'wallet-stats' | 'account';
+import { useViewportType, ViewportType } from '../hooks/useViewportType';
 
 const Layout: React.FC = () => {
+  type TabType = 'clients' | 'stats' | 'leaderboard' | 'providers' | 'wallet-stats' | 'account';
+  
   const { isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const viewportType = useViewportType()
 
   // Get current tab from URL
   const getCurrentTab = (): TabType => {
@@ -32,18 +33,6 @@ const Layout: React.FC = () => {
   };
 
   const activeTab = getCurrentTab();
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const tabs = [
     { id: 'clients', label: 'Clients', color: 'blue' },
@@ -74,7 +63,7 @@ const Layout: React.FC = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent truncate">
-                    URnetwork Client Manager
+                    URnetwork<span className="hidden md:inline">&nbsp;Client Manager</span>
                   </h1>
                   <p className="text-xs text-gray-400 hidden sm:block">Advanced Network Management</p>
                 </div>
@@ -101,7 +90,7 @@ const Layout: React.FC = () => {
             {isAuthenticated && (
               <>
                 <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl">
-                  {isMobile ? (
+                  {viewportType === ViewportType.Mobile ? (
                     <div className="p-2">
                       <div className="relative">
                         <button
