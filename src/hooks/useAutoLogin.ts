@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const useAutoLogin = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const hasAttemptedAutoLogin = useRef(false);
   const lastAttemptedCode = useRef<string | null>(null);
 
@@ -55,9 +56,7 @@ export const useAutoLogin = () => {
             }
             
             // Clear the auth_code from URL after attempting login
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.delete('auth_code');
-            window.history.replaceState({}, '', newUrl.toString());
+            navigate(location.pathname, { replace: true });
           }, 200);
         }
       }, 300);
@@ -83,11 +82,8 @@ export const useAutoLogin = () => {
       }
       
       // Clear the auth_code from URL
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('auth_code')) {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete('auth_code');
-        window.history.replaceState({}, '', newUrl.toString());
+      if (location.search.includes('auth_code')) {
+        navigate(location.pathname, { replace: true });
       }
       
       // Reset the attempt tracking
