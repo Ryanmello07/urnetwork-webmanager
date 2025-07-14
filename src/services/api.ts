@@ -179,7 +179,8 @@ export const fetchClients = async (token: string): Promise<ClientsResponse> => {
 // Remove client API
 export const removeClient = async (
   token: string,
-  clientId: string
+  clientId: string,
+  abortSignal?: AbortSignal
 ): Promise<RemoveClientResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/network/remove-client`, {
@@ -191,6 +192,7 @@ export const removeClient = async (
       body: JSON.stringify({
         client_id: clientId,
       }),
+      signal: abortSignal,
     });
 
     if (!response.ok) {
@@ -211,6 +213,7 @@ export const removeClient = async (
       error: {
         message:
           error instanceof Error ? error.message : "Failed to remove client",
+        isAborted: error instanceof Error && error.name === "AbortError",
       },
     };
   }
