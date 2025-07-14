@@ -12,7 +12,7 @@ export const useAutoLogin = () => {
 
   useEffect(() => {
     // Only attempt auto-login once and if not already authenticated
-    if (hasAttemptedAutoLogin.current || isAuthenticated || isLoading || isProcessingAutoLogin.current) {
+    if (hasAttemptedAutoLogin.current || isAuthenticated || isProcessingAutoLogin.current) {
       return;
     }
 
@@ -33,6 +33,7 @@ export const useAutoLogin = () => {
         .then(() => {
           toast.dismiss(loadingToast);
           console.log('Auto-login successful');
+          toast.success('Automatically authenticated!');
           
           // Clear the auth_code from URL after successful login
           const newUrl = new URL(window.location.href);
@@ -58,7 +59,7 @@ export const useAutoLogin = () => {
           isProcessingAutoLogin.current = false;
         });
     }
-  }, [login, isAuthenticated, isLoading, location.search, navigate]);
+  }, [login, isAuthenticated, location.search, navigate]);
 
   return {
     isAutoLoginAttempted: hasAttemptedAutoLogin.current,

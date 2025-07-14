@@ -57,27 +57,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('byToken', response.by_jwt);
         setToken(response.by_jwt);
         console.log('Token saved and state updated');
-        
-        // Only show success toast if this isn't an automatic login
-        const urlParams = new URLSearchParams(window.location.search);
-        const isAutoLogin = urlParams.has('auth_code');
-        
-        if (!isAutoLogin) {
-          toast.success('Successfully authenticated!');
-        }
+        toast.success('Successfully authenticated!');
       } else {
         console.error('No JWT in response:', response);
         throw new Error('Authentication failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      // Only show error toast if this isn't an automatic login (auto-login handles its own errors)
-      const urlParams = new URLSearchParams(window.location.search);
-      const isAutoLogin = urlParams.has('auth_code');
-      
-      if (!isAutoLogin) {
-        toast.error(error instanceof Error ? error.message : 'Authentication failed');
-      }
+      toast.error(error instanceof Error ? error.message : 'Authentication failed');
       localStorage.removeItem('byToken');
       setToken(null);
       throw error; // Re-throw so auto-login can handle it
