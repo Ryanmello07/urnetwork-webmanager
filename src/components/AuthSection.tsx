@@ -13,6 +13,11 @@ const AuthSection: React.FC = () => {
   const { login, loginWithPassword, isLoading } = useAuth();
   const { isAutoLoginAttempted, isProcessingAutoLogin } = useAutoLogin();
 
+  // Handle input change to update state when auto-filled
+  const handleAuthCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAuthCode(e.target.value);
+  };
+
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (authCode.trim()) {
@@ -143,7 +148,7 @@ const AuthSection: React.FC = () => {
                   id="authCode"
                   type="text"
                   value={authCode}
-                  onChange={(e) => setAuthCode(e.target.value)}
+                  onChange={handleAuthCodeChange}
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-white placeholder-gray-400"
                   placeholder="Enter your one time auth code"
                   disabled={isLoading}

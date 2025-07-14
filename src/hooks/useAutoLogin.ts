@@ -1,11 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
 
 export const useAutoLogin = () => {
-  const { login, isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
   const hasAttemptedAutoLogin = useRef(false);
   const isProcessingAutoLogin = useRef(false);
@@ -25,41 +23,34 @@ export const useAutoLogin = () => {
       
       console.log('Auto-login detected with auth code:', authCode);
       
-      // Show a loading toast
-      const loadingToast = toast.loading('Authenticating with provided code...');
-      
-      // Attempt automatic login
-      login(authCode.trim())
-        .then(() => {
-          toast.dismiss(loadingToast);
-          console.log('Auto-login successful');
-          toast.success('Automatically authenticated!');
+      // Auto-fill the auth code input and submit the form
+      setTimeout(() => {
+        const authCodeInput = document.getElementById('authCode') as HTMLInputElement;
+        const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+        
+        if (authCodeInput && submitButton) {
+          // Fill the input
+          authCodeInput.value = authCode.trim();
           
-          // Clear the auth_code from URL after successful login
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.delete('auth_code');
-          window.history.replaceState({}, '', newUrl.toString());
+          // Trigger input event to update React state
+          const inputEvent = new Event('input', { bubbles: true });
+          authCodeInput.dispatchEvent(inputEvent);
           
-          // Navigate to the main dashboard
-          navigate('/', { replace: true });
-        })
-        .catch((error) => {
-          toast.dismiss(loadingToast);
-          console.error('Auto-login failed:', error);
-          
-          // Clear the auth_code from URL even if login failed
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.delete('auth_code');
-          window.history.replaceState({}, '', newUrl.toString());
-          
-          // Show error message
-          toast.error('Automatic authentication failed. Please try logging in manually.');
-        })
-        .finally(() => {
-          isProcessingAutoLogin.current = false;
-        });
+          // Submit the form
+          setTimeout(() => {
+            submitButton.click();
+            
+            // Clear the auth_code from URL after attempting login
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('auth_code');
+            window.history.replaceState({}, '', newUrl.toString());
+          }, 100);
+        }
+        
+        isProcessingAutoLogin.current = false;
+      }, 500);
     }
-  }, [login, isAuthenticated, location.search, navigate]);
+  }, [isAuthenticated, location.search]);
 
   return {
     isAutoLoginAttempted: hasAttemptedAutoLogin.current,
