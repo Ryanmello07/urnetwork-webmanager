@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { KeyRound, Shield, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { useAutoLogin } from '../hooks/useAutoLogin';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +11,7 @@ const AuthSection: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'code' | 'password'>('code');
   const { login, loginWithPassword, isLoading } = useAuth();
+  const { isAutoLoginAttempted } = useAutoLogin();
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +31,44 @@ const AuthSection: React.FC = () => {
       }
     }
   };
+
+  // Show loading state if auto-login is being attempted
+  if (isAutoLoginAttempted && isLoading) {
+    return (
+      <div className="max-w-lg mx-auto mt-12">
+        <div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
+          <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 py-8 px-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="relative z-10">
+              <div className="flex justify-center mb-4">
+                <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full border border-white/30">
+                  <KeyRound size={32} className="text-white" />
+                </div>
+              </div>
+              <h2 className="text-white text-center text-2xl font-bold mb-2">Authenticating...</h2>
+              <p className="text-blue-100 text-center text-sm">
+                Processing your authentication code automatically
+              </p>
+            </div>
+          </div>
+          
+          <div className="p-6 bg-gray-800">
+            <div className="flex justify-center py-8">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-blue-500"></div>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse"></div>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-400">
+                Please wait while we authenticate you with the provided code...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto mt-12">
@@ -207,6 +247,9 @@ const AuthSection: React.FC = () => {
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-500">
               Preview Application • Data Stored Locally
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              Supports automatic authentication via URL parameter
             </p>
           </div>
         </div>

@@ -53,14 +53,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.by_jwt) {
         localStorage.setItem('byToken', response.by_jwt);
         setToken(response.by_jwt);
-        toast.success('Successfully authenticated!');
+        // Only show success toast if this isn't an automatic login
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAutoLogin = urlParams.has('auth_code');
+        
+        if (!isAutoLogin) {
+          toast.success('Successfully authenticated!');
+        }
       } else {
         throw new Error('Authentication failed');
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Authentication failed');
+      // Only show error toast if this isn't an automatic login (auto-login handles its own errors)
+      const urlParams = new URLSearchParams(window.location.search);
+      const isAutoLogin = urlParams.has('auth_code');
+      
+      if (!isAutoLogin) {
+        toast.error(error instanceof Error ? error.message : 'Authentication failed');
+      }
       localStorage.removeItem('byToken');
       setToken(null);
+      throw error; // Re-throw so auto-login can handle it
     } finally {
       setIsLoading(false);
     }

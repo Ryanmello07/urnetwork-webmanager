@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAutoLogin } from '../hooks/useAutoLogin';
 import { TerminalSquare, LogOut } from 'lucide-react';
 import AuthSection from './AuthSection';
 import ClientsSection from './ClientsSection';
@@ -20,6 +21,9 @@ const Layout: React.FC = () => {
   const location = useLocation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const viewportType = useViewportType()
+  
+  // Initialize auto-login functionality
+  useAutoLogin();
 
   // Get current tab from URL
   const getCurrentTab = (): TabType => {
