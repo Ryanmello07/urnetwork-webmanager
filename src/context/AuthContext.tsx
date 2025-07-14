@@ -43,16 +43,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleLogin = async (authCode: string) => {
     setIsLoading(true);
+    console.log('Login attempt with auth code:', authCode);
     try {
       const response = await login(authCode);
       
       if (response.error) {
+        console.error('Login API error:', response.error);
         throw new Error(response.error.message);
       }
       
       if (response.by_jwt) {
+        console.log('JWT received, saving to localStorage');
         localStorage.setItem('byToken', response.by_jwt);
         setToken(response.by_jwt);
+        console.log('Token saved and state updated');
+        
         // Only show success toast if this isn't an automatic login
         const urlParams = new URLSearchParams(window.location.search);
         const isAutoLogin = urlParams.has('auth_code');
@@ -61,9 +66,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast.success('Successfully authenticated!');
         }
       } else {
+        console.error('No JWT in response:', response);
         throw new Error('Authentication failed');
       }
     } catch (error) {
+      console.error('Login error:', error);
       // Only show error toast if this isn't an automatic login (auto-login handles its own errors)
       const urlParams = new URLSearchParams(window.location.search);
       const isAutoLogin = urlParams.has('auth_code');
@@ -75,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(null);
       throw error; // Re-throw so auto-login can handle it
     } finally {
+      console.log('Login attempt completed, setting loading to false');
       setIsLoading(false);
     }
   };

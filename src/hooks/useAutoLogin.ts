@@ -8,26 +8,32 @@ export const useAutoLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const hasAttemptedAutoLogin = useRef(false);
+  const isProcessingAutoLogin = useRef(false);
 
   useEffect(() => {
     // Only attempt auto-login once and if not already authenticated
-    if (hasAttemptedAutoLogin.current || isAuthenticated || isLoading) {
+    if (hasAttemptedAutoLogin.current || isAuthenticated || isLoading || isProcessingAutoLogin.current) {
       return;
     }
 
     const urlParams = new URLSearchParams(location.search);
     const authCode = urlParams.get('auth_code');
 
-    if (authCode) {
+    if (authCode && authCode.trim()) {
       hasAttemptedAutoLogin.current = true;
+      isProcessingAutoLogin.current = true;
+      
+      console.log('Auto-login detected with auth code:', authCode);
       
       // Show a loading toast
       const loadingToast = toast.loading('Authenticating with provided code...');
       
       // Attempt automatic login
-      login(authCode)
+      login(authCode.trim())
         .then(() => {
           toast.dismiss(loadingToast);
+          console.log('Auto-login successful');
+          
           // Clear the auth_code from URL after successful login
           const newUrl = new URL(window.location.href);
           newUrl.searchParams.delete('auth_code');
@@ -47,11 +53,15 @@ export const useAutoLogin = () => {
           
           // Show error message
           toast.error('Automatic authentication failed. Please try logging in manually.');
+        })
+        .finally(() => {
+          isProcessingAutoLogin.current = false;
         });
     }
   }, [login, isAuthenticated, isLoading, location.search, navigate]);
 
   return {
-    isAutoLoginAttempted: hasAttemptedAutoLogin.current
+    isAutoLoginAttempted: hasAttemptedAutoLogin.current,
+    isProcessingAutoLogin: isProcessingAutoLogin.current
   };
 };

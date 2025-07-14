@@ -11,7 +11,7 @@ const AuthSection: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'code' | 'password'>('code');
   const { login, loginWithPassword, isLoading } = useAuth();
-  const { isAutoLoginAttempted } = useAutoLogin();
+  const { isAutoLoginAttempted, isProcessingAutoLogin } = useAutoLogin();
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +33,7 @@ const AuthSection: React.FC = () => {
   };
 
   // Show loading state if auto-login is being attempted
-  if (isAutoLoginAttempted && isLoading) {
+  if ((isAutoLoginAttempted && isLoading) || isProcessingAutoLogin) {
     return (
       <div className="max-w-lg mx-auto mt-12">
         <div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
