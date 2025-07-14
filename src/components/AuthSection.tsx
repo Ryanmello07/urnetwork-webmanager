@@ -11,9 +11,9 @@ const AuthSection: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<'code' | 'password'>('code');
   const { login, loginWithPassword, isLoading } = useAuth();
-  const { isAutoLoginAttempted, isProcessingAutoLogin } = useAutoLogin();
+  const { isAutoLoginAttempted } = useAutoLogin();
 
-  // Handle input change to update state when auto-filled
+  // Handle input change to update state when auto-filled or manually typed
   const handleAuthCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAuthCode(e.target.value);
   };
@@ -37,8 +37,8 @@ const AuthSection: React.FC = () => {
     }
   };
 
-  // Show loading state if auto-login is being attempted
-  if ((isAutoLoginAttempted && isLoading) || isProcessingAutoLogin) {
+  // Show loading state if auto-login is being attempted and we're loading
+  if (isAutoLoginAttempted && isLoading) {
     return (
       <div className="max-w-lg mx-auto mt-12">
         <div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
@@ -149,6 +149,7 @@ const AuthSection: React.FC = () => {
                   type="text"
                   value={authCode}
                   onChange={handleAuthCodeChange}
+                  onInput={handleAuthCodeChange}
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-white placeholder-gray-400"
                   placeholder="Enter your one time auth code"
                   disabled={isLoading}
