@@ -3,9 +3,10 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const useAutoLogin = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const hasAttemptedAutoLogin = useRef(false);
+  const lastAttemptedCode = useRef<string | null>(null);
 
   useEffect(() => {
     // Only attempt auto-login once and if not already authenticated
@@ -16,8 +17,9 @@ export const useAutoLogin = () => {
     const urlParams = new URLSearchParams(location.search);
     const authCode = urlParams.get('auth_code');
 
-    if (authCode && authCode.trim()) {
+    if (authCode && authCode.trim() && authCode !== lastAttemptedCode.current) {
       hasAttemptedAutoLogin.current = true;
+      lastAttemptedCode.current = authCode;
       
       console.log('Auto-login detected with auth code:', authCode);
       
@@ -61,6 +63,38 @@ export const useAutoLogin = () => {
       }, 300);
     }
   }, [isAuthenticated, location.search]);
+
+  // Listen for authentication failures to clear the form and URL
+  useEffect(() => {
+    // If we attempted auto-login but are not loading and not authenticated, it failed
+    if (hasAttemptedAutoLogin.current && !isLoading && !isAuthenticated) {
+      console.log('Auto-login failed, clearing form and URL');
+      
+      // Clear the auth code input
+      const authCodeInput = document.getElementById('authCode') as HTMLInputElement;
+      if (authCodeInput) {
+        authCodeInput.value = '';
+        
+        // Trigger events to update React state
+        const inputEvent = new Event('input', { bubbles: true });
+        const changeEvent = new Event('change', { bubbles: true });
+        authCodeInput.dispatchEvent(inputEvent);
+        authCodeInput.dispatchEvent(changeEvent);
+      }
+      
+      // Clear the auth_code from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('auth_code')) {
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('auth_code');
+        window.history.replaceState({}, '', newUrl.toString());
+      }
+      
+      // Reset the attempt tracking
+      hasAttemptedAutoLogin.current = false;
+      lastAttemptedCode.current = null;
+    }
+  }, [isLoading, isAuthenticated]);
 
   return {
     isAutoLoginAttempted: hasAttemptedAutoLogin.current,
