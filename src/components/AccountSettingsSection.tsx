@@ -250,13 +250,13 @@ const AccountSettingsSection: React.FC = () => {
                       <div className="bg-green-800/30 p-3 rounded border border-green-600">
                         <div className="text-green-300">Duration</div>
                         <div className="text-green-100 font-medium">
-                          {formatDuration(authCodeResponse.duration_minutes || durationMinutes)}
+                          {formatDuration(authCodeResponse.duration_minutes ?? durationMinutes)}
                         </div>
                       </div>
                       <div className="bg-green-800/30 p-3 rounded border border-green-600">
                         <div className="text-green-300">Uses Remaining</div>
                         <div className="text-green-100 font-medium">
-                          {authCodeResponse.uses || uses} time{(authCodeResponse.uses || uses) !== 1 ? 's' : ''}
+                          {authCodeResponse.uses ?? uses} time{(authCodeResponse.uses ?? uses) !== 1 ? 's' : ''}
                         </div>
                       </div>
                     </div>
