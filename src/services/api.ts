@@ -22,8 +22,7 @@ import type {
   ProviderLocation,
 } from "./types";
 
-// Direct API base URL - change this to your actual API endpoint
-const API_BASE_URL = "https://api.bringyour.com";
+const API_BASE_URL = "/api";
 
 // Authentication API
 export const login = async (authCode: string): Promise<AuthResponse> => {
@@ -32,7 +31,6 @@ export const login = async (authCode: string): Promise<AuthResponse> => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
       },
       body: JSON.stringify({
         auth_code: authCode,
@@ -68,7 +66,6 @@ export const loginWithPassword = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
       },
       body: JSON.stringify({
         user_auth: userAuth,
@@ -111,7 +108,6 @@ export const fetchNetworkUser = async (
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
-        "Content-Type": "application/json",
       },
     });
 
@@ -192,7 +188,6 @@ export const removeClient = async (
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        Accept: "application/json",
       },
       body: JSON.stringify({
         client_id: clientId,
@@ -233,8 +228,7 @@ export const fetchProviderStats = async (
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: "*/*",
       },
     });
 
@@ -274,7 +268,7 @@ export const fetchLeaderboard = async (
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
+        Accept: "*/*",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({}),
@@ -308,8 +302,7 @@ export const fetchNetworkRanking = async (
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: "*/*",
       },
     });
 
@@ -345,8 +338,7 @@ export const fetchProviderLocations =
         {
           method: "GET",
           headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+            Accept: "*/*",
           },
         }
       );
@@ -384,7 +376,6 @@ export const findProviderLocations = async (
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
         body: JSON.stringify({
           query,
@@ -425,8 +416,7 @@ export const fetchWalletStats = async (
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: "*/*",
       },
     });
 
@@ -462,7 +452,6 @@ export const createAuthCode = async (
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        Accept: "application/json",
       },
       body: JSON.stringify({
         duration_minutes: durationMinutes,
