@@ -204,7 +204,7 @@ const AccountSettingsSection: React.FC = () => {
             className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg font-medium transition-all duration-200 ${
               isGenerating
                 ? 'bg-gray-600 cursor-not-allowed border border-gray-600 text-gray-400'
-                : 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-500 hover:shadow-lg transform hover:scale-105'
+                : 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-500 hover:shadow-lg transform hover:scale-[1.02]'
             }`}
           >
             {isGenerating ? (
