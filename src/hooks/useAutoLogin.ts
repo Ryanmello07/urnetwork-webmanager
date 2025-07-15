@@ -61,11 +61,17 @@ export const useAutoLogin = () => {
         }
       }, 300);
     }
-  }, [isAuthenticated, location.search]);
+  }, [isAuthenticated, location.search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for authentication failures to clear the form and URL
   useEffect(() => {
     // If we attempted auto-login but are not loading and not authenticated, it failed
+    //
+    // This is mostly correct, however this logic also runs initially after the page loads,
+    // because during that time, AuthContext stays in a not loading and not authenticated state.
+    // After the first render, AuthContext sets its token state from localStorage.
+    //
+    // Right now it's safe to leave it as-is.
     if (hasAttemptedAutoLogin.current && !isLoading && !isAuthenticated) {
       console.log('Auto-login failed, clearing form and URL');
       
@@ -90,7 +96,7 @@ export const useAutoLogin = () => {
       hasAttemptedAutoLogin.current = false;
       lastAttemptedCode.current = null;
     }
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isAutoLoginAttempted: hasAttemptedAutoLogin.current,
