@@ -1,145 +1,112 @@
-import React, { createContext, useState, useContext } from "react";
-import { login, loginWithPassword } from "../services/api";
+import { createContext, FC, PropsWithChildren, useState } from "react";
+import {
+	login as apiLogin,
+	loginWithPassword as apiLoginWithPassword,
+} from "../services/api";
 import toast from "react-hot-toast";
-import { PasswordLoginResponse } from "../services/types";
+import { AuthResponse, PasswordLoginResponse } from "../services/types";
 
 interface AuthContextType {
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (authCode: string) => Promise<void>;
-  loginWithPassword: (
-    userAuth: string,
-    password: string
-  ) => Promise<PasswordLoginResponse>;
-  logout: () => void;
-  error?: unknown;
+	token: string | null;
+	isAuthenticated: boolean;
+	isLoading: boolean;
+	isAutoLoginAttempted: boolean;
+	setIsAutoLoginAttempted: (value: boolean) => void;
+	setToken: (token: string) => void;
+	login: (code: string) => Promise<AuthResponse | null>;
+	loginWithPassword: (
+		username: string,
+		password: string,
+	) => Promise<PasswordLoginResponse | null>;
+	logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  token: null,
-  isAuthenticated: false,
-  isLoading: true,
-  login: async () => {},
-  loginWithPassword: async () => ({ error: { message: "Not implemented" } }),
-  logout: () => {},
+// eslint-disable-next-line react-refresh/only-export-components
+export const AuthContext = createContext<AuthContextType>({
+	token: null,
+	setToken: () => {},
+	logout: () => {},
+	login: async () => null,
+	loginWithPassword: async () => null,
+	isLoading: false,
+	isAutoLoginAttempted: false,
+	isAuthenticated: false,
+	setIsAutoLoginAttempted: () => {},
 });
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
+export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
+	const [token, setToken] = useState<string | null>(() =>
+		localStorage.getItem("byToken"),
+	);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem("byToken")
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<unknown | undefined>(undefined);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isAutoLoginAttempted, setIsAutoLoginAttempted] = useState(false);
 
-  const handleLogin = async (authCode: string) => {
-    setIsLoading(true);
-    setError(undefined);
-    console.log("Login attempt with auth code:", authCode);
-    try {
-      const response = await login(authCode);
+	const login = async (code: string): Promise<AuthResponse | null> => {
+		setIsLoading(true);
+		const response = await apiLogin(code);
+		setIsLoading(false);
 
-      if (response.error) {
-        console.error("Login API error:", response.error);
-        throw new Error(response.error.message);
-      }
+		if (response.error || !response.by_jwt) {
+			toast.error(
+				`Login failed: ${response.error?.message || "Invalid response received"}`,
+			);
+			return null;
+		}
 
-      if (response.by_jwt) {
-        console.log("JWT received, saving to localStorage");
-        localStorage.setItem("byToken", response.by_jwt);
-        setToken(response.by_jwt);
-        console.log("Token saved and state updated");
-        toast.success("Successfully authenticated!");
-      } else {
-        console.error("No JWT in response:", response);
-        throw new Error("Authentication failed");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Authentication failed"
-      );
-      localStorage.removeItem("byToken");
-      setToken(null);
-      setError(error);
-      throw error; // Re-throw so auto-login can handle it
-    } finally {
-      console.log("Login attempt completed, setting loading to false");
-      setIsLoading(false);
-    }
-  };
+		setToken(response.by_jwt);
+		localStorage.setItem("byToken", response.by_jwt);
+		toast.success("Login successful");
+		return response;
+	};
 
-  const handlePasswordLogin = async (
-    userAuth: string,
-    password: string
-  ): Promise<PasswordLoginResponse> => {
-    setIsLoading(true);
-    setError(undefined);
-    try {
-      const response = await loginWithPassword(userAuth, password);
+	const loginWithPassword = async (
+		username: string,
+		password: string,
+	): Promise<PasswordLoginResponse | null> => {
+		setIsLoading(true);
+		const response = await apiLoginWithPassword(username, password);
+		setIsLoading(false);
 
-      if (response.error) {
-        toast.error(response.error.message);
-        return response;
-      }
+		if (response.verification_required) {
+			toast.error(`Login failed: Verification required`);
+			return null;
+		}
 
-      if (response.verification_required) {
-        toast.error("Verification required. Please check your email or phone.");
-        return response;
-      }
+		if (response.error || !response.network?.by_jwt) {
+			toast.error(
+				`Login failed: ${response.error?.message || "Invalid response received"}`,
+			);
+			return null;
+		}
 
-      if (response.network?.by_jwt) {
-        localStorage.setItem("byToken", response.network.by_jwt);
-        setToken(response.network.by_jwt);
-        toast.success(
-          `Successfully authenticated as ${response.network.name}!`
-        );
-        return response;
-      }
+		setToken(response.network?.by_jwt);
+		localStorage.setItem("byToken", response.network?.by_jwt);
+		toast.success("Login successful");
+		return response;
+	};
 
-      throw new Error("Authentication failed");
-    } catch (error) {
-      setError(error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Password authentication failed";
-      toast.error(errorMessage);
-      return {
-        error: {
-          message: errorMessage,
-        },
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	const logout = () => {
+		setToken(null);
+		localStorage.removeItem("byToken");
+		toast.success("Logged out");
+	};
 
-  const handleLogout = async () => {
-    localStorage.removeItem("byToken");
-    setToken(null);
-    setError(undefined);
-    toast.success("Logged out successfully");
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        token,
-        isAuthenticated: !!token,
-        isLoading,
-        error,
-        login: handleLogin,
-        loginWithPassword: handlePasswordLogin,
-        logout: handleLogout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+	return (
+		<AuthContext.Provider
+			value={{
+				token,
+				setToken,
+				login,
+				loginWithPassword,
+				isLoading,
+				isAuthenticated: !!token,
+				logout,
+				isAutoLoginAttempted,
+				setIsAutoLoginAttempted,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
+	);
 };

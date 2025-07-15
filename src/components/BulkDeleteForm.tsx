@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Trash2, AlertTriangle, Clock, Users } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from '../hooks/useAuth';
 import { removeClient } from "../services/api";
 import type { Client } from "../services/api";
 import toast from "react-hot-toast";

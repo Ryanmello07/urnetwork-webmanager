@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { createAuthCode } from '../services/api';
 import type { CreateAuthCodeResponse } from '../services/api';
 import toast from 'react-hot-toast';
