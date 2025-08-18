@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, RefreshCw, AlertCircle, Activity, Clock, Database, Search, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { BarChart3, RefreshCw, AlertCircle, Activity, Clock, Database, Search, DollarSign, Users, TrendingUp, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { fetchProviderStats } from '../services/api';
 import type { Provider } from '../services/api';
@@ -8,9 +8,18 @@ import toast from 'react-hot-toast';
 const StatsSection: React.FC = () => {
   const { token } = useAuth();
   const [stats, setStats] = useState<Provider[]>([]);
+  const [showWarningBanner, setShowWarningBanner] = useState(() => {
+    const dismissed = localStorage.getItem('stats-warning-dismissed');
+    return dismissed !== 'true';
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  const dismissWarningBanner = () => {
+    setShowWarningBanner(false);
+    localStorage.setItem('stats-warning-dismissed', 'true');
+  };
 
   const loadStats = async () => {
     if (!token) return;
