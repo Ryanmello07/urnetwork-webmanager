@@ -11,6 +11,7 @@ const StatsSection: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [showWarningBanner, setShowWarningBanner] = useState(true);
 
   const loadStats = async () => {
     if (!token) return;
@@ -84,6 +85,30 @@ const StatsSection: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {showWarningBanner && (
+        <div className="bg-yellow-900/50 border-l-4 border-yellow-500 p-4 rounded-lg shadow-lg animate-fadeIn">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <AlertCircle size={20} className="text-yellow-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-yellow-300 mb-1">Development Notice</h3>
+                <p className="text-yellow-200 text-sm">
+                  This Statistics page is currently under development. The backend API is not yet complete, 
+                  so the data shown here is temporary placeholder information and may not reflect actual network statistics.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowWarningBanner(false)}
+              className="text-yellow-400 hover:text-yellow-300 focus:outline-none focus:text-yellow-300 transition-colors p-1 rounded-lg hover:bg-yellow-800/20 ml-4 flex-shrink-0"
+              aria-label="Dismiss warning"
+            >
+              <AlertCircle size={18} className="transform rotate-45" />
+            </button>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
