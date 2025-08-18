@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, RefreshCw, AlertCircle, Activity, Clock, Database, Search, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { BarChart3, RefreshCw, AlertCircle, Activity, Clock, Database, Search, DollarSign, Users, TrendingUp, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { fetchProviderStats } from '../services/api';
 import type { Provider } from '../services/api';
@@ -103,7 +103,7 @@ const StatsSection: React.FC = () => {
               className="text-yellow-400 hover:text-yellow-300 focus:outline-none focus:text-yellow-300 transition-colors p-1 rounded-lg hover:bg-yellow-800/20 ml-4 flex-shrink-0"
               aria-label="Dismiss warning"
             >
-              <AlertCircle size={18} className="transform rotate-45" />
+              <X size={18} />
             </button>
           </div>
         </div>
