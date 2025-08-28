@@ -28,7 +28,7 @@ const PayoutStatsSection: React.FC = () => {
         setPayments(response.account_payments || []);
         setLastUpdated(new Date().toISOString());
         if (showToast) {
-          toast.success('Payout data loaded successfully');
+          toast.success('Payout Stats updated successfully');
         }
       }
     } catch (err) {
