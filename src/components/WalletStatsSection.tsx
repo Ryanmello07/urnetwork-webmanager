@@ -220,7 +220,7 @@ const WalletStatsSection: React.FC = () => {
           // Reload history to include the new entry
           await loadStatsHistory();
           if (showToast) {
-            toast.success('Wallet stats updated successfully');
+            toast.success('Data Stats updated successfully');
           }
         }
       }
