@@ -12,7 +12,7 @@ const PayoutStatsSection: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
-  const loadPayments = async () => {
+  const loadPayments = async (showToast: boolean = false) => {
     if (!token) return;
     
     setIsLoading(true);
@@ -27,19 +27,23 @@ const PayoutStatsSection: React.FC = () => {
       } else {
         setPayments(response.account_payments || []);
         setLastUpdated(new Date().toISOString());
-        toast.success('Payout data loaded successfully');
+        if (showToast) {
+          toast.success('Payout data loaded successfully');
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load payout data';
       setError(message);
-      toast.error(message);
+      if (showToast) {
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    loadPayments();
+    loadPayments(false);
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatDate = (dateString: string) => {
@@ -113,6 +117,7 @@ const PayoutStatsSection: React.FC = () => {
         
         <button
           onClick={loadPayments}
+          onClick={() => loadPayments(true)}
           disabled={isLoading}
           className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-all duration-200 border border-green-500 hover:shadow-lg"
         >
