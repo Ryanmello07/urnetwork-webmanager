@@ -21,9 +21,7 @@ import type {
   WalletStatsEntry,
   ProviderLocation,
   AccountPayment,
-  AccountPaymentsResponse,
-  AccountPayment,
-  AccountPaymentsResponse,
+  AccountPaymentsResponse
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
