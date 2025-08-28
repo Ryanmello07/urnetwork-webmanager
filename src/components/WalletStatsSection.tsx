@@ -228,6 +228,8 @@ const WalletStatsSection: React.FC = () => {
         } else {
           // Reload history to include the new entry
           await loadStatsHistory();
+          // Also load payments when refreshing wallet stats
+          await loadAccountPayments(false);
           if (showToast) {
             toast.success('Wallet stats updated successfully');
           }
@@ -261,9 +263,6 @@ const WalletStatsSection: React.FC = () => {
         }
       } else {
         setPayments(response.account_payments || []);
-        if (showToast) {
-          toast.success('Payment history loaded successfully');
-        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load payment history';
@@ -394,6 +393,13 @@ const WalletStatsSection: React.FC = () => {
       default:
         return '#';
     }
+  };
+
+  // Calculate total USDC earned from completed payments
+  const calculateTotalUSDCEarned = (): number => {
+    return payments
+      .filter(payment => payment.completed && payment.token_type === 'USDC')
+      .reduce((total, payment) => total + payment.token_amount, 0);
   };
 
   const StatCard = ({ title, value, icon: Icon, gradient }: { 
@@ -580,15 +586,6 @@ const WalletStatsSection: React.FC = () => {
             >
               <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
               Refresh
-            </button>
-            
-            <button
-              onClick={() => loadAccountPayments(true)}
-              disabled={isLoadingPayments}
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-200 border border-blue-500 hover:shadow-lg"
-            >
-              <CreditCard size={16} className={isLoadingPayments ? 'animate-spin' : ''} />
-              Load Payments
             </button>
           </div>
         </div>
@@ -797,8 +794,8 @@ const WalletStatsSection: React.FC = () => {
                 {isLoadingPayments ? (
                   <div className="flex justify-center py-8">
                     <div className="relative">
-                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-orange-500"></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 animate-pulse"></div>
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-blue-500"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20 animate-pulse"></div>
                     </div>
                   </div>
                 ) : payments.length > 0 ? (
