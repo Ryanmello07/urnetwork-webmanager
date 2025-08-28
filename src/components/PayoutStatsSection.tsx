@@ -116,7 +116,6 @@ const PayoutStatsSection: React.FC = () => {
         </div>
         
         <button
-          onClick={loadPayments}
           onClick={() => loadPayments(true)}
           disabled={isLoading}
           className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-all duration-200 border border-green-500 hover:shadow-lg"
