@@ -26,7 +26,7 @@ import type {
   AccountPaymentsResponse,
 } from "./types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
+const API_BASE_URL = "https://api.bringyour.com";
 
 // Authentication API
 export const login = async (authCode: string): Promise<AuthResponse> => {
