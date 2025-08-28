@@ -794,8 +794,8 @@ const WalletStatsSection: React.FC = () => {
                 {isLoadingPayments ? (
                   <div className="flex justify-center py-8">
                     <div className="relative">
-                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-blue-500"></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20 animate-pulse"></div>
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-indigo-500"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 animate-pulse"></div>
                     </div>
                   </div>
                 ) : payments.length > 0 ? (
