@@ -520,38 +520,6 @@ export const fetchAccountPayments = async (
   }
 };
 
-// Get account payments API
-export const fetchAccountPayments = async (
-  token: string
-): Promise<AccountPaymentsResponse> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/account/payments`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "*/*",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Fetch account payments error:", error);
-    return {
-      account_payments: [],
-      error: {
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch account payments",
-      },
-    };
-  }
-};
-
 export type {
   AuthResponse,
   Client,
@@ -572,9 +540,6 @@ export type {
   WalletStatsEntry,
   NetworkUser,
   NetworkUserResponse,
-  CreateAuthCodeResponse,
-  AccountPayment,
-  AccountPaymentsResponse,
   CreateAuthCodeResponse,
   AccountPayment,
   AccountPaymentsResponse,

@@ -7,7 +7,6 @@ import type { NetworkUser } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
 import PayoutStatsSection from './PayoutStatsSection';
-import PayoutStatsSection from './PayoutStatsSection';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -77,7 +76,6 @@ const loadSettingsFromStorage = (): WalletStatsSettings => {
   return DEFAULT_SETTINGS;
 };
 const WalletStatsSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'data' | 'payouts'>('data');
   const [activeTab, setActiveTab] = useState<'data' | 'payouts'>('data');
   const { token } = useAuth();
   const [currentStats, setCurrentStats] = useState({ paid_mb: 0, unpaid_mb: 0 });
