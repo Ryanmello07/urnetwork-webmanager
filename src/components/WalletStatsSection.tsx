@@ -242,9 +242,6 @@ const WalletStatsSection: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-    
-    // Also load payments when refreshing
-    await loadAccountPayments(showToast);
   }, [token, networkUser?.network_name, networkUser?.user_id, loadStatsHistory]);
 
   // Load account payments
@@ -264,8 +261,8 @@ const WalletStatsSection: React.FC = () => {
         }
       } else {
         setPayments(response.account_payments || []);
-        if (showToast && response.account_payments && response.account_payments.length > 0) {
-          toast.success(`Loaded ${response.account_payments.length} payments`);
+        if (showToast) {
+          toast.success('Payment history loaded successfully');
         }
       }
     } catch (err) {
@@ -397,16 +394,6 @@ const WalletStatsSection: React.FC = () => {
       default:
         return '#';
     }
-  };
-
-  // Calculate total USDC earned from all payments
-  const getTotalUSDCEarned = () => {
-    return payments.reduce((total, payment) => {
-      if (payment.token_type === 'USDC' && payment.completed) {
-        return total + payment.token_amount;
-      }
-      return total;
-    }, 0);
   };
 
   const StatCard = ({ title, value, icon: Icon, gradient }: { 
@@ -563,6 +550,15 @@ const WalletStatsSection: React.FC = () => {
               </span>
             </div>
           </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600"
+            >
+              <Settings size={16} />
+              Settings
+            </button>
             
             <button
               onClick={() => setShowClearModal(true)}
