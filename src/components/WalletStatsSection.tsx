@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, ComponentProps } from 'react';
-import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity } from 'lucide-react';
+import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity, CreditCard, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { fetchWalletStats, fetchNetworkUser } from '../services/api';
+import { fetchWalletStats, fetchNetworkUser, fetchAccountPayments } from '../services/api';
 import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
-import type { NetworkUser } from '../services/api';
+import type { NetworkUser, AccountPayment } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
 import {
@@ -78,9 +78,12 @@ const WalletStatsSection: React.FC = () => {
   const { token } = useAuth();
   const [currentStats, setCurrentStats] = useState({ paid_mb: 0, unpaid_mb: 0 });
   const [statsHistory, setStatsHistory] = useState<WalletStatsRecord[]>([]);
+  const [payments, setPayments] = useState<AccountPayment[]>([]);
   const [networkUser, setNetworkUser] = useState<NetworkUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentsError, setPaymentsError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
@@ -225,6 +228,8 @@ const WalletStatsSection: React.FC = () => {
         } else {
           // Reload history to include the new entry
           await loadStatsHistory();
+          // Load payments when refreshing wallet stats (without toast)
+          loadAccountPayments(false);
           if (showToast) {
             toast.success('Wallet stats updated successfully');
           }
@@ -240,6 +245,35 @@ const WalletStatsSection: React.FC = () => {
       setIsLoading(false);
     }
   }, [token, networkUser?.network_name, networkUser?.user_id, loadStatsHistory]);
+
+  // Load account payments
+  const loadAccountPayments = useCallback(async (showToast = true) => {
+    if (!token) return;
+    
+    setIsLoadingPayments(true);
+    setPaymentsError(null);
+    
+    try {
+      const response = await fetchAccountPayments(token);
+      
+      if (response.error) {
+        setPaymentsError(response.error.message);
+        if (showToast) {
+          toast.error(response.error.message);
+        }
+      } else {
+        setPayments(response.account_payments || []);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load payment history';
+      setPaymentsError(message);
+      if (showToast) {
+        toast.error(message);
+      }
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  }, [token]);
 
   // Clear wallet stats history
   const handleClearHistory = async () => {
@@ -302,8 +336,9 @@ const WalletStatsSection: React.FC = () => {
   useEffect(() => {
     if (networkUser?.user_id) {
       loadStatsHistory();
+      loadAccountPayments(false);
     }
-  }, [loadStatsHistory, networkUser?.user_id]);
+  }, [loadStatsHistory, loadAccountPayments, networkUser?.user_id]);
 
   // Update storage info on mount
   useEffect(() => {
@@ -339,6 +374,32 @@ const WalletStatsSection: React.FC = () => {
       'Australia/Sydney',
       Intl.DateTimeFormat().resolvedOptions().timeZone,
     ].filter((tz, index, arr) => arr.indexOf(tz) === index);
+  };
+
+  // Format nano cents to dollars
+  const formatNanoCents = (nanoCents: number): string => {
+    return `$${(nanoCents / 1000000000).toFixed(4)}`;
+  };
+
+  // Get blockchain explorer URL
+  const getBlockchainExplorerUrl = (blockchain: string, txHash: string): string => {
+    switch (blockchain.toUpperCase()) {
+      case 'SOL':
+        return `https://solscan.io/tx/${txHash}`;
+      case 'ETH':
+        return `https://etherscan.io/tx/${txHash}`;
+      case 'MATIC':
+        return `https://polygonscan.com/tx/${txHash}`;
+      default:
+        return '#';
+    }
+  };
+
+  // Calculate total USDC earned from completed payments
+  const calculateTotalUSDCEarned = (): number => {
+    return payments
+      .filter(payment => payment.completed && payment.token_type === 'USDC')
+      .reduce((total, payment) => total + payment.token_amount, 0);
   };
 
   const StatCard = ({ title, value, icon: Icon, gradient }: { 
@@ -694,6 +755,148 @@ const WalletStatsSection: React.FC = () => {
                 icon={TrendingUp}
                 gradient="bg-gradient-to-r from-purple-600 to-pink-600"
               />
+              <StatCard
+                title="Total Payments"
+                value={payments.length}
+                icon={CreditCard}
+                gradient="bg-gradient-to-r from-orange-600 to-red-600"
+              />
+            </div>
+
+            {/* Payment Timeline */}
+            <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+              <div className="px-6 py-4 bg-gradient-to-r from-orange-600 to-red-600 border-b border-gray-600">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CreditCard size={20} className="text-white" />
+                    <div>
+                      <h3 className="font-medium text-white">Payment Timeline</h3>
+                      <p className="text-orange-100 text-sm mt-1">History of payouts and earnings</p>
+                    </div>
+                  </div>
+                  <span className="bg-orange-800 text-orange-200 text-sm font-medium px-3 py-1 rounded-full">
+                    {payments.length} payments
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                {paymentsError && (
+                  <div className="bg-red-900/50 border border-red-700 p-4 rounded-xl flex items-start gap-3 mb-6">
+                    <AlertCircle size={20} className="text-red-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-red-300">Error loading payments</h4>
+                      <p className="text-red-200 text-sm mt-1">{paymentsError}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {isLoadingPayments ? (
+                  <div className="flex justify-center py-8">
+                    <div className="relative">
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-indigo-500"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 animate-pulse"></div>
+                    </div>
+                  </div>
+                ) : payments.length > 0 ? (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {payments.map((payment) => (
+                      <div key={payment.payment_id} className="bg-gray-900 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-all duration-200">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            {payment.completed ? (
+                              <CheckCircle size={20} className="text-green-400 flex-shrink-0" />
+                            ) : payment.canceled ? (
+                              <XCircle size={20} className="text-red-400 flex-shrink-0" />
+                            ) : (
+                              <Clock size={20} className="text-yellow-400 flex-shrink-0" />
+                            )}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg font-semibold text-white">
+                                  {payment.token_amount.toFixed(4)} {payment.token_type}
+                                </span>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  payment.completed 
+                                    ? 'bg-green-900 text-green-300 border border-green-700'
+                                    : payment.canceled
+                                    ? 'bg-red-900 text-red-300 border border-red-700'
+                                    : 'bg-yellow-900 text-yellow-300 border border-yellow-700'
+                                }`}>
+                                  {payment.completed ? 'Completed' : payment.canceled ? 'Canceled' : 'Pending'}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-400">
+                                {formatDateTime(payment.payment_time || payment.create_time)}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {payment.tx_hash && (
+                            <a
+                              href={getBlockchainExplorerUrl(payment.blockchain, payment.tx_hash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 transition-colors p-1 rounded hover:bg-gray-800"
+                              title="View on blockchain explorer"
+                            >
+                              <ExternalLink size={16} />
+                            </a>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                          <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                            <div className="text-gray-400">Data Transfer</div>
+                            <div className="text-white font-medium">
+                              {formatBytes(payment.payout_byte_count)}
+                            </div>
+                          </div>
+                          
+                          <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                            <div className="text-gray-400">Base Payout</div>
+                            <div className="text-green-400 font-medium">
+                              {formatNanoCents(payment.payout_nano_cents)}
+                            </div>
+                          </div>
+                          
+                          {payment.subsidy_payout_nano_cents > 0 && (
+                            <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                              <div className="text-gray-400">Subsidy</div>
+                              <div className="text-blue-400 font-medium">
+                                {formatNanoCents(payment.subsidy_payout_nano_cents)}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                            <div className="text-gray-400">Blockchain</div>
+                            <div className="text-purple-400 font-medium font-mono">
+                              {payment.blockchain}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {payment.wallet_address && (
+                          <div className="mt-3 p-2 bg-gray-800 rounded border border-gray-700">
+                            <div className="text-xs text-gray-400 mb-1">Wallet Address</div>
+                            <div className="text-xs text-gray-300 font-mono break-all">
+                              {payment.wallet_address}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CreditCard className="text-gray-500" size={24} />
+                    </div>
+                    <p className="text-gray-400 italic">No payment history available yet.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {statsHistory.length > 0 && (

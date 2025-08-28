@@ -20,6 +20,8 @@ import type {
   WalletStats,
   WalletStatsEntry,
   ProviderLocation,
+  AccountPayment,
+  AccountPaymentsResponse,
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
@@ -484,6 +486,45 @@ export const createAuthCode = async (
   }
 };
 
+// Get account payments API
+export const fetchAccountPayments = async (
+  token: string
+): Promise<AccountPaymentsResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/account/payments`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "*/*",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(
+        "Fetch account payments failed:",
+        response.status,
+        response.statusText
+      );
+      const errorData = await response.text();
+      console.error("Error response:", errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch account payments error:", error);
+    return {
+      account_payments: [],
+      error: {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch account payments",
+      },
+    };
+  }
+};
+
 export type {
   AuthResponse,
   Client,
@@ -505,4 +546,6 @@ export type {
   NetworkUser,
   NetworkUserResponse,
   CreateAuthCodeResponse,
+  AccountPayment,
+  AccountPaymentsResponse,
 };
