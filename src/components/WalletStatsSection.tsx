@@ -7,6 +7,7 @@ import type { NetworkUser } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
 import PayoutStatsSection from './PayoutStatsSection';
+import type { WalletStatsSettings } from '../services/types';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,15 +32,6 @@ ChartJS.register(
   Legend,
   Filler
 );
-
-// Settings interface for localStorage
-interface WalletStatsSettings {
-  refreshInterval: number;
-  timezone: string;
-  isAutoRefreshEnabled: boolean;
-  maxDataPoints: number;
-  showDataPoints: boolean;
-}
 
 // Default settings
 const DEFAULT_SETTINGS: WalletStatsSettings = {
