@@ -386,8 +386,6 @@ const WalletStatsSection: React.FC = () => {
     switch (blockchain.toUpperCase()) {
       case 'SOL':
         return `https://solscan.io/tx/${txHash}`;
-      case 'ETH':
-        return `https://etherscan.io/tx/${txHash}`;
       case 'MATIC':
         return `https://polygonscan.com/tx/${txHash}`;
       default:
