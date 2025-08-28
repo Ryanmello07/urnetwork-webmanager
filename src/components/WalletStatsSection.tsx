@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, ComponentProps } from 'react';
-import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity, CreditCard, BarChart3, ChevronDown } from 'lucide-react';
+import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity, CreditCard, BarChart3 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { fetchWalletStats, fetchNetworkUser } from '../services/api';
 import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
