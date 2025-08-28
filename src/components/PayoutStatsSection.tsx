@@ -40,7 +40,7 @@ const PayoutStatsSection: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  };
 
   useEffect(() => {
     loadPayments(false);
