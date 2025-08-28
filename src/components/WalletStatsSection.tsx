@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, ComponentProps } from 'react';
-import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity } from 'lucide-react';
+import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity, CreditCard, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { fetchWalletStats, fetchNetworkUser } from '../services/api';
+import { fetchWalletStats, fetchNetworkUser, fetchAccountPayments } from '../services/api';
 import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
-import type { NetworkUser } from '../services/api';
+import type { NetworkUser, AccountPayment } from '../services/api';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
 import {
@@ -78,9 +78,12 @@ const WalletStatsSection: React.FC = () => {
   const { token } = useAuth();
   const [currentStats, setCurrentStats] = useState({ paid_mb: 0, unpaid_mb: 0 });
   const [statsHistory, setStatsHistory] = useState<WalletStatsRecord[]>([]);
+  const [accountPayments, setAccountPayments] = useState<AccountPayment[]>([]);
   const [networkUser, setNetworkUser] = useState<NetworkUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentsError, setPaymentsError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
@@ -141,6 +144,38 @@ const WalletStatsSection: React.FC = () => {
     const info = getStorageInfo();
     setStorageInfo(info);
   }, []);
+
+  // Load account payments
+  const loadAccountPayments = useCallback(async (showToast = true) => {
+    if (!token) return;
+    
+    setIsLoadingPayments(true);
+    setPaymentsError(null);
+    
+    try {
+      const response = await fetchAccountPayments(token);
+      
+      if (response.error) {
+        setPaymentsError(response.error.message);
+        if (showToast) {
+          toast.error(`Failed to load payments: ${response.error.message}`);
+        }
+      } else {
+        setAccountPayments(response.account_payments || []);
+        if (showToast && response.account_payments.length > 0) {
+          toast.success(`Loaded ${response.account_payments.length} payment records`);
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load account payments';
+      setPaymentsError(message);
+      if (showToast) {
+        toast.error(message);
+      }
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  }, [token]);
 
   // Load network user info
   const loadNetworkUser = useCallback(async () => {
@@ -296,6 +331,7 @@ const WalletStatsSection: React.FC = () => {
   // Load network user on component mount
   useEffect(() => {
     loadNetworkUser();
+    loadAccountPayments(false);
   }, [loadNetworkUser]);
 
   // Load stats history when networkUser is available

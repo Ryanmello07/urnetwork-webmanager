@@ -201,3 +201,35 @@ export interface CreateAuthCodeResponse {
     message: string;
   };
 }
+
+export interface AccountPayment {
+  payment_id: string;
+  payment_plan_id: string;
+  wallet_id: string;
+  network_id: string;
+  payout_byte_count: number;
+  payout_nano_cents: number;
+  subsidy_payout_nano_cents: number;
+  reliability_subsidy_nano_cents: number;
+  min_sweep_time: string;
+  create_time: string;
+  payment_record: string;
+  token_type: string;
+  token_amount: number;
+  payment_time: string;
+  payment_receipt: string;
+  wallet_address: string;
+  blockchain: string;
+  tx_hash: string;
+  completed: boolean;
+  complete_time: string | null;
+  canceled: boolean;
+  cancel_time: string | null;
+}
+
+export interface AccountPaymentsResponse {
+  account_payments: AccountPayment[];
+  error?: {
+    message: string;
+  };
+}
