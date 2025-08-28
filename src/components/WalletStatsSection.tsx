@@ -228,8 +228,8 @@ const WalletStatsSection: React.FC = () => {
         } else {
           // Reload history to include the new entry
           await loadStatsHistory();
-          // Also load payments when refreshing wallet stats
-          await loadAccountPayments(false);
+          // Load payments when refreshing wallet stats (without toast)
+          loadAccountPayments(false);
           if (showToast) {
             toast.success('Wallet stats updated successfully');
           }
