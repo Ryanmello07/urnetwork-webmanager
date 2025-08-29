@@ -57,9 +57,9 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved, isInGr
   return (
     <>
       <div className={`bg-gray-800 rounded-xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 border border-gray-700 hover:border-gray-600 ${isInGroup ? '' : 'transform hover:scale-105'}`}>
-        <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-100 truncate flex-1 mr-3" title={client.device_name || client.client_id}>
+        <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600 overflow-hidden">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="font-medium text-gray-100 truncate flex-1 min-w-0 overflow-hidden" title={client.device_name || client.client_id}>
               {client.device_name || 'Unnamed Device'}
             </h3>
             <div className="flex items-center space-x-2 flex-shrink-0">

@@ -101,8 +101,8 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
               className="p-4 bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-600 cursor-pointer hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
               onClick={() => toggleGroup(group.sourceClient.client_id)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
                   <div className="flex items-center gap-2">
                     {isExpanded ? (
                       <ChevronDown size={20} className="text-gray-400" />
@@ -111,17 +111,17 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
                     )}
                     <Smartphone size={20} className="text-blue-400" />
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 overflow-hidden">
                     <h3 className="font-medium text-gray-100">
                       {group.sourceClient.device_name || 'Device Group'}
                     </h3>
-                    <p className="text-sm text-gray-400 truncate" title={group.sourceClient.device_spec || 'Unknown device'}>
+                    <p className="text-sm text-gray-400 truncate overflow-hidden" title={group.sourceClient.device_spec || 'Unknown device'}>
                       {group.sourceClient.device_spec || 'Unknown device'}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="text-right">
+                <div className="flex items-center gap-3 flex-shrink-0 overflow-hidden">
+                  <div className="text-right flex-shrink-0">
                     <div className="text-sm font-medium text-gray-200">
                       {totalClients} client{totalClients !== 1 ? 's' : ''}
                     </div>
@@ -129,7 +129,7 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
                       {connectedCount} connected
                     </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                     connectedCount > 0
                       ? 'bg-green-900 text-green-300 border border-green-700'
                       : 'bg-red-900 text-red-300 border border-red-700'
