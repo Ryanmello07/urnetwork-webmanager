@@ -21,6 +21,7 @@ export interface AuthResponse {
 
 export interface Client {
   client_id: string;
+  source_client_id?: string;
   device_id: string;
   network_id: string;
   description: string;
