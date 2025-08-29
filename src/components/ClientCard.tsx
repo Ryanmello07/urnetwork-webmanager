@@ -9,9 +9,10 @@ import ConfirmModal from './ConfirmModal';
 interface ClientCardProps {
   client: Client;
   onClientRemoved: (clientId: string) => void;
+  isInGroup?: boolean;
 }
 
-const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved }) => {
+const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved, isInGroup = false }) => {
   const { token } = useAuth();
   const [isRemoving, setIsRemoving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -55,7 +56,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved }) => {
 
   return (
     <>
-      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 border border-gray-700 hover:border-gray-600 transform hover:scale-105">
+      <div className={`bg-gray-800 rounded-xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-300 border border-gray-700 hover:border-gray-600 ${isInGroup ? '' : 'transform hover:scale-105'}`}>
         <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-gray-100 truncate flex-1" title={client.device_name || client.client_id}>
@@ -110,6 +111,9 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved }) => {
               <h4 className="text-sm font-medium text-gray-300 mb-3">Additional Details</h4>
               
               <div className="space-y-2 text-xs bg-gray-900 p-3 rounded-lg border border-gray-700">
+                {client.source_client_id && (
+                  <p><span className="text-gray-400">Source Client ID:</span> <span className="text-gray-200 font-mono">{client.source_client_id}</span></p>
+                )}
                 <p><span className="text-gray-400">Network ID:</span> <span className="text-gray-200 font-mono">{client.network_id}</span></p>
                 <p><span className="text-gray-400">Client ID:</span> <span className="text-gray-200 font-mono">{client.client_id}</span></p>
                 <p><span className="text-gray-400">Description:</span> <span className="text-gray-200">{client.description || 'N/A'}</span></p>
