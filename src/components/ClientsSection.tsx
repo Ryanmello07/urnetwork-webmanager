@@ -63,8 +63,11 @@ const ClientsSection: React.FC = () => {
     return clientsToSearch.filter(client => {
       const deviceName = (client.device_name || '').toLowerCase();
       const clientId = client.client_id.toLowerCase();
+      const deviceSpec = (client.device_spec || '').toLowerCase();
       
-      return deviceName.includes(searchTerm) || clientId.includes(searchTerm);
+      return deviceName.includes(searchTerm) || 
+             clientId.includes(searchTerm) || 
+             deviceSpec.includes(searchTerm);
     });
   };
 
@@ -185,7 +188,7 @@ const ClientsSection: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by device name or client ID..."
+            placeholder="Search by device name, client ID, or device spec..."
             className="block w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           />
           {searchQuery && (
