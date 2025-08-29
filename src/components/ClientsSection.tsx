@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, RefreshCw, AlertCircle, Network, ChevronLeft, ChevronRight, Filter, Trash2 } from 'lucide-react';
+import { Users, RefreshCw, AlertCircle, Network, ChevronLeft, ChevronRight, Filter, Trash2, Search } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { fetchClients } from '../services/api';
 import ClientsList from './ClientsList';
@@ -14,6 +14,7 @@ const ClientsSection: React.FC = () => {
 
   const { token } = useAuth();
   const [allClients, setAllClients] = useState<Client[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [clientsPerPage] = useState(100);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,18 +55,32 @@ const ClientsSection: React.FC = () => {
     });
   };
 
+  // Search clients function
+  const searchClients = (clientsToSearch: Client[], query: string) => {
+    if (!query.trim()) return clientsToSearch;
+    
+    const searchTerm = query.toLowerCase().trim();
+    return clientsToSearch.filter(client => {
+      const deviceName = (client.device_name || '').toLowerCase();
+      const clientId = client.client_id.toLowerCase();
+      
+      return deviceName.includes(searchTerm) || clientId.includes(searchTerm);
+    });
+  };
+
   // Get paginated clients
   const getPaginatedClients = () => {
     const sorted = sortClients(allClients, sortBy);
     const filtered = filterClients(sorted, filterStatus);
+    const searched = searchClients(filtered, searchQuery);
     
     const startIndex = (currentPage - 1) * clientsPerPage;
     const endIndex = startIndex + clientsPerPage;
     
     return {
-      clients: filtered.slice(startIndex, endIndex),
-      totalClients: filtered.length,
-      totalPages: Math.ceil(filtered.length / clientsPerPage)
+      clients: searched.slice(startIndex, endIndex),
+      totalClients: searched.length,
+      totalPages: Math.ceil(searched.length / clientsPerPage)
     };
   };
 
@@ -105,7 +120,7 @@ const ClientsSection: React.FC = () => {
   // Reset to first page when sort or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [sortBy, filterStatus]);
+  }, [sortBy, filterStatus, searchQuery]);
 
   // Handle client removal from the list
   const handleClientRemoved = (clientId: string) => {
@@ -143,7 +158,8 @@ const ClientsSection: React.FC = () => {
           <div className="flex items-center gap-2 mt-2">
             <Network size={16} className="text-blue-400" />
             <span className="text-sm text-gray-500">
-              {totalClients} of {allClients.length} clients 
+              {totalClients} of {allClients.length} clients
+              {searchQuery && ` (filtered by "${searchQuery}")`}
               ({statusCounts.online} online, {statusCounts.offline} offline)
             </span>
           </div>
@@ -157,6 +173,35 @@ const ClientsSection: React.FC = () => {
           <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
           Refresh Clients
         </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by device name or client ID..."
+            className="block w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 transition-colors"
+            >
+              <span className="text-sm">Clear</span>
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <div className="mt-3 text-sm text-gray-400">
+            Found {totalClients} client{totalClients !== 1 ? 's' : ''} matching "{searchQuery}"
+          </div>
+        )}
       </div>
 
       {/* Filters and Sorting */}
