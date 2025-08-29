@@ -22,48 +22,37 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
     const standaloneClients: Client[] = [];
     const processedClientIds = new Set<string>();
 
+    // First, identify all potential parent clients (clients that have children)
+    const parentClientIds = new Set<string>();
+    clients.forEach(client => {
+      if (client.source_client_id) {
+        parentClientIds.add(client.source_client_id);
+      }
+    });
+
+    // Process each client
     clients.forEach(client => {
       if (processedClientIds.has(client.client_id)) return;
 
-      if (client.source_client_id) {
-        // Find if this is a source client for others
-        const childClients = clients.filter(c => 
-          c.source_client_id === client.client_id && c.client_id !== client.client_id
-        );
+      // Check if this client is a parent (has children)
+      const childClients = clients.filter(c => 
+        c.source_client_id === client.client_id && c.client_id !== client.client_id
+      );
 
-        if (childClients.length > 0) {
-          // This client has children, create a group
-          groups.push({
-            sourceClient: client,
-            childClients: childClients
-          });
-          processedClientIds.add(client.client_id);
-          childClients.forEach(child => processedClientIds.add(child.client_id));
-        } else {
-          // Check if this client belongs to an existing group
-          const parentExists = clients.some(c => c.client_id === client.source_client_id);
-          if (!parentExists) {
-            // Parent doesn't exist in current data, treat as standalone
-            standaloneClients.push(client);
-            processedClientIds.add(client.client_id);
-          }
-        }
-      } else {
-        // No source_client_id, check if this is a source for others
-        const childClients = clients.filter(c => c.source_client_id === client.client_id);
-        
-        if (childClients.length > 0) {
-          groups.push({
-            sourceClient: client,
-            childClients: childClients
-          });
-          processedClientIds.add(client.client_id);
-          childClients.forEach(child => processedClientIds.add(child.client_id));
-        } else {
-          standaloneClients.push(client);
-          processedClientIds.add(client.client_id);
-        }
+      if (childClients.length > 0) {
+        // This client has children, create a group
+        groups.push({
+          sourceClient: client,
+          childClients: childClients
+        });
+        processedClientIds.add(client.client_id);
+        childClients.forEach(child => processedClientIds.add(child.client_id));
+      } else if (!client.source_client_id) {
+        // This is a standalone client (no parent, no children)
+        standaloneClients.push(client);
+        processedClientIds.add(client.client_id);
       }
+      // Note: Child clients are handled when processing their parent
     });
 
     return { groups, standaloneClients };
