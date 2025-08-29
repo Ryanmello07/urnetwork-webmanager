@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	CreditCard,
 	RefreshCw,
@@ -49,6 +49,19 @@ const PayoutStatsSection: React.FC = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [lastUpdated, setLastUpdated] = useState<string>("");
+	const tableWrapperRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		if (tableWrapperRef.current) {
+			setTimeout(
+				() =>
+					tableWrapperRef.current?.scroll({
+						left: 100000,
+					}),
+				100,
+			);
+		}
+	}, []);
 
 	const loadPayments = async (showToast: boolean = false) => {
 		if (!token) return;
@@ -227,9 +240,28 @@ const PayoutStatsSection: React.FC = () => {
 								</div>
 							</div>
 						</div>
-						<div className="overflow-x-auto rotate-180">
-							<div className="-rotate-180">
-								<table className="min-w-full divide-y divide-gray-700">
+						<div
+							className="rotate-180 overflow-x-scroll"
+							ref={tableWrapperRef}
+						>
+							{payments.length === 0 && !isLoading ? (
+								<div className="text-center py-12 -rotate-180">
+									<div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+										<CreditCard
+											className="text-gray-500"
+											size={24}
+										/>
+									</div>
+									<h3 className="text-lg font-medium text-gray-200 mb-2">
+										No Payments Found
+									</h3>
+									<p className="text-gray-400 italic px-3">
+										No payout data available. Try refreshing
+										the data.
+									</p>
+								</div>
+							) : (
+								<table className="min-w-full divide-y divide-gray-700 -rotate-180">
 									<thead className="bg-gray-900">
 										<tr>
 											<th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -357,25 +389,7 @@ const PayoutStatsSection: React.FC = () => {
 										))}
 									</tbody>
 								</table>
-
-								{payments.length === 0 && !isLoading && (
-									<div className="text-center py-12">
-										<div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-											<CreditCard
-												className="text-gray-500"
-												size={24}
-											/>
-										</div>
-										<h3 className="text-lg font-medium text-gray-200 mb-2">
-											No Payments Found
-										</h3>
-										<p className="text-gray-400 italic">
-											No payout data available. Try
-											refreshing the data.
-										</p>
-									</div>
-								)}
-							</div>
+							)}
 						</div>
 					</div>
 				</div>
