@@ -24,6 +24,7 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
 
     // First, identify all potential parent clients (clients that have children)
     const parentClientIds = new Set<string>();
+    
     clients.forEach(client => {
       if (client.source_client_id) {
         parentClientIds.add(client.source_client_id);
@@ -47,7 +48,7 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
         });
         processedClientIds.add(client.client_id);
         childClients.forEach(child => processedClientIds.add(child.client_id));
-      } else if (!client.source_client_id) {
+      } else {
         // This is a standalone client (no parent, no children)
         standaloneClients.push(client);
         processedClientIds.add(client.client_id);
@@ -98,7 +99,7 @@ const ClientsList: React.FC<ClientsListProps> = ({ clients, onClientRemoved }) =
           <div key={group.sourceClient.client_id} className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
             {/* Group Header */}
             <div 
-              className="p-4 bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-600 cursor-pointer hover:from-gray-600 hover:to-gray-700 transition-all duration-200"
+              className={`p-4 ${isExpanded ? 'rounded-t-xl' : 'rounded-xl'} bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-600 cursor-pointer hover:from-gray-600 hover:to-gray-700`}
               onClick={() => toggleGroup(group.sourceClient.client_id)}
             >
               <div className="flex items-center justify-between gap-4">
