@@ -114,8 +114,8 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved, isInGr
                 {client.source_client_id && (
                   <p><span className="text-gray-400">Source Client ID:</span> <span className="text-gray-200 font-mono">{client.source_client_id}</span></p>
                 )}
-                <p><span className="text-gray-400">Network ID:</span> <span className="text-gray-200 font-mono">{client.network_id}</span></p>
                 <p><span className="text-gray-400">Client ID:</span> <span className="text-gray-200 font-mono">{client.client_id}</span></p>
+                <p><span className="text-gray-400">Network ID:</span> <span className="text-gray-200 font-mono">{client.network_id}</span></p>
                 <p><span className="text-gray-400">Description:</span> <span className="text-gray-200">{client.description || 'N/A'}</span></p>
                 <p><span className="text-gray-400">Device Spec:</span> <span className="text-gray-200">{client.device_spec || 'N/A'}</span></p>
               </div>
