@@ -46,22 +46,27 @@ const StatCard = ({
 const PayoutStatsSection: React.FC = () => {
 	const { token } = useAuth();
 	const [payments, setPayments] = useState<AccountPayment[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [lastUpdated, setLastUpdated] = useState<string>("");
 	const tableWrapperRef = useRef<HTMLDivElement | null>(null);
+	const initialRenderRef = useRef<boolean>(true);
 
 	useEffect(() => {
-		if (tableWrapperRef.current) {
-			setTimeout(
-				() =>
-					tableWrapperRef.current?.scroll({
-						left: 100000,
-					}),
-				100,
-			);
+		if (!initialRenderRef.current || isLoading) {
+			return;
 		}
-	}, []);
+
+		setTimeout(
+			() =>
+				tableWrapperRef.current?.scroll({
+					left: 100000,
+				}),
+			120,
+		);
+
+		initialRenderRef.current = false;
+	}, [isLoading]);
 
 	const loadPayments = async (showToast: boolean = false) => {
 		if (!token) return;
