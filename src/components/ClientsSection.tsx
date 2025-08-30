@@ -35,9 +35,29 @@ const ClientsSection: React.FC = () => {
 
 	// Sort clients function
 	const sortClients = (clientsToSort: Client[], sortType: string) => {
+		const clientsById = new Map<string, Client>();
+
+		for (const client of clientsToSort) {
+			clientsById.set(client.client_id, client);
+		}
+
 		return [...clientsToSort].sort((a, b) => {
-			const aConnected = a.connections && a.connections.length > 0;
-			const bConnected = b.connections && b.connections.length > 0;
+			const aParent = a.source_client_id
+				? clientsById.get(a.source_client_id)
+				: undefined;
+			const bParent = b.source_client_id
+				? clientsById.get(b.source_client_id)
+				: undefined;
+			const aParentConnected =
+				aParent &&
+				aParent.connections &&
+				aParent.connections.length > 0;
+			const bParentConnected =
+				bParent &&
+				bParent.connections &&
+				bParent.connections.length > 0;
+			const aConnected = aParentConnected || (a.connections && a.connections.length > 0);
+			const bConnected = bParentConnected || (b.connections && b.connections.length > 0);
 
 			if (sortType === "status") {
 				// Online clients first, then sort by auth_time (most recent first)
