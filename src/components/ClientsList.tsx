@@ -211,6 +211,7 @@ const ClientsList: React.FC<ClientsListProps> = ({
 											client={group.sourceClient}
 											onClientRemoved={onClientRemoved}
 											isInGroup={true}
+											isConnected={group.childClients.some(client => client.connections.length > 0)}
 										/>
 									</div>
 

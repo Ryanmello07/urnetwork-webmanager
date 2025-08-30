@@ -10,9 +10,10 @@ interface ClientCardProps {
   client: Client;
   onClientRemoved: (clientId: string) => void;
   isInGroup?: boolean;
+  isConnected?: boolean;
 }
 
-const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved, isInGroup = false }) => {
+const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved, isInGroup = false, isConnected: isConnectedOverride }) => {
   const { token } = useAuth();
   const [isRemoving, setIsRemoving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -52,7 +53,7 @@ const ClientCard: React.FC<ClientCardProps> = ({ client, onClientRemoved, isInGr
     setShowDetails(!showDetails);
   };
 
-  const isConnected = client.connections && client.connections.length > 0;
+  const isConnected = isConnectedOverride || (client.connections && client.connections.length > 0);
 
   return (
     <>
