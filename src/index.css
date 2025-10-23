@@ -99,6 +99,68 @@
   }
 }
 
+@keyframes unlockSequence {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+    filter: blur(10px);
+  }
+}
+
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes expandFromCenter {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInBackdrop {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 @keyframes curtainReveal {
   0% {
     transform: scaleY(1);
@@ -180,12 +242,32 @@
   animation: scaleOut 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
+.animate-unlockSequence {
+  animation: unlockSequence 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-slideInFromTop {
+  animation: slideInFromTop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-slideInFromBottom {
+  animation: slideInFromBottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-expandFromCenter {
+  animation: expandFromCenter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-fadeInBackdrop {
+  animation: fadeInBackdrop 0.6s ease-out forwards;
+}
+
 .animate-curtainReveal {
   animation: curtainReveal 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 .animate-dashboardSlideIn {
-  animation: dashboardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: dashboardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .animate-iconMorph {

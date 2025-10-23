@@ -33,7 +33,7 @@ const Layout: React.FC = () => {
 		if (isAuthenticated) {
 			const timer = setTimeout(() => {
 				setShowDashboard(true);
-			}, 100);
+			}, 1200);
 			return () => clearTimeout(timer);
 		} else {
 			setShowDashboard(false);
@@ -75,7 +75,7 @@ const Layout: React.FC = () => {
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-900">
 			{isAuthenticated && (
-				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-dashboardSlideIn' : 'opacity-0'}`}>
+				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-slideInFromTop' : 'opacity-0'}`}>
 					<div className="px-4 py-4">
 						<div className="flex justify-between items-center gap-4">
 							<div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
@@ -119,7 +119,7 @@ const Layout: React.FC = () => {
 			<main className="flex-grow container mx-auto px-4 py-8">
 				{isAuthenticated && (
 					<>
-						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-dashboardSlideIn' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>
+						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : 'opacity-0'}`} style={{ animationDelay: '0.15s' }}>
 							{viewportType === ViewportType.Mobile ? (
 								<div className="p-2">
 									<div className="relative">
@@ -184,7 +184,7 @@ const Layout: React.FC = () => {
 							)}
 						</div>
 
-						<div className={`mt-8 ${showDashboard ? 'animate-dashboardSlideIn' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+						<div className={`mt-8 ${showDashboard ? 'animate-slideInFromBottom' : 'opacity-0'}`} style={{ animationDelay: '0.3s' }}>
 							<Routes>
 								<Route path="/" element={<ClientsSection />} />
 								<Route
