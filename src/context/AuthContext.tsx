@@ -64,7 +64,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 			setToken(response.by_jwt);
 			localStorage.setItem("byToken", response.by_jwt);
 			setIsTransitioning(false);
-		}, 1200);
+		}, 900);
 
 		return response;
 	};
@@ -96,7 +96,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 			setToken(response.network?.by_jwt);
 			localStorage.setItem("byToken", response.network?.by_jwt);
 			setIsTransitioning(false);
-		}, 1200);
+		}, 900);
 
 		return response;
 	};

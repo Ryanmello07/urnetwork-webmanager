@@ -33,7 +33,7 @@ const Layout: React.FC = () => {
 		if (isAuthenticated) {
 			const timer = setTimeout(() => {
 				setShowDashboard(true);
-			}, 1200);
+			}, 900);
 			return () => clearTimeout(timer);
 		} else {
 			setShowDashboard(false);
