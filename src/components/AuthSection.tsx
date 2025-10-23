@@ -185,7 +185,7 @@ const AuthSection: React.FC = () => {
 						</button>
 					</div>
 
-					<div className="relative overflow-hidden">
+					<div className="relative">
 						{activeTab === "code" && (
 							<form
 								onSubmit={handleCodeSubmit}
@@ -216,7 +216,7 @@ const AuthSection: React.FC = () => {
 											}
 											className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-white placeholder-gray-400 ${
 												authCodeFocused
-													? "scale-[1.02] shadow-lg"
+													? "shadow-lg shadow-blue-500/20"
 													: ""
 											} ${
 												isAuthCodeValid
@@ -238,10 +238,10 @@ const AuthSection: React.FC = () => {
 								<button
 									type="submit"
 									disabled={isLoading || !isAuthCodeValid}
-									className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 transform ${
+									className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 ${
 										isLoading || !isAuthCodeValid
 											? "bg-gray-600 cursor-not-allowed opacity-60"
-											: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-[1.02] shadow-lg hover:shadow-xl active:scale-95"
+											: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:shadow-blue-500/50 active:scale-[0.98]"
 									}`}
 								>
 									{isLoading ? (
@@ -302,7 +302,7 @@ const AuthSection: React.FC = () => {
 												setIsEmailValid(!!e.target.value.trim())
 											}
 											className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-white placeholder-gray-400 ${
-												emailFocused ? "scale-[1.02] shadow-lg" : ""
+												emailFocused ? "shadow-lg shadow-blue-500/20" : ""
 											} ${
 												isEmailValid
 													? "border-green-500"
@@ -345,7 +345,7 @@ const AuthSection: React.FC = () => {
 											}
 											className={`w-full px-4 py-3 pr-12 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-white placeholder-gray-400 ${
 												passwordFocused
-													? "scale-[1.02] shadow-lg"
+													? "shadow-lg shadow-blue-500/20"
 													: ""
 											} ${
 												isPasswordValid
@@ -382,10 +382,10 @@ const AuthSection: React.FC = () => {
 								<button
 									type="submit"
 									disabled={isLoading}
-									className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 transform ${
+									className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-300 ${
 										isLoading
 											? "bg-gray-600 cursor-not-allowed opacity-60"
-											: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-[1.02] shadow-lg hover:shadow-xl active:scale-95"
+											: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:shadow-blue-500/50 active:scale-[0.98]"
 									}`}
 								>
 									{isLoading ? (
