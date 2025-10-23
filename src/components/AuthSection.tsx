@@ -5,8 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 const AuthSection: React.FC = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [activeTab, setActiveTab] = useState<"code" | "password">("code");
-	const [isExiting, setIsExiting] = useState(false);
-	const { login, loginWithPassword, isLoading, isAutoLoginAttempted } = useAuth();
+	const { login, loginWithPassword, isLoading, isAutoLoginAttempted, isTransitioning } = useAuth();
 	const authCodeInputRef = useRef<HTMLInputElement>(null);
 	const [isAuthCodeValid, setIsAuthCodeValid] = useState(false);
 	const [isEmailValid, setIsEmailValid] = useState(false);
@@ -34,10 +33,7 @@ const AuthSection: React.FC = () => {
 		const code = authCodeInputRef.current?.value?.toString().trim();
 
 		if (code) {
-			const result = await login(code);
-			if (result && result.by_jwt) {
-				setIsExiting(true);
-			}
+			await login(code);
 		}
 	};
 
@@ -63,16 +59,7 @@ const AuthSection: React.FC = () => {
 			return;
 		}
 
-		const response = await loginWithPassword(username, password);
-
-		if (response?.verification_required) {
-			console.log(
-				"Verification required for:",
-				response.verification_required.user_auth,
-			);
-		} else if (response && response.network?.by_jwt) {
-			setIsExiting(true);
-		}
+		await loginWithPassword(username, password);
 	};
 
 	if (isAutoLoginAttempted && isLoading) {
@@ -120,7 +107,7 @@ const AuthSection: React.FC = () => {
 	}
 
 	return (
-		<div className={`max-w-lg mx-auto mt-12 ${isExiting ? "animate-unlockSequence" : ""}`}>
+		<div className={`max-w-lg mx-auto mt-12 ${isTransitioning ? "animate-unlockSequence" : ""}`}>
 			<div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl border border-gray-700">
 				<div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 py-8 px-6 relative overflow-hidden animate-gradientShift">
 					<div className="absolute inset-0 bg-black/20"></div>

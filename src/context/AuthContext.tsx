@@ -11,6 +11,7 @@ interface AuthContextType {
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	isAutoLoginAttempted: boolean;
+	isTransitioning: boolean;
 	setIsAutoLoginAttempted: (value: boolean) => void;
 	setToken: (token: string) => void;
 	login: (code: string) => Promise<AuthResponse | null>;
@@ -31,6 +32,7 @@ export const AuthContext = createContext<AuthContextType>({
 	isLoading: false,
 	isAutoLoginAttempted: false,
 	isAuthenticated: false,
+	isTransitioning: false,
 	setIsAutoLoginAttempted: () => {},
 });
 
@@ -41,6 +43,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
 	const [isLoading, setIsLoading] = useState(false);
 	const [isAutoLoginAttempted, setIsAutoLoginAttempted] = useState(false);
+	const [isTransitioning, setIsTransitioning] = useState(false);
 
 	const login = async (code: string): Promise<AuthResponse | null> => {
 		setIsLoading(true);
@@ -54,9 +57,15 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 			return null;
 		}
 
-		setToken(response.by_jwt);
-		localStorage.setItem("byToken", response.by_jwt);
+		setIsTransitioning(true);
 		toast.success("Login successful");
+
+		setTimeout(() => {
+			setToken(response.by_jwt);
+			localStorage.setItem("byToken", response.by_jwt);
+			setIsTransitioning(false);
+		}, 1200);
+
 		return response;
 	};
 
@@ -80,9 +89,15 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 			return null;
 		}
 
-		setToken(response.network?.by_jwt);
-		localStorage.setItem("byToken", response.network?.by_jwt);
+		setIsTransitioning(true);
 		toast.success("Login successful");
+
+		setTimeout(() => {
+			setToken(response.network?.by_jwt);
+			localStorage.setItem("byToken", response.network?.by_jwt);
+			setIsTransitioning(false);
+		}, 1200);
+
 		return response;
 	};
 
@@ -101,6 +116,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 				loginWithPassword,
 				isLoading,
 				isAuthenticated: !!token,
+				isTransitioning,
 				logout,
 				isAutoLoginAttempted,
 				setIsAutoLoginAttempted,
