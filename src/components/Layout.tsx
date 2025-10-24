@@ -75,7 +75,7 @@ const Layout: React.FC = () => {
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-900">
 			{isAuthenticated && (
-				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-slideInFromTop' : 'opacity-0'}`}>
+				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-slideInFromTop' : ''}`} style={{ opacity: showDashboard ? undefined : 0 }}>
 					<div className="px-4 py-4">
 						<div className="flex justify-between items-center gap-4">
 							<div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
@@ -119,7 +119,7 @@ const Layout: React.FC = () => {
 			<main className="flex-grow container mx-auto px-4 py-8">
 				{isAuthenticated && (
 					<>
-						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : 'opacity-0'}`} style={{ animationDelay: '0.15s' }}>
+						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''}`} style={{ animationDelay: showDashboard ? '0.15s' : undefined, opacity: showDashboard ? undefined : 0 }}>
 							{viewportType === ViewportType.Mobile ? (
 								<div className="p-2">
 									<div className="relative">
@@ -184,7 +184,7 @@ const Layout: React.FC = () => {
 							)}
 						</div>
 
-						<div className={`mt-8 ${showDashboard ? 'animate-slideInFromBottom' : 'opacity-0'}`} style={{ animationDelay: '0.3s' }}>
+						<div className={`mt-8 ${showDashboard ? 'animate-slideInFromBottom' : ''}`} style={{ animationDelay: showDashboard ? '0.3s' : undefined, opacity: showDashboard ? undefined : 0 }}>
 							<Routes>
 								<Route path="/" element={<ClientsSection />} />
 								<Route

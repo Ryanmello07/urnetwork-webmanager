@@ -245,15 +245,15 @@
 }
 
 .animate-slideInFromTop {
-  animation: slideInFromTop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: slideInFromTop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .animate-slideInFromBottom {
-  animation: slideInFromBottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: slideInFromBottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .animate-expandFromCenter {
-  animation: expandFromCenter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: expandFromCenter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .animate-fadeInBackdrop {
