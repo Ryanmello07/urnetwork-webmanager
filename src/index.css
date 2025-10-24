@@ -208,6 +208,105 @@
   }
 }
 
+@keyframes tabSlideFadeLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(60px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes tabSlideFadeRight {
+  0% {
+    opacity: 0;
+    transform: translateX(-60px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes tabExitLeft {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.96);
+  }
+}
+
+@keyframes tabExitRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40px) scale(0.96);
+  }
+}
+
+@keyframes tabFadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes staggerFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tableRowReveal {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes chartSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
@@ -275,6 +374,46 @@
 .animate-gradientShift {
   background-size: 200% 200%;
   animation: gradientShift 4s ease infinite;
+}
+
+.animate-tabSlideFadeLeft {
+  animation: tabSlideFadeLeft 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-tabSlideFadeRight {
+  animation: tabSlideFadeRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-tabExitLeft {
+  animation: tabExitLeft 0.3s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.animate-tabExitRight {
+  animation: tabExitRight 0.3s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.animate-tabFadeScale {
+  animation: tabFadeScale 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-staggerFadeUp {
+  animation: staggerFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-cardReveal {
+  animation: cardReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-tableRowReveal {
+  animation: tableRowReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-chartSlideUp {
+  animation: chartSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tab-content-wrapper {
+  will-change: transform, opacity;
 }
 
 body {

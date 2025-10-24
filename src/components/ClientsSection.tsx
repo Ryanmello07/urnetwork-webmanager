@@ -216,7 +216,7 @@ const ClientsSection: React.FC = () => {
 
 	return (
 		<div className="space-y-8">
-			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-staggerFadeUp" style={{ animationDelay: '0.05s' }}>
 				<div>
 					<h2 className="text-3xl font-bold text-white flex items-center gap-3">
 						<div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
@@ -252,7 +252,7 @@ const ClientsSection: React.FC = () => {
 			</div>
 
 			{/* Search Bar */}
-			<div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+			<div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.1s' }}>
 				<div className="relative">
 					<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 						<Search className="h-5 w-5 text-gray-400" />
@@ -282,7 +282,7 @@ const ClientsSection: React.FC = () => {
 			</div>
 
 			{/* Filters and Sorting */}
-			<div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+			<div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.15s' }}>
 				<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 					<div className="flex flex-col sm:flex-row sm:items-center gap-4">
 						<div className="flex items-center gap-2">

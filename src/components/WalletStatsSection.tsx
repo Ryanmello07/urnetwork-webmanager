@@ -457,7 +457,7 @@ const WalletStatsSection: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Tab Navigation */}
-      <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl">
+      <div className="bg-gray-800 rounded-xl border border-gray-700 shadow-2xl animate-staggerFadeUp" style={{ animationDelay: '0.05s' }}>
         <div className="flex space-x-1 p-2">
           <button
             onClick={() => setActiveTab('data')}
@@ -487,7 +487,7 @@ const WalletStatsSection: React.FC = () => {
       {/* Tab Content */}
       {activeTab === 'data' ? (
       <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-staggerFadeUp" style={{ animationDelay: '0.1s' }}>
           <div>
             <h2 className="text-3xl font-bold text-white flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl">
@@ -693,7 +693,7 @@ const WalletStatsSection: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-staggerFadeUp" style={{ animationDelay: '0.2s' }}>
               <StatCard
                 title="Current Paid Data"
                 value={formatMBValue(currentStats.paid_mb)}
@@ -721,7 +721,7 @@ const WalletStatsSection: React.FC = () => {
             </div>
 
             {statsHistory.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-chartSlideUp" style={{ animationDelay: '0.25s' }}>
                 {paidChartData && (
                   <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
                     <h3 className="text-lg font-medium text-gray-100 mb-6 flex items-center gap-2">

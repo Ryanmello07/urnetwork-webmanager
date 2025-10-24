@@ -27,6 +27,8 @@ const Layout: React.FC = () => {
 	const location = useLocation();
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [showDashboard, setShowDashboard] = useState(false);
+	const [previousTab, setPreviousTab] = useState<TabType>("clients");
+	const [animationDirection, setAnimationDirection] = useState<"left" | "right" | "none">("none");
 	const viewportType = useViewportType();
 
 	useEffect(() => {
@@ -56,21 +58,41 @@ const Layout: React.FC = () => {
 	const activeTab = getCurrentTab();
 
 	const tabs = [
-		{ id: "clients", label: "Clients", color: "blue" },
-		{ id: "stats", label: "Statistics", color: "green" },
-		{ id: "leaderboard", label: "Leaderboard", color: "yellow" },
-		{ id: "providers", label: "Providers", color: "purple" },
-		{ id: "wallet-stats", label: "Wallet Stats", color: "indigo" },
-		{ id: "account", label: "Account Settings", color: "gray" },
+		{ id: "clients", label: "Clients", color: "blue", index: 0 },
+		{ id: "stats", label: "Statistics", color: "green", index: 1 },
+		{ id: "leaderboard", label: "Leaderboard", color: "yellow", index: 2 },
+		{ id: "providers", label: "Providers", color: "purple", index: 3 },
+		{ id: "wallet-stats", label: "Wallet Stats", color: "indigo", index: 4 },
+		{ id: "account", label: "Account Settings", color: "gray", index: 5 },
 	];
 
 	const activeTabData = tabs.find((tab) => tab.id === activeTab);
 
 	const handleTabChange = (tabId: TabType) => {
+		const currentIndex = tabs.find(tab => tab.id === activeTab)?.index || 0;
+		const newIndex = tabs.find(tab => tab.id === tabId)?.index || 0;
+
+		if (currentIndex < newIndex) {
+			setAnimationDirection("left");
+		} else if (currentIndex > newIndex) {
+			setAnimationDirection("right");
+		} else {
+			setAnimationDirection("none");
+		}
+
+		setPreviousTab(activeTab);
+
 		const path = tabId === "clients" ? "/" : `/${tabId}`;
 		navigate(path);
 		setShowMobileMenu(false);
 	};
+
+	useEffect(() => {
+		const currentTab = getCurrentTab();
+		if (currentTab !== previousTab) {
+			setPreviousTab(currentTab);
+		}
+	}, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-900">
@@ -184,7 +206,22 @@ const Layout: React.FC = () => {
 							)}
 						</div>
 
-						<div className={`mt-8 ${showDashboard ? 'animate-slideInFromBottom' : ''}`} style={{ animationDelay: showDashboard ? '0.3s' : undefined, opacity: showDashboard ? undefined : 0 }}>
+						<div
+							className={`mt-8 tab-content-wrapper ${
+								showDashboard
+									? animationDirection === "left"
+										? "animate-tabSlideFadeLeft"
+										: animationDirection === "right"
+										? "animate-tabSlideFadeRight"
+										: "animate-tabFadeScale"
+									: ""
+							}`}
+							style={{
+								animationDelay: showDashboard ? '0.1s' : undefined,
+								opacity: showDashboard ? undefined : 0
+							}}
+							key={location.pathname}
+						>
 							<Routes>
 								<Route path="/" element={<ClientsSection />} />
 								<Route
