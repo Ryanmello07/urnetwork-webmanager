@@ -27,6 +27,8 @@ const Layout: React.FC = () => {
 	const location = useLocation();
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [showDashboard, setShowDashboard] = useState(false);
+	const [isTransitioning, setIsTransitioning] = useState(false);
+	const [previousPath, setPreviousPath] = useState(location.pathname);
 	const viewportType = useViewportType();
 
 	useEffect(() => {
@@ -39,6 +41,17 @@ const Layout: React.FC = () => {
 			setShowDashboard(false);
 		}
 	}, [isAuthenticated]);
+
+	useEffect(() => {
+		if (location.pathname !== previousPath && showDashboard) {
+			setIsTransitioning(true);
+			setPreviousPath(location.pathname);
+			const timer = setTimeout(() => {
+				setIsTransitioning(false);
+			}, 400);
+			return () => clearTimeout(timer);
+		}
+	}, [location.pathname, previousPath, showDashboard]);
 
 	useAutoLogin();
 
@@ -184,7 +197,7 @@ const Layout: React.FC = () => {
 							)}
 						</div>
 
-						<div className={`mt-8 ${showDashboard ? 'animate-slideInFromBottom' : ''}`} style={{ animationDelay: showDashboard ? '0.3s' : undefined, opacity: showDashboard ? undefined : 0 }}>
+						<div className={`mt-8 ${showDashboard && !isTransitioning ? 'animate-slideInFromBottom' : ''} ${isTransitioning ? 'animate-tabTransition' : ''}`} style={{ animationDelay: showDashboard && !isTransitioning ? '0.3s' : undefined, opacity: showDashboard ? undefined : 0 }}>
 							<Routes>
 								<Route path="/" element={<ClientsSection />} />
 								<Route
