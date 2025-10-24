@@ -1,4 +1,4 @@
-import React, { FormEvent, useRef, useState, useEffect } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { KeyRound, Shield, Lock, Mail, Eye, EyeOff, Check } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
