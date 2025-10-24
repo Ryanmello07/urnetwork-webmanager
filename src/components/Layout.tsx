@@ -69,6 +69,12 @@ const Layout: React.FC = () => {
 	const activeTabData = tabs.find((tab) => tab.id === activeTab);
 
 	const handleTabChange = (tabId: TabType) => {
+		// Don't do anything if clicking the same tab
+		if (tabId === activeTab) {
+			setShowMobileMenu(false);
+			return;
+		}
+
 		const currentIndex = tabs.find(tab => tab.id === activeTab)?.index || 0;
 		const newIndex = tabs.find(tab => tab.id === tabId)?.index || 0;
 
@@ -208,18 +214,12 @@ const Layout: React.FC = () => {
 
 						<div
 							className={`mt-8 tab-content-wrapper ${
-								showDashboard
-									? animationDirection === "left"
-										? "animate-tabSlideFadeLeft"
-										: animationDirection === "right"
-										? "animate-tabSlideFadeRight"
-										: "animate-tabFadeScale"
+								animationDirection === "left"
+									? "animate-tabSlideFadeLeft"
+									: animationDirection === "right"
+									? "animate-tabSlideFadeRight"
 									: ""
 							}`}
-							style={{
-								animationDelay: showDashboard ? '0.1s' : undefined,
-								opacity: showDashboard ? undefined : 0
-							}}
 							key={location.pathname}
 						>
 							<Routes>
