@@ -409,10 +409,10 @@ const AuthSection: React.FC = () => {
 
 					<div className="mt-6 text-center">
 						<p className="text-xs text-gray-500">
-							Preview Application • Data Stored Locally
+							Beta Application
 						</p>
 						<p className="text-xs text-gray-600 mt-1">
-							Supports automatic authentication via URL parameter
+							Unfinished Product. Major changes expected.
 						</p>
 					</div>
 				</div>
