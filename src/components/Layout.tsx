@@ -167,7 +167,7 @@ const Layout: React.FC = () => {
 										</button>
 
 										{showMobileMenu && (
-											<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-fadeIn">
+											<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border-2 border-gray-600 rounded-lg shadow-2xl z-[100] animate-fadeIn overflow-hidden backdrop-blur-sm" style={{ backgroundColor: 'rgb(31, 41, 55)' }}>
 												{tabs.map((tab) => (
 													<button
 														key={tab.id}
@@ -176,11 +176,15 @@ const Layout: React.FC = () => {
 																tab.id as TabType,
 															)
 														}
-														className={`w-full text-left py-3 px-4 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg ${
+														className={`w-full text-left py-3 px-4 text-sm font-medium transition-all duration-200 first:rounded-t-lg last:rounded-b-lg border-b border-gray-700 last:border-b-0 ${
 															activeTab === tab.id
 																? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
-																: "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+																: "text-gray-200 hover:text-white hover:bg-gray-700 active:bg-gray-600"
 														}`}
+														style={{
+															pointerEvents: 'auto',
+															touchAction: 'manipulation'
+														}}
 													>
 														{tab.label}
 													</button>
