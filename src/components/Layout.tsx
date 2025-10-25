@@ -121,7 +121,7 @@ const Layout: React.FC = () => {
 										</span>
 									</h1>
 									<p className="text-xs text-gray-400 hidden md:block">
-										Advanced Network Management
+										Beta Application
 									</p>
 								</div>
 							</div>
@@ -269,7 +269,7 @@ const Layout: React.FC = () => {
 						</p>
 					</div>
 					<p className="text-xs text-gray-500">
-						Advanced Network Management • Preview Application
+						Beta Application
 					</p>
 				</div>
 			</footer>
