@@ -147,10 +147,10 @@ const Layout: React.FC = () => {
 			<main className="flex-grow container mx-auto px-4 py-8">
 				{isAuthenticated && (
 					<>
-						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
+						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''}`} style={{ opacity: showDashboard ? 1 : 0, overflow: viewportType === ViewportType.Mobile ? 'visible' : 'hidden', position: 'relative', zIndex: 10 }}>
 							{viewportType === ViewportType.Mobile ? (
-								<div className="p-2">
-									<div className="relative">
+								<div className="p-2" style={{ overflow: 'visible' }}>
+									<div className="relative" style={{ zIndex: 1000 }}>
 										<button
 											onClick={() =>
 												setShowMobileMenu(
@@ -167,7 +167,7 @@ const Layout: React.FC = () => {
 										</button>
 
 										{showMobileMenu && (
-											<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border-2 border-gray-600 rounded-lg shadow-2xl z-[100] animate-fadeIn overflow-hidden backdrop-blur-sm" style={{ backgroundColor: 'rgb(31, 41, 55)' }}>
+											<div className="absolute top-full left-0 right-0 mt-2 rounded-lg shadow-2xl animate-fadeIn" style={{ backgroundColor: 'rgb(31, 41, 55)', border: '2px solid rgb(75, 85, 99)', zIndex: 9999 }}>
 												{tabs.map((tab) => (
 													<button
 														key={tab.id}
@@ -176,14 +176,16 @@ const Layout: React.FC = () => {
 																tab.id as TabType,
 															)
 														}
-														className={`w-full text-left py-3 px-4 text-sm font-medium transition-all duration-200 first:rounded-t-lg last:rounded-b-lg border-b border-gray-700 last:border-b-0 ${
+														className={`w-full text-left py-4 px-4 text-sm font-semibold transition-all duration-200 first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0 ${
 															activeTab === tab.id
 																? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
-																: "text-gray-200 hover:text-white hover:bg-gray-700 active:bg-gray-600"
+																: "text-white hover:bg-gray-700 active:bg-gray-600"
 														}`}
 														style={{
 															pointerEvents: 'auto',
-															touchAction: 'manipulation'
+															touchAction: 'manipulation',
+															backgroundColor: activeTab === tab.id ? undefined : 'rgb(55, 65, 81)',
+															borderColor: 'rgb(75, 85, 99)'
 														}}
 													>
 														{tab.label}
