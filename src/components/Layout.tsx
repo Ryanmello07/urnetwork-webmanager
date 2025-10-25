@@ -149,7 +149,7 @@ const Layout: React.FC = () => {
 					<>
 						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
 							{viewportType === ViewportType.Mobile ? (
-								<div className="p-2">
+								<div className="p-2 relative z-50">
 									<div className="relative">
 										<button
 											onClick={() =>
@@ -167,7 +167,7 @@ const Layout: React.FC = () => {
 										</button>
 
 										{showMobileMenu && (
-											<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 animate-fadeIn">
+											<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-[100] animate-fadeIn">
 												{tabs.map((tab) => (
 													<button
 														key={tab.id}
@@ -213,7 +213,7 @@ const Layout: React.FC = () => {
 						</div>
 
 						<div
-							className={`mt-8 tab-content-wrapper ${
+							className={`mt-8 relative z-10 tab-content-wrapper ${
 								animationDirection === "left"
 									? "animate-tabSlideFadeLeft"
 									: animationDirection === "right"
