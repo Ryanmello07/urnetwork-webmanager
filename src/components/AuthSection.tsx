@@ -412,7 +412,7 @@ const AuthSection: React.FC = () => {
 							Beta Application
 						</p>
 						<p className="text-xs text-gray-600 mt-1">
-							Unfinished Product. Major changes expected.
+							Unfinished Product. Major Changes Expected.
 						</p>
 					</div>
 				</div>
