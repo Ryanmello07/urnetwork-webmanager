@@ -149,46 +149,54 @@ const Layout: React.FC = () => {
 					<>
 						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
 							{viewportType === ViewportType.Mobile ? (
-								<div className="p-2 relative z-50">
-									<div className="relative">
-										<button
-											onClick={() =>
-												setShowMobileMenu(
-													!showMobileMenu,
-												)
-											}
-											className={`w-full flex items-center justify-between py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-${activeTabData?.color}-600 to-${activeTabData?.color}-500 text-white shadow-lg`}
-										>
-											<span>{activeTabData?.label}</span>
-											<ChevronDown
-												size={16}
-												className={`transition-transform duration-200 ${showMobileMenu ? "rotate-180" : ""}`}
-											/>
-										</button>
+								<>
+									{showMobileMenu && (
+										<div
+											className="fixed inset-0 bg-black/50 z-40"
+											onClick={() => setShowMobileMenu(false)}
+										/>
+									)}
+									<div className="p-2 relative z-50">
+										<div className="relative">
+											<button
+												onClick={() =>
+													setShowMobileMenu(
+														!showMobileMenu,
+													)
+												}
+												className={`w-full flex items-center justify-between py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-${activeTabData?.color}-600 to-${activeTabData?.color}-500 text-white shadow-lg`}
+											>
+												<span>{activeTabData?.label}</span>
+												<ChevronDown
+													size={16}
+													className={`transition-transform duration-200 ${showMobileMenu ? "rotate-180" : ""}`}
+												/>
+											</button>
 
-										{showMobileMenu && (
-											<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-[100] animate-fadeIn">
-												{tabs.map((tab) => (
-													<button
-														key={tab.id}
-														onClick={() =>
-															handleTabChange(
-																tab.id as TabType,
-															)
-														}
-														className={`w-full text-left py-3 px-4 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg ${
-															activeTab === tab.id
-																? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
-																: "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-														}`}
-													>
-														{tab.label}
-													</button>
-												))}
-											</div>
-										)}
+											{showMobileMenu && (
+												<div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-[100] overflow-hidden animate-fadeIn">
+													{tabs.map((tab) => (
+														<button
+															key={tab.id}
+															onClick={() =>
+																handleTabChange(
+																	tab.id as TabType,
+																)
+															}
+															className={`w-full text-left py-3 px-4 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg ${
+																activeTab === tab.id
+																	? `bg-gradient-to-r from-${tab.color}-600 to-${tab.color}-500 text-white`
+																	: "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+															}`}
+														>
+															{tab.label}
+														</button>
+													))}
+												</div>
+											)}
+										</div>
 									</div>
-								</div>
+								</>
 							) : (
 								<nav className="flex space-x-1 p-2">
 									{tabs.map((tab) => (
