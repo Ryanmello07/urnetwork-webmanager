@@ -328,9 +328,9 @@ const PayoutStatsSection: React.FC = () => {
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">
 													$
-													{payment.token_amount.toFixed(
+													{payment.token_amount?.toFixed(
 														4,
-													)}{" "}
+													) ?? "1.0000"}{" "}
 													{payment.token_type}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-medium">
@@ -344,9 +344,9 @@ const PayoutStatsSection: React.FC = () => {
 															size={14}
 															className="text-gray-500"
 														/>
-														{formatDate(
+														{payment.payment_time ? formatDate(
 															payment.payment_time,
-														)}
+														) : <>&mdash;</>}
 													</div>
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
@@ -356,39 +356,37 @@ const PayoutStatsSection: React.FC = () => {
 															className="text-gray-500"
 														/>
 														<span className="font-mono text-xs">
-															{payment.tx_hash.substring(
+															{payment.tx_hash ? <>{payment.tx_hash.substring(
 																0,
 																Math.floor(
-																	payment
-																		.tx_hash
-																		.length /
+																	(payment
+																		.tx_hash?.length ?? 0) /
 																		4,
 																),
 															)}
 															...
 															{payment.tx_hash.substring(
 																Math.floor(
-																	payment
-																		.tx_hash
-																		.length *
+																	(payment
+																		.tx_hash?.length ?? 0) *
 																		(3 / 4),
 																),
-															)}
+															)}</> : ""}
 														</span>
 														<a
-															href={`https://solscan.io/tx/${payment.tx_hash}`}
+															href={payment.tx_hash ? `https://solscan.io/tx/${payment.tx_hash}` : '#'}
 															target="_blank"
 															rel="noopener noreferrer"
 															className="text-blue-400 hover:text-blue-300 transition-colors"
 														>
-															<ExternalLink
+															{payment.tx_hash ? <ExternalLink
 																size={12}
-															/>
+															/> : <>&mdash;</>}
 														</a>
 													</div>
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-purple-400 font-medium">
-													{payment.blockchain}
+													{payment.blockchain || <>&mdash;</>}
 												</td>
 											</tr>
 										))}
