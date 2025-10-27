@@ -327,11 +327,11 @@ const PayoutStatsSection: React.FC = () => {
 													</span>
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-green-400 font-medium">
-													$
-													{payment.token_amount?.toFixed(
+													{payment.token_amount ? <>$
+													{payment.token_amount.toFixed(
 														4,
-													) ?? "1.0000"}{" "}
-													{payment.token_type}
+													)}{" "}
+													{payment.token_type}</> : <>&mdash;</>}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-medium">
 													{formatBytes(
