@@ -103,7 +103,7 @@ const Layout: React.FC = () => {
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-900">
 			{isAuthenticated && (
-				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-slideInFromTop' : ''} ${isLoggingOut ? 'animate-dashboardFadeOut' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
+				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-slideInFromTop' : ''} ${isLoggingOut ? 'animate-unlockSequence' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
 					<div className="px-4 py-4">
 						<div className="flex justify-between items-center gap-4">
 							<div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
@@ -147,7 +147,7 @@ const Layout: React.FC = () => {
 			<main className="flex-grow container mx-auto px-4 py-8">
 				{isAuthenticated && (
 					<>
-						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''} ${isLoggingOut ? 'animate-dashboardFadeOut' : ''}`} style={{ opacity: showDashboard ? 1 : 0, overflow: viewportType === ViewportType.Mobile ? 'visible' : 'hidden', position: 'relative', zIndex: 10 }}>
+						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''} ${isLoggingOut ? 'animate-unlockSequence' : ''}`} style={{ opacity: showDashboard ? 1 : 0, overflow: viewportType === ViewportType.Mobile ? 'visible' : 'hidden', position: 'relative', zIndex: 10 }}>
 							{viewportType === ViewportType.Mobile ? (
 								<div className="p-2" style={{ overflow: 'visible' }}>
 									<div className="relative" style={{ zIndex: 1000 }}>
@@ -225,7 +225,7 @@ const Layout: React.FC = () => {
 									: animationDirection === "right"
 									? "animate-tabSlideFadeRight"
 									: ""
-							} ${isLoggingOut ? 'animate-dashboardFadeOut' : ''}`}
+							} ${isLoggingOut ? 'animate-unlockSequence' : ''}`}
 							key={location.pathname}
 						>
 							<Routes>
