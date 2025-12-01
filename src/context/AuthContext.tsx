@@ -12,6 +12,7 @@ interface AuthContextType {
 	isLoading: boolean;
 	isAutoLoginAttempted: boolean;
 	isTransitioning: boolean;
+	isLoggingOut: boolean;
 	setIsAutoLoginAttempted: (value: boolean) => void;
 	setToken: (token: string) => void;
 	login: (code: string) => Promise<AuthResponse | null>;
@@ -33,6 +34,7 @@ export const AuthContext = createContext<AuthContextType>({
 	isAutoLoginAttempted: false,
 	isAuthenticated: false,
 	isTransitioning: false,
+	isLoggingOut: false,
 	setIsAutoLoginAttempted: () => {},
 });
 
@@ -44,6 +46,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isAutoLoginAttempted, setIsAutoLoginAttempted] = useState(false);
 	const [isTransitioning, setIsTransitioning] = useState(false);
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 	const login = async (code: string): Promise<AuthResponse | null> => {
 		setIsLoading(true);
@@ -102,9 +105,14 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 	};
 
 	const logout = () => {
-		setToken(null);
-		localStorage.removeItem("byToken");
-		toast.success("Logged out");
+		setIsLoggingOut(true);
+
+		setTimeout(() => {
+			setToken(null);
+			localStorage.removeItem("byToken");
+			toast.success("Logged out");
+			setIsLoggingOut(false);
+		}, 600);
 	};
 
 	return (
@@ -117,6 +125,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 				isLoading,
 				isAuthenticated: !!token,
 				isTransitioning,
+				isLoggingOut,
 				logout,
 				isAutoLoginAttempted,
 				setIsAutoLoginAttempted,

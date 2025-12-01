@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 const AuthSection: React.FC = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [activeTab, setActiveTab] = useState<"code" | "password">("code");
-	const { login, loginWithPassword, isLoading, isAutoLoginAttempted, isTransitioning } = useAuth();
+	const { login, loginWithPassword, isLoading, isAutoLoginAttempted, isTransitioning, isLoggingOut } = useAuth();
 	const authCodeInputRef = useRef<HTMLInputElement>(null);
 	const [isAuthCodeValid, setIsAuthCodeValid] = useState(false);
 	const [isEmailValid, setIsEmailValid] = useState(false);
@@ -107,7 +107,7 @@ const AuthSection: React.FC = () => {
 	}
 
 	return (
-		<div className={`max-w-lg mx-auto mt-12 ${isTransitioning ? "animate-unlockSequence" : ""}`}>
+		<div className={`max-w-lg mx-auto mt-12 ${isTransitioning ? "animate-unlockSequence" : ""} ${isLoggingOut ? "animate-lockSequence" : ""}`}>
 			<div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl border border-gray-700">
 				<div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 py-8 px-6 relative overflow-hidden animate-gradientShift">
 					<div className="absolute inset-0 bg-black/20"></div>
