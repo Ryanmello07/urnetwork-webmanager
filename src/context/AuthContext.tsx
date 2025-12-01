@@ -112,7 +112,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 			localStorage.removeItem("byToken");
 			toast.success("Logged out");
 			setIsLoggingOut(false);
-		}, 600);
+		}, 900);
 	};
 
 	return (
