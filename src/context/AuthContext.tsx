@@ -105,6 +105,10 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 	};
 
 	const logout = () => {
+		if (isLoggingOut || isTransitioning) {
+			return;
+		}
+
 		setIsLoggingOut(true);
 
 		setTimeout(() => {
