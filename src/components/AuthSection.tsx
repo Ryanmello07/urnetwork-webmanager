@@ -107,7 +107,7 @@ const AuthSection: React.FC = () => {
 	}
 
 	return (
-		<div className={`max-w-lg mx-auto mt-12 ${isTransitioning ? "animate-unlockSequence" : ""} ${isLoggingOut ? "animate-lockSequence" : ""}`}>
+		<div className={`max-w-lg mx-auto mt-12 ${isLoggingOut ? "animate-lockSequence" : isTransitioning ? "animate-unlockSequence" : ""}`}>
 			<div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:shadow-3xl border border-gray-700">
 				<div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 py-8 px-6 relative overflow-hidden animate-gradientShift">
 					<div className="absolute inset-0 bg-black/20"></div>

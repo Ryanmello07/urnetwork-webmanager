@@ -105,6 +105,10 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 	};
 
 	const logout = () => {
+		if (isLoggingOut || isTransitioning) {
+			return;
+		}
+
 		setIsLoggingOut(true);
 
 		setTimeout(() => {
@@ -112,7 +116,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 			localStorage.removeItem("byToken");
 			toast.success("Logged out");
 			setIsLoggingOut(false);
-		}, 600);
+		}, 900);
 	};
 
 	return (

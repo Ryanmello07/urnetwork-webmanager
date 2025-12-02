@@ -22,7 +22,7 @@ const Layout: React.FC = () => {
 		| "wallet-stats"
 		| "account";
 
-	const { isAuthenticated, logout, isLoggingOut } = useAuth();
+	const { isAuthenticated, logout, isLoggingOut, isTransitioning } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -103,7 +103,7 @@ const Layout: React.FC = () => {
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-900">
 			{isAuthenticated && (
-				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${showDashboard ? 'animate-slideInFromTop' : ''} ${isLoggingOut ? 'animate-dashboardFadeOut' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
+				<header className={`bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white shadow-2xl border-b border-gray-700 ${isLoggingOut ? 'animate-unlockSequence' : showDashboard ? 'animate-slideInFromTop' : ''}`} style={{ opacity: showDashboard ? 1 : 0 }}>
 					<div className="px-4 py-4">
 						<div className="flex justify-between items-center gap-4">
 							<div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
@@ -129,7 +129,12 @@ const Layout: React.FC = () => {
 							<div className="flex items-center space-x-2 md:space-x-3">
 								<button
 									onClick={logout}
-									className="flex items-center space-x-1 md:space-x-2 bg-gray-700 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500 shadow-lg hover:shadow-xl flex-shrink-0"
+									disabled={isLoggingOut || isTransitioning}
+									className={`flex items-center space-x-1 md:space-x-2 text-white px-3 md:px-4 py-2 rounded-lg transition-all duration-200 border shadow-lg flex-shrink-0 ${
+										isLoggingOut || isTransitioning
+											? "bg-gray-800 border-gray-700 cursor-not-allowed opacity-60"
+											: "bg-gray-700 hover:bg-gray-600 border-gray-600 hover:border-gray-500 hover:shadow-xl"
+									}`}
 								>
 									<LogOut
 										size={14}
@@ -147,7 +152,7 @@ const Layout: React.FC = () => {
 			<main className="flex-grow container mx-auto px-4 py-8">
 				{isAuthenticated && (
 					<>
-						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${showDashboard ? 'animate-expandFromCenter' : ''} ${isLoggingOut ? 'animate-dashboardFadeOut' : ''}`} style={{ opacity: showDashboard ? 1 : 0, overflow: viewportType === ViewportType.Mobile ? 'visible' : 'hidden', position: 'relative', zIndex: 10 }}>
+						<div className={`bg-gray-800 rounded-xl border border-gray-700 shadow-2xl ${isLoggingOut ? 'animate-unlockSequence' : showDashboard ? 'animate-expandFromCenter' : ''}`} style={{ opacity: showDashboard ? 1 : 0, overflow: viewportType === ViewportType.Mobile ? 'visible' : 'hidden', position: 'relative', zIndex: 10 }}>
 							{viewportType === ViewportType.Mobile ? (
 								<div className="p-2" style={{ overflow: 'visible' }}>
 									<div className="relative" style={{ zIndex: 1000 }}>
@@ -220,12 +225,14 @@ const Layout: React.FC = () => {
 
 						<div
 							className={`mt-8 tab-content-wrapper ${
-								animationDirection === "left"
+								isLoggingOut
+									? "animate-unlockSequence"
+									: animationDirection === "left"
 									? "animate-tabSlideFadeLeft"
 									: animationDirection === "right"
 									? "animate-tabSlideFadeRight"
 									: ""
-							} ${isLoggingOut ? 'animate-dashboardFadeOut' : ''}`}
+							}`}
 							key={location.pathname}
 						>
 							<Routes>
