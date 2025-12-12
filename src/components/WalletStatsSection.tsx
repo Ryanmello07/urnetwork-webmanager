@@ -946,8 +946,8 @@ const WalletStatsSection: React.FC = () => {
               </div>
             )}
 
-            {(reliabilityData || reliabilityLoading) && (
-              <div className="animate-chartSlideUp" style={{ animationDelay: '0.3s' }}>
+            {reliabilityData && (
+              <div className="animate-chartSlideUp" style={{ animationDelay: '0.35s' }}>
                 <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-4">
@@ -955,14 +955,12 @@ const WalletStatsSection: React.FC = () => {
                         <Activity size={20} className="text-blue-400" />
                         Network Reliability
                       </h3>
-                      {reliabilityData && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-400">Mean:</span>
-                          <span className="text-blue-400 font-medium">
-                            {reliabilityData.mean_reliability_weight.toFixed(2)}
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-400">Mean:</span>
+                        <span className="text-blue-400 font-medium">
+                          {reliabilityData.mean_reliability_weight.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-4">
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -997,10 +995,6 @@ const WalletStatsSection: React.FC = () => {
                   {reliabilityChartData && reliabilityChartData.datasets.length > 0 ? (
                     <div className="h-64 md:h-80">
                       <Line data={reliabilityChartData} options={reliabilityChartOptions as ComponentProps<typeof Line>["options"]} />
-                    </div>
-                  ) : reliabilityLoading ? (
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-700 border-t-blue-500"></div>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-64 text-gray-400">
