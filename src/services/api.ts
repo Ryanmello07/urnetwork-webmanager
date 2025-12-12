@@ -28,7 +28,9 @@ import type {
   WalletStatsEntry,
   ProviderLocation,
   AccountPayment,
-  AccountPaymentsResponse
+  AccountPaymentsResponse,
+  AccountPoint,
+  AccountPointsResponse
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
@@ -791,6 +793,52 @@ export const requestPasswordReset = async (
   }
 };
 
+/**
+ * Get account points history
+ * @param token - JWT authentication token
+ * @returns AccountPointsResponse with points awards or error
+ */
+export const fetchAccountPoints = async (
+  token: string
+): Promise<AccountPointsResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/account/points`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "*/*",
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        account_points: [],
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    const data = await safeJsonParse<AccountPointsResponse>(response);
+
+    return {
+      account_points: Array.isArray(data.account_points) ? data.account_points : [],
+      error: data.error,
+    };
+  } catch (error) {
+    console.error("Fetch account points error:", error);
+    return {
+      account_points: [],
+      error: {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch account points",
+      },
+    };
+  }
+};
+
 // Export types for convenience
 export type {
   AuthResponse,
@@ -816,4 +864,6 @@ export type {
   PasswordResetResponse,
   AccountPayment,
   AccountPaymentsResponse,
+  AccountPoint,
+  AccountPointsResponse,
 };

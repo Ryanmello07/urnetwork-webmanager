@@ -453,3 +453,33 @@ export interface PasswordResetResponse {
     message: string;
   };
 }
+
+/**
+ * Represents a points award for provided services
+ */
+export interface AccountPoint {
+  /** Unique identifier for this point award */
+  account_point_id: string;
+  /** Network identifier */
+  network_id: string;
+  /** Event type that triggered the award (e.g., "payout", "referral") */
+  event: string;
+  /** Number of points awarded */
+  point_value: number;
+  /** Associated payment plan identifier */
+  payment_plan_id: string;
+  /** Associated payment identifier (links to AccountPayment) */
+  account_payment_id: string;
+  /** ISO 8601 timestamp when points were awarded */
+  create_time: string;
+}
+
+/**
+ * Response from fetching account points history
+ */
+export interface AccountPointsResponse {
+  /** Array of point awards (empty on error) */
+  account_points: AccountPoint[];
+  /** Error information if request failed */
+  error?: { message: string };
+}

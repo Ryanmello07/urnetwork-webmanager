@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
 	CreditCard,
 	RefreshCw,
@@ -11,10 +11,11 @@ import {
 	Clock,
 	TrendingUp,
 	Database,
+	Star,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { fetchAccountPayments } from "../services/api";
-import type { AccountPayment } from "../services/api";
+import { fetchAccountPayments, fetchAccountPoints } from "../services/api";
+import type { AccountPayment, AccountPoint } from "../services/api";
 import toast from "react-hot-toast";
 
 const StatCard = ({
@@ -43,14 +44,27 @@ const StatCard = ({
 	</div>
 );
 
+const formatNumber = (num: number): string => {
+	return num.toLocaleString("en-US");
+};
+
 const PayoutStatsSection: React.FC = () => {
 	const { token } = useAuth();
 	const [payments, setPayments] = useState<AccountPayment[]>([]);
+	const [points, setPoints] = useState<AccountPoint[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [lastUpdated, setLastUpdated] = useState<string>("");
 	const tableWrapperRef = useRef<HTMLDivElement | null>(null);
 	const initialRenderRef = useRef<boolean>(true);
+
+	const pointsByPaymentId = useMemo(() => {
+		const map = new Map<string, AccountPoint>();
+		for (const point of points) {
+			map.set(point.account_payment_id, point);
+		}
+		return map;
+	}, [points]);
 
 	useEffect(() => {
 		if (!initialRenderRef.current || isLoading) {
@@ -75,13 +89,17 @@ const PayoutStatsSection: React.FC = () => {
 		setError(null);
 
 		try {
-			const response = await fetchAccountPayments(token);
+			const [paymentsResponse, pointsResponse] = await Promise.all([
+				fetchAccountPayments(token),
+				fetchAccountPoints(token),
+			]);
 
-			if (response.error) {
-				setError(response.error.message);
-				toast.error(response.error.message);
+			if (paymentsResponse.error) {
+				setError(paymentsResponse.error.message);
+				toast.error(paymentsResponse.error.message);
 			} else {
-				setPayments(response.account_payments || []);
+				setPayments(paymentsResponse.account_payments || []);
+				setPoints(pointsResponse.account_points || []);
 				setLastUpdated(new Date().toISOString());
 				if (showToast) {
 					toast.success("Payout Stats updated successfully");
@@ -122,7 +140,7 @@ const PayoutStatsSection: React.FC = () => {
 	};
 
 	const calculateTotals = () => {
-		return payments.reduce(
+		const paymentTotals = payments.reduce(
 			(acc, payment) => ({
 				totalPayouts: acc.totalPayouts + payment.token_amount,
 				totalBytes: acc.totalBytes + payment.payout_byte_count,
@@ -139,6 +157,13 @@ const PayoutStatsSection: React.FC = () => {
 				pendingPayments: 0,
 			},
 		);
+
+		const totalPoints = points.reduce(
+			(acc, point) => acc + point.point_value,
+			0,
+		);
+
+		return { ...paymentTotals, totalPoints };
 	};
 
 	const totals = calculateTotals();
@@ -198,7 +223,7 @@ const PayoutStatsSection: React.FC = () => {
 				</div>
 			) : (
 				<div className="space-y-8">
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-staggerFadeUp" style={{ animationDelay: '0.2s' }}>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 animate-staggerFadeUp" style={{ animationDelay: '0.2s' }}>
 						<StatCard
 							title="Total USDC Earned"
 							value={`$${totals.totalPayouts.toFixed(4)}`}
@@ -206,10 +231,16 @@ const PayoutStatsSection: React.FC = () => {
 							gradient="bg-gradient-to-r from-green-600 to-emerald-600"
 						/>
 						<StatCard
+							title="Total Points Earned"
+							value={formatNumber(totals.totalPoints)}
+							icon={Star}
+							gradient="bg-gradient-to-r from-amber-500 to-yellow-500"
+						/>
+						<StatCard
 							title="Total Data Paid"
 							value={formatBytes(totals.totalBytes)}
 							icon={Database}
-							gradient="bg-gradient-to-r from-blue-600 to-indigo-600"
+							gradient="bg-gradient-to-r from-blue-600 to-cyan-600"
 						/>
 						<StatCard
 							title="Completed Payments"
@@ -221,7 +252,7 @@ const PayoutStatsSection: React.FC = () => {
 							title="Total Payments"
 							value={payments.length}
 							icon={TrendingUp}
-							gradient="bg-gradient-to-r from-purple-600 to-pink-600"
+							gradient="bg-gradient-to-r from-rose-600 to-pink-600"
 						/>
 					</div>
 
@@ -274,6 +305,9 @@ const PayoutStatsSection: React.FC = () => {
 											</th>
 											<th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
 												Amount
+											</th>
+											<th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+												Points Earned
 											</th>
 											<th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
 												Data Transferred
@@ -332,6 +366,12 @@ const PayoutStatsSection: React.FC = () => {
 														4,
 													)}{" "}
 													{payment.token_type}</> : <>&mdash;</>}
+												</td>
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-amber-400 font-medium">
+													{(() => {
+														const point = pointsByPaymentId.get(payment.payment_id);
+														return point ? formatNumber(point.point_value) : <>&mdash;</>;
+													})()}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-medium">
 													{formatBytes(
