@@ -30,7 +30,8 @@ import type {
   AccountPayment,
   AccountPaymentsResponse,
   AccountPoint,
-  AccountPointsResponse
+  AccountPointsResponse,
+  NetworkReliabilityResponse,
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
@@ -839,6 +840,45 @@ export const fetchAccountPoints = async (
   }
 };
 
+/**
+ * Get network reliability statistics
+ * @param token - JWT authentication token
+ * @returns NetworkReliabilityResponse with reliability window data or error
+ */
+export const fetchNetworkReliability = async (
+  token: string
+): Promise<NetworkReliabilityResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/network/reliability`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "*/*",
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<NetworkReliabilityResponse>(response);
+  } catch (error) {
+    console.error("Fetch network reliability error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch network reliability",
+      },
+    };
+  }
+};
+
 // Export types for convenience
 export type {
   AuthResponse,
@@ -866,4 +906,5 @@ export type {
   AccountPaymentsResponse,
   AccountPoint,
   AccountPointsResponse,
+  NetworkReliabilityResponse,
 };

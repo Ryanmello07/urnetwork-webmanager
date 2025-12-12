@@ -483,3 +483,57 @@ export interface AccountPointsResponse {
   /** Error information if request failed */
   error?: { message: string };
 }
+
+/**
+ * Country multiplier for reliability calculations
+ */
+export interface CountryMultiplier {
+  /** Location identifier for the country */
+  country_location_id: string;
+  /** Country name */
+  country: string;
+  /** ISO country code */
+  country_code: string;
+  /** Reliability multiplier for this country */
+  reliability_multiplier: number;
+}
+
+/**
+ * Reliability window data for network statistics
+ */
+export interface ReliabilityWindow {
+  /** Mean reliability weight (0-1) */
+  mean_reliability_weight: number;
+  /** Minimum time in unix milliseconds */
+  min_time_unix_milli: number;
+  /** Minimum bucket number */
+  min_bucket_number: number;
+  /** Maximum time in unix milliseconds */
+  max_time_unix_milli: number;
+  /** Maximum bucket number */
+  max_bucket_number: number;
+  /** Duration of each bucket in seconds */
+  bucket_duration_seconds: number;
+  /** Maximum client count in any bucket */
+  max_client_count: number;
+  /** Maximum total client count */
+  max_total_client_count: number;
+  /** Array of reliability weights (0-1) for graphing */
+  reliability_weights: number[];
+  /** Array of client counts per bucket */
+  client_counts: number[];
+  /** Array of total client counts per bucket */
+  total_client_counts: number[];
+  /** Country-specific reliability multipliers */
+  country_multipliers: CountryMultiplier[];
+}
+
+/**
+ * Response from fetching network reliability data
+ */
+export interface NetworkReliabilityResponse {
+  /** Reliability window data */
+  reliability_window?: ReliabilityWindow;
+  /** Error information if request failed */
+  error?: { message: string };
+}

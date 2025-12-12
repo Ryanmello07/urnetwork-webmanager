@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef, ComponentProps } from 'react';
 import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, DollarSign, User, Trash2, AlertTriangle, HardDrive, Activity, CreditCard, BarChart3 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { fetchWalletStats, fetchNetworkUser } from '../services/api';
+import { fetchWalletStats, fetchNetworkUser, fetchNetworkReliability } from '../services/api';
 import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
-import type { NetworkUser } from '../services/api';
+import type { NetworkUser, NetworkReliabilityResponse } from '../services/api';
+import type { ReliabilityWindow } from '../services/types';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
 import PayoutStatsSection from './PayoutStatsSection';
@@ -80,6 +81,9 @@ const WalletStatsSection: React.FC = () => {
   const [showClearModal, setShowClearModal] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
+  const [reliabilityData, setReliabilityData] = useState<ReliabilityWindow | null>(null);
+  const [reliabilityLoading, setReliabilityLoading] = useState(false);
+  const [reliabilityError, setReliabilityError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settingsInitialized = useRef(false);
   
@@ -157,16 +161,16 @@ const WalletStatsSection: React.FC = () => {
   // Load wallet stats history from localStorage
   const loadStatsHistory = useCallback(async () => {
     if (!networkUser?.user_id) return;
-    
+
     try {
       const { data, error } = await getWalletStatsHistory(networkUser.user_id, 1000);
-      
+
       if (error) {
         console.error('Error loading stats history:', error);
       } else if (data) {
         setStatsHistory(data);
         updateStorageInfo();
-        
+
         // Set current stats from the latest entry
         if (data.length > 0) {
           const latest = data[0];
@@ -180,6 +184,28 @@ const WalletStatsSection: React.FC = () => {
       console.error('Error loading stats history:', err);
     }
   }, [networkUser?.user_id, updateStorageInfo]);
+
+  const loadReliabilityData = useCallback(async () => {
+    if (!token) return;
+
+    setReliabilityLoading(true);
+    setReliabilityError(null);
+
+    try {
+      const response = await fetchNetworkReliability(token);
+
+      if (response.error) {
+        setReliabilityError(response.error.message);
+      } else if (response.reliability_window) {
+        setReliabilityData(response.reliability_window);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load reliability data';
+      setReliabilityError(message);
+    } finally {
+      setReliabilityLoading(false);
+    }
+  }, [token]);
 
   // Fetch wallet stats from API and save to localStorage
   const loadWalletStats = useCallback(async (showToast = true) => {
@@ -299,6 +325,13 @@ const WalletStatsSection: React.FC = () => {
     }
   }, [loadStatsHistory, networkUser?.user_id]);
 
+  // Load reliability data when token is available
+  useEffect(() => {
+    if (token) {
+      loadReliabilityData();
+    }
+  }, [loadReliabilityData, token]);
+
   // Update storage info on mount
   useEffect(() => {
     updateStorageInfo();
@@ -361,12 +394,12 @@ const WalletStatsSection: React.FC = () => {
     // Reverse to show chronological order and limit data points
     const actualMaxPoints = settings.maxDataPoints === 1000 ? statsHistory.length : Math.min(settings.maxDataPoints, statsHistory.length);
     const sortedData = [...statsHistory].reverse().slice(-actualMaxPoints);
-    
+
     return {
       labels: sortedData.map(record => {
         const date = new Date(record.created_at);
-        return date.toLocaleDateString('en-US', { 
-          month: 'short', 
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
           day: 'numeric',
           hour: '2-digit',
           minute: '2-digit'
@@ -377,7 +410,7 @@ const WalletStatsSection: React.FC = () => {
           label,
           data: sortedData.map(record => bytesToMB(record[dataKey])),
           borderColor: color,
-          backgroundColor: color + '20', // Add transparency
+          backgroundColor: color + '20',
           fill: true,
           tension: 0.4,
           pointBackgroundColor: color,
@@ -388,6 +421,105 @@ const WalletStatsSection: React.FC = () => {
         },
       ],
     };
+  };
+
+  const createReliabilityChartData = () => {
+    if (!reliabilityData || reliabilityData.reliability_weights.length === 0) return null;
+
+    const weights = reliabilityData.reliability_weights;
+    const bucketDuration = reliabilityData.bucket_duration_seconds * 1000;
+    const startTime = reliabilityData.min_time_unix_milli;
+
+    return {
+      labels: weights.map((_, index) => {
+        const timestamp = startTime + (index * bucketDuration);
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }),
+      datasets: [
+        {
+          label: 'Reliability',
+          data: weights.map(w => w * 100),
+          borderColor: '#3b82f6',
+          backgroundColor: '#3b82f620',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: '#1f2937',
+          pointBorderWidth: 2,
+          pointRadius: settings.showDataPoints ? 4 : 0,
+          pointHoverRadius: settings.showDataPoints ? 6 : 4,
+        },
+      ],
+    };
+  };
+
+  const reliabilityChartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#d1d5db',
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        backgroundColor: '#374151',
+        titleColor: '#f3f4f6',
+        bodyColor: '#d1d5db',
+        borderColor: '#4b5563',
+        borderWidth: 1,
+        callbacks: {
+          label: function(context) {
+            const value = context.parsed.y;
+            return `${context.dataset.label}: ${value.toFixed(1)}%`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          color: '#374151',
+        },
+        ticks: {
+          color: '#9ca3af',
+          font: {
+            size: 11,
+          },
+          maxTicksLimit: 8,
+        },
+      },
+      y: {
+        grid: {
+          color: '#374151',
+        },
+        min: 0,
+        max: 100,
+        ticks: {
+          color: '#9ca3af',
+          font: {
+            size: 11,
+          },
+          callback: function(value) {
+            return `${value}%`;
+          },
+        },
+      },
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index' as const,
+    },
   };
 
   const chartOptions: ChartOptions = {
@@ -453,6 +585,7 @@ const WalletStatsSection: React.FC = () => {
 
   const paidChartData = createChartData('paid_bytes_provided', '#10b981', 'Paid Data Transfer');
   const unpaidChartData = createChartData('unpaid_bytes_provided', '#f59e0b', 'Unpaid Data Transfer');
+  const reliabilityChartData = createReliabilityChartData();
 
   return (
     <div className="space-y-8">
@@ -745,6 +878,47 @@ const WalletStatsSection: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {reliabilityChartData && (
+              <div className="animate-chartSlideUp" style={{ animationDelay: '0.3s' }}>
+                <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-medium text-gray-100 flex items-center gap-2">
+                      <Activity size={20} className="text-blue-400" />
+                      Network Reliability
+                    </h3>
+                    {reliabilityData && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-400">Mean:</span>
+                        <span className="text-blue-400 font-medium">
+                          {(reliabilityData.mean_reliability_weight * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="h-64 md:h-80">
+                    <Line data={reliabilityChartData} options={reliabilityChartOptions as ComponentProps<typeof Line>["options"]} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {reliabilityLoading && !reliabilityChartData && (
+              <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-700 border-t-blue-500"></div>
+                </div>
+              </div>
+            )}
+
+            {reliabilityError && !reliabilityChartData && (
+              <div className="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+                <div className="flex items-center gap-3 text-red-400">
+                  <AlertCircle size={20} />
+                  <span>Failed to load reliability data: {reliabilityError}</span>
+                </div>
               </div>
             )}
 
