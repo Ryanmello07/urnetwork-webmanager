@@ -166,7 +166,7 @@ const PayoutStatsSection: React.FC = () => {
 		);
 
 		const totalPoints = points.reduce(
-			(acc, point) => acc + point.point_value,
+			(acc, point) => acc + point.point_value / 1_000_000,
 			0,
 		);
 
@@ -377,7 +377,7 @@ const PayoutStatsSection: React.FC = () => {
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-amber-400 font-medium">
 													{(() => {
 														const point = pointsByPaymentId.get(payment.payment_id);
-														return point ? formatNumber(point.point_value) : <>&mdash;</>;
+														return point ? formatNumber(point.point_value / 1_000_000) : <>&mdash;</>;
 													})()}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-medium">
