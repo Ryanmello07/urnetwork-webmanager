@@ -125,7 +125,6 @@ const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 <span className="text-blue-300 font-medium">{userEmail}</span>
               </div>
               <p className="text-gray-500 text-xs mt-4">
-                This window will close automatically...
               </p>
             </div>
           ) : (
