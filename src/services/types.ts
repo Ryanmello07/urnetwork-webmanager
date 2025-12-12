@@ -443,3 +443,13 @@ export interface CreateAuthCodeResponse {
     message: string;
   };
 }
+
+/**
+ * Response from requesting a password reset
+ */
+export interface PasswordResetResponse {
+  /** Error information if request failed */
+  error?: {
+    message: string;
+  };
+}

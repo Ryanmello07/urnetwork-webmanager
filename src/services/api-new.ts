@@ -19,6 +19,7 @@ import type {
   ProviderLocationsResponse,
   PasswordLoginResponse,
   CreateAuthCodeResponse,
+  PasswordResetResponse,
   LocationSpec,
   LocationGroup,
   Device,
@@ -741,6 +742,55 @@ export const fetchAccountPayments = async (
   }
 };
 
+/**
+ * Request a password reset email
+ * @param userAuth - User email or username
+ * @returns PasswordResetResponse with error if failed
+ */
+export const requestPasswordReset = async (
+  userAuth: string
+): Promise<PasswordResetResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/password-reset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_auth: userAuth,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        "Password reset request failed:",
+        response.status,
+        response.statusText
+      );
+      const errorData = await response.text();
+      console.error("Error response:", errorData);
+
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<PasswordResetResponse>(response);
+  } catch (error) {
+    console.error("Password reset request error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to request password reset",
+      },
+    };
+  }
+};
+
 // Export types for convenience
 export type {
   AuthResponse,
@@ -763,6 +813,7 @@ export type {
   NetworkUser,
   NetworkUserResponse,
   CreateAuthCodeResponse,
+  PasswordResetResponse,
   AccountPayment,
   AccountPaymentsResponse,
 };
