@@ -3,7 +3,7 @@ import { Wallet, RefreshCw, AlertCircle, Settings, Clock, TrendingUp, Database, 
 import { useAuth } from '../hooks/useAuth';
 import { fetchWalletStats, fetchNetworkUser, fetchNetworkReliability } from '../services/api';
 import { saveWalletStats, getWalletStatsHistory, clearWalletStatsHistory, getStorageInfo, type WalletStatsRecord } from '../services/localStorage';
-import type { NetworkUser, NetworkReliabilityResponse } from '../services/api';
+import type { NetworkUser } from '../services/api';
 import type { ReliabilityWindow } from '../services/types';
 import toast from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
@@ -82,7 +82,6 @@ const WalletStatsSection: React.FC = () => {
   const [isClearing, setIsClearing] = useState(false);
   const [storageInfo, setStorageInfo] = useState({ totalRecords: 0, storageSize: '0 KB' });
   const [reliabilityData, setReliabilityData] = useState<ReliabilityWindow | null>(null);
-  const [reliabilityLoading, setReliabilityLoading] = useState(false);
   const [reliabilityError, setReliabilityError] = useState<string | null>(null);
   const [showReliabilityWeight, setShowReliabilityWeight] = useState(true);
   const [showWeightedClients, setShowWeightedClients] = useState(true);
@@ -191,7 +190,6 @@ const WalletStatsSection: React.FC = () => {
   const loadReliabilityData = useCallback(async () => {
     if (!token) return;
 
-    setReliabilityLoading(true);
     setReliabilityError(null);
 
     try {
@@ -205,8 +203,6 @@ const WalletStatsSection: React.FC = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load reliability data';
       setReliabilityError(message);
-    } finally {
-      setReliabilityLoading(false);
     }
   }, [token]);
 
