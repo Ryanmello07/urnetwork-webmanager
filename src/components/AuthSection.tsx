@@ -127,7 +127,7 @@ const AuthSection: React.FC = () => {
 							</div>
 						</div>
 						<h2 className="text-white text-center text-2xl font-bold mb-2">
-							Secure Authentication
+							Sign in to URnetwork
 						</h2>
 						<p className="text-blue-100 text-center text-sm transition-all duration-300">
 							{activeTab === "code"
