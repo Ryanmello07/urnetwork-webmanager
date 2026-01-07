@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser } from '../services/api';
 import type { CreateAuthCodeResponse } from '../services/api';
@@ -370,6 +370,36 @@ const AccountSettingsSection: React.FC = () => {
               </>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* Subscription Management */}
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.2s' }}>
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 border-b border-gray-600">
+          <div className="flex items-center gap-3">
+            <CreditCard size={20} className="text-white" />
+            <div>
+              <h3 className="font-medium text-white">Subscription Management</h3>
+              <p className="text-green-100 text-sm mt-1">Access your Stripe subscription portal to manage billing and payment details</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-300 mb-4">
+            Access your subscription portal to manage your billing details, update payment methods, view invoices, and modify your subscription plan.
+          </p>
+
+          <a
+            href="https://pay.ur.io/p/login/00g16I4Mag2O240aEE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-green-600 hover:bg-green-700 text-white border border-green-500 hover:shadow-lg transform hover:scale-[1.02]"
+          >
+            <CreditCard size={18} />
+            Open Subscription Portal
+            <ExternalLink size={16} />
+          </a>
         </div>
       </div>
 
