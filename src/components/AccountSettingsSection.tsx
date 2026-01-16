@@ -33,7 +33,13 @@ const AccountSettingsSection: React.FC = () => {
     try {
       const response = await fetchNetworkTransferBalanceCodes(token);
       if (response.balance_codes) {
-        setTransferBalanceCodes(response.balance_codes);
+        // TEMPORARY: Add dummy data for testing scrollbar
+        const dummyData: RedeemedTransferBalanceCode[] = Array.from({ length: 12 }, (_, i) => ({
+          balance_code_id: `dummy-${i}`,
+          secret: `ABC${i.toString().padStart(3, '0')}XYZ${i.toString().padStart(3, '0')}ABC${i.toString().padStart(3, '0')}XYZ`,
+          redeem_time: new Date(Date.now() - i * 60000).toISOString(),
+        }));
+        setTransferBalanceCodes([...response.balance_codes, ...dummyData]);
       }
     } catch (error) {
       console.error('Failed to fetch network transfer balance codes:', error);
