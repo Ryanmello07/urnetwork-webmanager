@@ -8,12 +8,46 @@ import RedeemTransferBalanceCodeModal from "./RedeemTransferBalanceCodeModal";
 const BalanceCodesSection: React.FC = () => {
     const sectionColor = "blue";
 
-    const colorClasses = {
-      iconBg: "p-2 bg-gradient-to-r from-emerald-600 to-emerald-600 rounded-xl",
-      headerBg: "bg-gradient-to-r from-emerald-600 to-emerald-600 px-6 py-4 border-b border-gray-600",
-      headerText: "text-emerald-100 text-sm mt-1",
-      buttonBg: "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 hover:shadow-lg transform hover:scale-[1.02]",
+    const colorConfig = {
+      emerald: {
+        iconBg: "p-2 bg-gradient-to-r from-emerald-600 to-emerald-600 rounded-xl",
+        headerBg: "bg-gradient-to-r from-emerald-600 to-emerald-600 px-6 py-4 border-b border-gray-600",
+        headerText: "text-emerald-100 text-sm mt-1",
+        buttonBg: "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 hover:shadow-lg transform hover:scale-[1.02]",
+      },
+      blue: {
+        iconBg: "p-2 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl",
+        headerBg: "bg-gradient-to-r from-blue-600 to-blue-600 px-6 py-4 border-b border-gray-600",
+        headerText: "text-blue-100 text-sm mt-1",
+        buttonBg: "bg-blue-600 hover:bg-blue-700 text-white border border-blue-500 hover:shadow-lg transform hover:scale-[1.02]",
+      },
+      purple: {
+        iconBg: "p-2 bg-gradient-to-r from-purple-600 to-purple-600 rounded-xl",
+        headerBg: "bg-gradient-to-r from-purple-600 to-purple-600 px-6 py-4 border-b border-gray-600",
+        headerText: "text-purple-100 text-sm mt-1",
+        buttonBg: "bg-purple-600 hover:bg-purple-700 text-white border border-purple-500 hover:shadow-lg transform hover:scale-[1.02]",
+      },
+      red: {
+        iconBg: "p-2 bg-gradient-to-r from-red-600 to-red-600 rounded-xl",
+        headerBg: "bg-gradient-to-r from-red-600 to-red-600 px-6 py-4 border-b border-gray-600",
+        headerText: "text-red-100 text-sm mt-1",
+        buttonBg: "bg-red-600 hover:bg-red-700 text-white border border-red-500 hover:shadow-lg transform hover:scale-[1.02]",
+      },
+      amber: {
+        iconBg: "p-2 bg-gradient-to-r from-amber-600 to-amber-600 rounded-xl",
+        headerBg: "bg-gradient-to-r from-amber-600 to-amber-600 px-6 py-4 border-b border-gray-600",
+        headerText: "text-amber-100 text-sm mt-1",
+        buttonBg: "bg-amber-600 hover:bg-amber-700 text-white border border-amber-500 hover:shadow-lg transform hover:scale-[1.02]",
+      },
+      teal: {
+        iconBg: "p-2 bg-gradient-to-r from-teal-600 to-teal-600 rounded-xl",
+        headerBg: "bg-gradient-to-r from-teal-600 to-teal-600 px-6 py-4 border-b border-gray-600",
+        headerText: "text-teal-100 text-sm mt-1",
+        buttonBg: "bg-teal-600 hover:bg-teal-700 text-white border border-teal-500 hover:shadow-lg transform hover:scale-[1.02]",
+      },
     };
+
+    const colorClasses = colorConfig[sectionColor as keyof typeof colorConfig];
 
     const { token } = useAuth();
     const [transferBalanceCodes, setTransferBalanceCodes] = useState<RedeemedTransferBalanceCode[]>([]);
