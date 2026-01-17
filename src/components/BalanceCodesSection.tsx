@@ -46,14 +46,12 @@ const BalanceCodesSection: React.FC = () => {
       return date.toLocaleString();
     };
 
-    const sectionColor = "emerald"
-
     return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-staggerFadeUp" style={{ animationDelay: '0.05s' }}>
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-            <div className={`p-2 bg-gradient-to-r from-${sectionColor}-600 to-${sectionColor}-600 rounded-xl`}>
+            <div className="p-2 bg-gradient-to-r from-emerald-600 to-emerald-600 rounded-xl">
               <Ticket className="text-white" size={28} />
             </div>
             Balance Codes
@@ -65,28 +63,18 @@ const BalanceCodesSection: React.FC = () => {
       </div>
 
 
-      <div className={`bg-${sectionColor}-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp`} style={{ animationDelay: '0.1s' }}>
-        <div className={`bg-gradient-to-r from-${sectionColor}-600 to-${sectionColor}-600 px-6 py-4 border-b border-gray-600`}>
+      <div className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-600 px-6 py-4 border-b border-gray-600">
           <div className="flex items-center gap-3">
             <TicketCheck size={20} className="text-white" />
             <div>
               <h3 className="font-medium text-white">Account Transfer Balance Codes</h3>
-              <p className="text-blue-100 text-sm mt-1">Redeem a transfer balance code to add data to your account.</p>
+              <p className="text-emerald-100 text-sm mt-1">Redeem a transfer balance code to add data to your account.</p>
             </div>
           </div>
         </div>
 
-        {transferBalanceCodes.length === 0 && !isLoadingTransferBalanceCodes ? (
-          <div className="p-6">
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TicketSlash className="text-gray-500" size={24} />
-              </div>
-              <h3 className="text-lg font-medium text-gray-200 mb-2">No Transfer Balance Codes Redeemed</h3>
-              <p className="text-gray-400 italic">No transfer balance codes found for your network.</p>
-            </div>
-          </div>
-        ) : (
+        {transferBalanceCodes.length > 0 ? (
           <div className="max-h-80 overflow-y-auto">
             <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-900 sticky top-0 z-10">
@@ -104,6 +92,16 @@ const BalanceCodesSection: React.FC = () => {
                 ))}
             </tbody>
             </table>
+          </div>
+        ) : (
+          <div className="p-6">
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TicketSlash className="text-gray-500" size={24} />
+              </div>
+              <h3 className="text-lg font-medium text-gray-200 mb-2">No Transfer Balance Codes Redeemed</h3>
+              <p className="text-gray-400 italic">No transfer balance codes found for your network.</p>
+            </div>
           </div>
         )}
 
