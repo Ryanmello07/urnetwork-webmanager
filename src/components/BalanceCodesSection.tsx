@@ -50,31 +50,9 @@ const BalanceCodesSection: React.FC = () => {
     const colorClasses = colorConfig[sectionColor as keyof typeof colorConfig];
 
     const { token } = useAuth();
-
-    // Generate dummy data for testing
-    const generateDummyData = (): RedeemedTransferBalanceCode[] => {
-      const dummyData: RedeemedTransferBalanceCode[] = [];
-      const now = new Date();
-
-      for (let i = 0; i < 10; i++) {
-        const redeemDate = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000)); // i days ago
-        const endDate = new Date(redeemDate.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days after redeem
-
-        dummyData.push({
-          balance_code_id: `dummy-code-${i + 1}`,
-          balance_byte_count: (i + 1) * 1000000000, // 1GB increments
-          redeem_time: redeemDate.toISOString(),
-          end_time: endDate.toISOString(),
-          secret: `ABC${String(i + 1).padStart(3, '0')}XYZ${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-        });
-      }
-
-      return dummyData;
-    };
-
-    const [transferBalanceCodes, setTransferBalanceCodes] = useState<RedeemedTransferBalanceCode[]>(generateDummyData());
+    const [transferBalanceCodes, setTransferBalanceCodes] = useState<RedeemedTransferBalanceCode[]>([]);
     const [isAddTransferBalanceCodeModalOpen, setIsAddTransferBalanceCodeModalOpen] = useState(false);
-    const [isLoadingTransferBalanceCodes, setIsLoadingTransferBalanceCodes] = useState(false);
+    const [isLoadingTransferBalanceCodes, setIsLoadingTransferBalanceCodes] = useState(true);
 
     const loadTransferBalanceCodes = useCallback(async () => {
         if (!token) {
@@ -86,9 +64,8 @@ const BalanceCodesSection: React.FC = () => {
 
         try {
             const response = await fetchNetworkTransferBalanceCodes(token);
-            if (response.balance_codes && response.balance_codes.length > 0) {
-              // If we get real data, merge it with dummy data
-              setTransferBalanceCodes(prev => [...response.balance_codes, ...prev]);
+            if (response.balance_codes) {
+            setTransferBalanceCodes(response.balance_codes);
             }
         } catch (error) {
             console.error('Failed to fetch network transfer balance codes:', error);
