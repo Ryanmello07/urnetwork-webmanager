@@ -657,7 +657,7 @@ const WalletStatsSection: React.FC = () => {
             onClick={() => setActiveTab('data')}
             className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
               activeTab === 'data'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
             }`}
           >
@@ -668,7 +668,7 @@ const WalletStatsSection: React.FC = () => {
             onClick={() => setActiveTab('payouts')}
             className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
               activeTab === 'payouts'
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg transform scale-105'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
             }`}
           >
