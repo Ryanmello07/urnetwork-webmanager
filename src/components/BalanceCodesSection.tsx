@@ -74,17 +74,7 @@ const BalanceCodesSection: React.FC = () => {
           </div>
         </div>
 
-        {!isLoadingTransferBalanceCodes && transferBalanceCodes.length === 0 ? (
-          <div className="p-6">
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TicketSlash className="text-gray-500" size={24} />
-              </div>
-              <h3 className="text-lg font-medium text-gray-200 mb-2">No Transfer Balance Codes Redeemed</h3>
-              <p className="text-gray-400 italic">No transfer balance codes found for your network.</p>
-            </div>
-          </div>
-        ) : !isLoadingTransferBalanceCodes && transferBalanceCodes.length > 0 ? (
+        {transferBalanceCodes.length > 0 ? (
           <div className="max-h-80 overflow-y-auto">
             <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-900 sticky top-0 z-10">
@@ -103,7 +93,17 @@ const BalanceCodesSection: React.FC = () => {
             </tbody>
             </table>
           </div>
-        ) : null}
+        ) : (
+          <div className="p-6">
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TicketSlash className="text-gray-500" size={24} />
+              </div>
+              <h3 className="text-lg font-medium text-gray-200 mb-2">No Transfer Balance Codes Redeemed</h3>
+              <p className="text-gray-400 italic">No transfer balance codes found for your network.</p>
+            </div>
+          </div>
+        )}
 
         <div className="p-6">
           <button
