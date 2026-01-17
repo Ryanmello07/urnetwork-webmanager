@@ -51,7 +51,7 @@ const BalanceCodesSection: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-staggerFadeUp" style={{ animationDelay: '0.05s' }}>
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl">
+            <div className="p-2 bg-gradient-to-r from-emerald-600 to-emerald-600 rounded-xl">
               <Ticket className="text-white" size={28} />
             </div>
             Balance Codes
@@ -64,12 +64,12 @@ const BalanceCodesSection: React.FC = () => {
 
 
       <div className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.1s' }}>
-        <div className="bg-gradient-to-r from-blue-600 to-blue-600 px-6 py-4 border-b border-gray-600">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-600 px-6 py-4 border-b border-gray-600">
           <div className="flex items-center gap-3">
             <TicketCheck size={20} className="text-white" />
             <div>
               <h3 className="font-medium text-white">Account Transfer Balance Codes</h3>
-              <p className="text-blue-100 text-sm mt-1">Redeem a transfer balance code to add data to your account.</p>
+              <p className="text-emerald-100 text-sm mt-1">Redeem a transfer balance code to add data to your account.</p>
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@ const BalanceCodesSection: React.FC = () => {
               className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg font-medium transition-all duration-200 ${
               isLoadingTransferBalanceCodes
                   ? 'bg-gray-600 cursor-not-allowed border border-gray-600 text-gray-400'
-                  : `bg-blue-600 hover:bg-blue-700 text-white border border-blue-500 hover:shadow-lg transform hover:scale-[1.02]`
+                  : `bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 hover:shadow-lg transform hover:scale-[1.02]`
               }`}
           >
               <TicketCheck size={20} />
