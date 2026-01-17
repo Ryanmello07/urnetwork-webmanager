@@ -46,14 +46,12 @@ const BalanceCodesSection: React.FC = () => {
       return date.toLocaleString();
     };
 
-    const sectionColor = "emerald"
-
     return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-staggerFadeUp" style={{ animationDelay: '0.05s' }}>
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-            <div className={`p-2 bg-gradient-to-r from-${sectionColor}-600 to-${sectionColor}-600 rounded-xl`}>
+            <div className="p-2 bg-gradient-to-r from-emerald-600 to-emerald-600 rounded-xl">
               <Ticket className="text-white" size={28} />
             </div>
             Balance Codes
@@ -65,8 +63,8 @@ const BalanceCodesSection: React.FC = () => {
       </div>
 
 
-      <div className={`bg-${sectionColor}-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp`} style={{ animationDelay: '0.1s' }}>
-        <div className={`bg-gradient-to-r from-${sectionColor}-600 to-${sectionColor}-600 px-6 py-4 border-b border-gray-600`}>
+      <div className="bg-emerald-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-600 px-6 py-4 border-b border-gray-600">
           <div className="flex items-center gap-3">
             <TicketCheck size={20} className="text-white" />
             <div>
