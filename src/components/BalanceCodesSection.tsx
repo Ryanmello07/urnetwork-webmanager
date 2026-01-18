@@ -6,7 +6,7 @@ import { fetchNetworkTransferBalanceCodes } from "../services/api";
 import RedeemTransferBalanceCodeModal from "./RedeemTransferBalanceCodeModal";
 
 const BalanceCodesSection: React.FC = () => {
-    const sectionColor = "emerald";
+    const sectionColor = "blue"; // You can change this to emerald, blue, purple, red, amber, or teal
 
     const colorConfig = {
       emerald: {
