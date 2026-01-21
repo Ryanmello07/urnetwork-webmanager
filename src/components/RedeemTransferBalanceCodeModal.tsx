@@ -4,6 +4,7 @@ import { X, CheckCircle, TicketCheck } from "lucide-react";
 import { redeemTransferBalanceCode } from "../services/api";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
+import { BALANCE_CODE_LENGTH, isValidBalanceCode } from "../utils/balanceCodeUtils";
 
 interface RedeemTransferBalanceCodeModalProps {
   isOpen: boolean;
@@ -80,13 +81,18 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
 
     if (!token) {
         toast.error("You must be logged in to redeem a balance code.");
-        return
+        return;
     }
 
     const balanceCode = balanceCodeInputRef.current?.value?.toString().trim();
 
-    if (!balanceCode || balanceCode.length !== 26) {
-      toast.error("Please enter a valid 26-character balance code.");
+    if (!balanceCode) {
+      toast.error("Please enter a balance code.");
+      return;
+    }
+
+    if (!isValidBalanceCode(balanceCode)) {
+      toast.error(`Please enter a valid ${BALANCE_CODE_LENGTH}-character alphanumeric balance code.`);
       return;
     }
 
@@ -95,7 +101,7 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
     try {
       const response = await redeemTransferBalanceCode(balanceCode, token);
 
-      if (response.error) {
+      if (response.error?.message) {
         toast.error(response.error.message);
         setState("initial");
       } else {
@@ -158,7 +164,7 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
                     onBlur={() => setBalanceCodeFocused(false)}
                     onChange={(e) =>
                         setIsBalanceCodeValid(
-                            e.target.value.trim().length === 26,
+                            isValidBalanceCode(e.target.value.trim())
                         )
                     }
                     className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-white placeholder-gray-400 ${
@@ -170,11 +176,11 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
                             ? "border-green-500"
                             : "border-gray-600"
                     }`}
-                    placeholder="Enter your transfer balance code"
+                    placeholder={`Enter your ${BALANCE_CODE_LENGTH}-character balance code`}
                     disabled={state === "loading"}
                     aria-label="Transfer balance code"
                     aria-describedby="balance-code-help"
-                    maxLength={26}
+                    maxLength={BALANCE_CODE_LENGTH}
                     autoComplete="off"
                     required
                 />
