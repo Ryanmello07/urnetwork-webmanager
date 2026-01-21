@@ -13,8 +13,6 @@ interface RedeemTransferBalanceCodeModalProps {
 
 type ModalState = "initial" | "loading" | "success";
 
-const BALANCE_CODE_LENGTH = 26;
-
 const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalProps> = ({
   isOpen,
   onClose,
@@ -26,22 +24,6 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
   const balanceCodeInputRef = useRef<HTMLInputElement>(null);
   const [balanceCodeFocused, setBalanceCodeFocused] = useState<boolean>(false);
   const [isBalanceCodeValid, setIsBalanceCodeValid] = useState<boolean>(false);
-
-  const isValidBalanceCode = (code: string): boolean => {
-    if (!code || typeof code !== 'string') {
-      return false;
-    }
-
-    const trimmedCode = code.trim();
-
-    if (trimmedCode.length !== BALANCE_CODE_LENGTH) {
-      return false;
-    }
-
-    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(trimmedCode);
-
-    return isAlphanumeric;
-  };
 
 
   useEffect(() => {
@@ -98,18 +80,13 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
 
     if (!token) {
         toast.error("You must be logged in to redeem a balance code.");
-        return;
+        return
     }
 
     const balanceCode = balanceCodeInputRef.current?.value?.toString().trim();
 
-    if (!balanceCode) {
-      toast.error("Please enter a balance code.");
-      return;
-    }
-
-    if (!isValidBalanceCode(balanceCode)) {
-      toast.error(`Please enter a valid ${BALANCE_CODE_LENGTH}-character alphanumeric balance code.`);
+    if (!balanceCode || balanceCode.length !== 26) {
+      toast.error("Please enter a valid 26-character balance code.");
       return;
     }
 
@@ -118,7 +95,7 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
     try {
       const response = await redeemTransferBalanceCode(balanceCode, token);
 
-      if (response.error?.message) {
+      if (response.error) {
         toast.error(response.error.message);
         setState("initial");
       } else {
@@ -181,7 +158,7 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
                     onBlur={() => setBalanceCodeFocused(false)}
                     onChange={(e) =>
                         setIsBalanceCodeValid(
-                            isValidBalanceCode(e.target.value.trim())
+                            e.target.value.trim().length === 26,
                         )
                     }
                     className={`w-full px-4 py-3 bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-white placeholder-gray-400 ${
@@ -193,11 +170,11 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
                             ? "border-green-500"
                             : "border-gray-600"
                     }`}
-                    placeholder={`Enter your ${BALANCE_CODE_LENGTH}-character balance code`}
+                    placeholder="Enter your transfer balance code"
                     disabled={state === "loading"}
                     aria-label="Transfer balance code"
                     aria-describedby="balance-code-help"
-                    maxLength={BALANCE_CODE_LENGTH}
+                    maxLength={26}
                     autoComplete="off"
                     required
                 />

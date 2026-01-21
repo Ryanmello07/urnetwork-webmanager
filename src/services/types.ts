@@ -565,50 +565,30 @@ export interface RedeemTransferBalanceCodeResponse {
 }
 
 /**
- * Current subscription metadata
- */
-export interface CurrentSubscription {
-  /** Unique identifier for the subscription */
-  subscription_id: string;
-  /** App store source (e.g., "apple", "google") */
-  store: string;
-  /** Subscription plan identifier */
-  plan: string;
-}
-
-/**
  * Response from fetching subscription balance
  */
 export interface SubscriptionBalanceResponse {
-  /** Initial balance in bytes */
   start_balance_byte_count: number;
-  /** Current balance in bytes */
   balance_byte_count: number;
-  /** Bytes currently in open/pending transfers */
   open_transfer_byte_count: number;
-  /** Current subscription details (if any) */
-  current_subscription?: CurrentSubscription;
-  /** Error information if request failed */
-  error?: { message: string };
+  current_subscription: CurrentSubscription;
+  pending_payout_usd_nano_cents: number;
+  update_time: string;
+  active_transfer_balances: TransferBalance[];
 }
 
-/**
- * Represents a balance transfer record for a network
- * Tracks data transfer metrics and associated revenue over a time period
- */
+export interface CurrentSubscription {
+  subscription_id: string;
+  store: string; // e.g., "apple", "google"
+  plan: string;
+}
+
 export interface TransferBalance {
-  /** Unique identifier for this balance transfer record */
   balance_id: string;
-  /** Network identifier associated with this transfer */
   network_id: string;
-  /** ISO 8601 timestamp marking the start of the transfer period */
   start_time: string;
-  /** ISO 8601 timestamp marking the end of the transfer period */
   end_time: string;
-  /** Initial balance in bytes at the start of the transfer period */
   start_balance_byte_count: number;
-  /** Net revenue for this transfer in USD nano cents (1 USD = 1e9 nano cents) */
   net_revenue: number;
-  /** Current balance in bytes after the transfer period */
   balance_byte_count: number;
 }
