@@ -565,6 +565,18 @@ export interface RedeemTransferBalanceCodeResponse {
 }
 
 /**
+ * Current subscription metadata
+ */
+export interface CurrentSubscription {
+  /** Unique identifier for the subscription */
+  subscription_id: string;
+  /** App store source (e.g., "apple", "google") */
+  store: string;
+  /** Subscription plan identifier */
+  plan: string;
+}
+
+/**
  * Response from fetching subscription balance
  */
 export interface SubscriptionBalanceResponse {
@@ -576,26 +588,8 @@ export interface SubscriptionBalanceResponse {
   open_transfer_byte_count: number;
   /** Current subscription details (if any) */
   current_subscription?: CurrentSubscription;
-  /** Pending payout amount in USD nano cents */
-/**
- * Current subscription metadata
- */
-export interface CurrentSubscription {
-  /** Unique identifier for the subscription */
-  subscription_id: string;
-  /** App store source (e.g., "apple", "google") */
-  store: string;
-  /** Subscription plan identifier */
-  plan: string;
-}
   /** Error information if request failed */
   error?: { message: string };
-}
-
-export interface CurrentSubscription {
-  subscription_id: string;
-  store: string; // e.g., "apple", "google"
-  plan: string;
 }
 
 /**
