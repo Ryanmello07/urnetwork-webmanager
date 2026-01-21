@@ -4,7 +4,6 @@ import { X, CheckCircle, TicketCheck } from "lucide-react";
 import { redeemTransferBalanceCode } from "../services/api";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
-import { BALANCE_CODE_LENGTH, isValidBalanceCode } from "../utils/balanceCodeUtils";
 
 interface RedeemTransferBalanceCodeModalProps {
   isOpen: boolean;
@@ -13,6 +12,8 @@ interface RedeemTransferBalanceCodeModalProps {
 }
 
 type ModalState = "initial" | "loading" | "success";
+
+const BALANCE_CODE_LENGTH = 26;
 
 const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalProps> = ({
   isOpen,
@@ -25,6 +26,22 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
   const balanceCodeInputRef = useRef<HTMLInputElement>(null);
   const [balanceCodeFocused, setBalanceCodeFocused] = useState<boolean>(false);
   const [isBalanceCodeValid, setIsBalanceCodeValid] = useState<boolean>(false);
+
+  const isValidBalanceCode = (code: string): boolean => {
+    if (!code || typeof code !== 'string') {
+      return false;
+    }
+
+    const trimmedCode = code.trim();
+
+    if (trimmedCode.length !== BALANCE_CODE_LENGTH) {
+      return false;
+    }
+
+    const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(trimmedCode);
+
+    return isAlphanumeric;
+  };
 
 
   useEffect(() => {

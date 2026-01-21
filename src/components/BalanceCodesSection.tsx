@@ -4,7 +4,6 @@ import { Ticket, TicketCheck, TicketSlash, AlertCircle } from "lucide-react";
 import { RedeemedTransferBalanceCode, SubscriptionBalanceResponse } from "../services/types";
 import { fetchNetworkTransferBalanceCodes, fetchSubscriptionBalance } from "../services/api";
 import RedeemTransferBalanceCodeModal from "./RedeemTransferBalanceCodeModal";
-import { maskSecret, formatDate, formatDataBalance } from "../utils/balanceCodeUtils";
 
 const COLOR_CLASSES = {
   iconBg: "p-2 bg-gradient-to-r from-emerald-600 to-emerald-600 rounded-xl",
@@ -22,6 +21,39 @@ const BalanceCodesSection: React.FC = () => {
     const [subscriptionBalance, setSubscriptionBalance] = useState<SubscriptionBalanceResponse | null>(null);
     const [balanceCodesError, setBalanceCodesError] = useState<string | null>(null);
     const [subscriptionBalanceError, setSubscriptionBalanceError] = useState<string | null>(null);
+
+    const maskSecret = (secret: string) => {
+      if (!secret || secret.length <= 6) return secret;
+      return `${secret.slice(0, 3)}...${secret.slice(-3)}`;
+    };
+
+    const formatDate = (dateString: string) => {
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return 'Invalid date';
+        }
+        return date.toLocaleString();
+      } catch {
+        return 'Invalid date';
+      }
+    };
+
+    const formatDataBalance = (bytes: number) => {
+      if (typeof bytes !== "number" || isNaN(bytes)) return "-";
+      if (bytes < 0) return "0 GiB";
+
+      const TIB = 1099511627776;
+      const GIB = 1073741824;
+
+      if (bytes < TIB) {
+        const gib = bytes / GIB;
+        return `${gib.toFixed(2)} GiB`;
+      } else {
+        const tib = bytes / TIB;
+        return `${tib.toFixed(2)} TiB`;
+      }
+    };
 
     const loadTransferBalanceCodes = useCallback(async () => {
         if (!token) {
