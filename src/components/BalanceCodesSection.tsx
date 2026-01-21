@@ -184,13 +184,13 @@ const BalanceCodesSection: React.FC = () => {
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
                 {transferBalanceCodes.map((code) => (
+                <tr key={code.balance_code_id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{maskSecret(code.secret)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {typeof code.balance_byte_count === "number" && !isNaN(code.balance_byte_count)
                       ? `+${formatDataBalance(code.balance_byte_count)}`
                       : "-"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{maskSecret(code.secret)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{`+${formatDataBalance(code.balance_byte_count)}`}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{formatDate(code.redeem_time)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{formatDate(code.end_time)}</td>
                 </tr>
