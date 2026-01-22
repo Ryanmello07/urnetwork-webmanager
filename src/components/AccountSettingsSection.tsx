@@ -276,7 +276,7 @@ const AccountSettingsSection: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = (countryCode: string, locationName: string) => {
+  const handleLocationSelect = (countryCode: string) => {
     setCountryCode(countryCode.toLowerCase());
   };
 
