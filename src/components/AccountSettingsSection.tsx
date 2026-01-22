@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
@@ -23,6 +23,31 @@ const AccountSettingsSection: React.FC = () => {
   const [isGeneratingAuthClient, setIsGeneratingAuthClient] = useState(false);
   const [authClientResponse, setAuthClientResponse] = useState<AuthClientResponse | null>(null);
   const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const [clientId, setClientId] = useState('');
+  const [sourceClientId, setSourceClientId] = useState('');
+  const [derivedClientId, setDerivedClientId] = useState('');
+
+  const [lockCallerIp, setLockCallerIp] = useState(false);
+  const [lockIpList, setLockIpList] = useState('');
+  const [httpsRequireAuth, setHttpsRequireAuth] = useState(false);
+
+  const [locationClientId, setLocationClientId] = useState('');
+  const [locationId, setLocationId] = useState('');
+  const [locationGroupId, setLocationGroupId] = useState('');
+  const [bestAvailable, setBestAvailable] = useState(false);
+  const [locationName, setLocationName] = useState('');
+  const [locationType, setLocationType] = useState('country');
+
+  const [windowType, setWindowType] = useState('quality');
+  const [windowSizeMin, setWindowSizeMin] = useState('');
+  const [windowSizeMinP2pOnly, setWindowSizeMinP2pOnly] = useState('');
+  const [windowSizeMax, setWindowSizeMax] = useState('');
+  const [windowSizeHardMax, setWindowSizeHardMax] = useState('');
+  const [windowSizeReconnectScale, setWindowSizeReconnectScale] = useState('');
+  const [keepHealthiestCount, setKeepHealthiestCount] = useState('');
+  const [ulimit, setUlimit] = useState('');
 
 
   useEffect(() => {
@@ -117,15 +142,108 @@ const AccountSettingsSection: React.FC = () => {
     setCopiedFields({});
 
     try {
-      const request = {
-        description,
-        device_spec: deviceSpec,
-        proxy_config: {
-          initial_device_state: {
-            country_code: countryCode,
-          },
-        },
-      };
+      const request: {
+        client_id?: string;
+        source_client_id?: string;
+        description?: string;
+        device_spec?: string;
+        derived_client_id?: string;
+        proxy_config?: {
+          lock_caller_ip?: boolean;
+          lock_ip_list?: string[];
+          https_require_auth?: boolean;
+          initial_device_state?: {
+            country_code?: string;
+            location?: {
+              connect_location_id?: {
+                client_id?: string;
+                location_id?: string;
+                location_group_id?: string;
+                best_available?: boolean;
+              };
+              name?: string;
+              location_type?: string;
+            };
+            performance_profile?: {
+              window_type?: string;
+              window_size_settings?: {
+                window_size_min?: number;
+                window_size_min_p2p_only?: number;
+                window_size_max?: number;
+                window_size_hard_max?: number;
+                window_size_reconnect_scale?: number;
+                keep_healthiest_count?: number;
+                ulimit?: number;
+              };
+            };
+          };
+        };
+      } = {};
+
+      if (clientId) request.client_id = clientId;
+      if (sourceClientId) request.source_client_id = sourceClientId;
+      if (description) request.description = description;
+      if (deviceSpec) request.device_spec = deviceSpec;
+      if (derivedClientId) request.derived_client_id = derivedClientId;
+
+      const hasProxyConfig = showAdvanced || countryCode;
+      if (hasProxyConfig) {
+        request.proxy_config = {};
+
+        if (showAdvanced) {
+          if (lockCallerIp) request.proxy_config.lock_caller_ip = lockCallerIp;
+          if (lockIpList) {
+            request.proxy_config.lock_ip_list = lockIpList
+              .split(',')
+              .map(ip => ip.trim())
+              .filter(ip => ip.length > 0);
+          }
+          if (httpsRequireAuth) request.proxy_config.https_require_auth = httpsRequireAuth;
+        }
+
+        const hasInitialDeviceState = countryCode || locationClientId || locationId || locationGroupId || bestAvailable || locationName || locationType || windowType || windowSizeMin || windowSizeMinP2pOnly || windowSizeMax || windowSizeHardMax || windowSizeReconnectScale || keepHealthiestCount || ulimit;
+        if (hasInitialDeviceState) {
+          request.proxy_config.initial_device_state = {};
+
+          if (countryCode) request.proxy_config.initial_device_state.country_code = countryCode;
+
+          const hasLocation = locationClientId || locationId || locationGroupId || bestAvailable || locationName || locationType;
+          if (hasLocation) {
+            request.proxy_config.initial_device_state.location = {};
+
+            const hasConnectLocationId = locationClientId || locationId || locationGroupId || bestAvailable;
+            if (hasConnectLocationId) {
+              request.proxy_config.initial_device_state.location.connect_location_id = {};
+              if (locationClientId) request.proxy_config.initial_device_state.location.connect_location_id.client_id = locationClientId;
+              if (locationId) request.proxy_config.initial_device_state.location.connect_location_id.location_id = locationId;
+              if (locationGroupId) request.proxy_config.initial_device_state.location.connect_location_id.location_group_id = locationGroupId;
+              if (bestAvailable) request.proxy_config.initial_device_state.location.connect_location_id.best_available = bestAvailable;
+            }
+
+            if (locationName) request.proxy_config.initial_device_state.location.name = locationName;
+            if (locationType) request.proxy_config.initial_device_state.location.location_type = locationType;
+          }
+
+          const hasPerformanceProfile = windowType || windowSizeMin || windowSizeMinP2pOnly || windowSizeMax || windowSizeHardMax || windowSizeReconnectScale || keepHealthiestCount || ulimit;
+          if (hasPerformanceProfile) {
+            request.proxy_config.initial_device_state.performance_profile = {};
+
+            if (windowType) request.proxy_config.initial_device_state.performance_profile.window_type = windowType;
+
+            const hasWindowSizeSettings = windowSizeMin || windowSizeMinP2pOnly || windowSizeMax || windowSizeHardMax || windowSizeReconnectScale || keepHealthiestCount || ulimit;
+            if (hasWindowSizeSettings) {
+              request.proxy_config.initial_device_state.performance_profile.window_size_settings = {};
+              if (windowSizeMin) request.proxy_config.initial_device_state.performance_profile.window_size_settings.window_size_min = parseInt(windowSizeMin);
+              if (windowSizeMinP2pOnly) request.proxy_config.initial_device_state.performance_profile.window_size_settings.window_size_min_p2p_only = parseInt(windowSizeMinP2pOnly);
+              if (windowSizeMax) request.proxy_config.initial_device_state.performance_profile.window_size_settings.window_size_max = parseInt(windowSizeMax);
+              if (windowSizeHardMax) request.proxy_config.initial_device_state.performance_profile.window_size_settings.window_size_hard_max = parseInt(windowSizeHardMax);
+              if (windowSizeReconnectScale) request.proxy_config.initial_device_state.performance_profile.window_size_settings.window_size_reconnect_scale = parseInt(windowSizeReconnectScale);
+              if (keepHealthiestCount) request.proxy_config.initial_device_state.performance_profile.window_size_settings.keep_healthiest_count = parseInt(keepHealthiestCount);
+              if (ulimit) request.proxy_config.initial_device_state.performance_profile.window_size_settings.ulimit = parseInt(ulimit);
+            }
+          }
+        }
+      }
 
       const response = await createAuthClient(token, request);
       setAuthClientResponse(response);
@@ -476,6 +594,322 @@ const AccountSettingsSection: React.FC = () => {
               ))}
             </div>
             <p className="text-xs text-gray-400 mt-2">2-letter ISO country code for proxy location</p>
+          </div>
+
+          <div className="border-t border-gray-700 pt-4">
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center justify-between w-full px-4 py-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg transition-all duration-200 text-left border border-gray-600"
+              disabled={isGeneratingAuthClient}
+            >
+              <span className="text-gray-300 font-medium">Advanced Options</span>
+              {showAdvanced ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+            </button>
+
+            {showAdvanced && (
+              <div className="mt-4 space-y-6 bg-gray-750 p-6 rounded-lg border border-gray-600">
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-teal-300 mb-3">Client Configuration</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Client ID
+                      </label>
+                      <input
+                        type="text"
+                        value={clientId}
+                        onChange={(e) => setClientId(e.target.value)}
+                        placeholder="Client ID"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Source Client ID
+                      </label>
+                      <input
+                        type="text"
+                        value={sourceClientId}
+                        onChange={(e) => setSourceClientId(e.target.value)}
+                        placeholder="Source Client ID"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Derived Client ID
+                      </label>
+                      <input
+                        type="text"
+                        value={derivedClientId}
+                        onChange={(e) => setDerivedClientId(e.target.value)}
+                        placeholder="Derived Client ID"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-gray-600">
+                  <h4 className="text-sm font-semibold text-teal-300 mb-3">Proxy Configuration</h4>
+
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={lockCallerIp}
+                        onChange={(e) => setLockCallerIp(e.target.checked)}
+                        className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
+                        disabled={isGeneratingAuthClient}
+                      />
+                      <span className="text-sm text-gray-300">Lock Caller IP</span>
+                    </label>
+
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={httpsRequireAuth}
+                        onChange={(e) => setHttpsRequireAuth(e.target.checked)}
+                        className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
+                        disabled={isGeneratingAuthClient}
+                      />
+                      <span className="text-sm text-gray-300">HTTPS Require Auth</span>
+                    </label>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Lock IP List (comma-separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={lockIpList}
+                        onChange={(e) => setLockIpList(e.target.value)}
+                        placeholder="e.g., 192.168.1.1, 10.0.0.1"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-gray-600">
+                  <h4 className="text-sm font-semibold text-teal-300 mb-3">Location Settings</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Location Client ID
+                      </label>
+                      <input
+                        type="text"
+                        value={locationClientId}
+                        onChange={(e) => setLocationClientId(e.target.value)}
+                        placeholder="Location Client ID"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Location ID
+                      </label>
+                      <input
+                        type="text"
+                        value={locationId}
+                        onChange={(e) => setLocationId(e.target.value)}
+                        placeholder="Location ID"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Location Group ID
+                      </label>
+                      <input
+                        type="text"
+                        value={locationGroupId}
+                        onChange={(e) => setLocationGroupId(e.target.value)}
+                        placeholder="Location Group ID"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Location Name
+                      </label>
+                      <input
+                        type="text"
+                        value={locationName}
+                        onChange={(e) => setLocationName(e.target.value)}
+                        placeholder="Location Name"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Location Type
+                      </label>
+                      <select
+                        value={locationType}
+                        onChange={(e) => setLocationType(e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white text-sm"
+                        disabled={isGeneratingAuthClient}
+                      >
+                        <option value="country">Country</option>
+                        <option value="region">Region</option>
+                        <option value="city">City</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={bestAvailable}
+                          onChange={(e) => setBestAvailable(e.target.checked)}
+                          className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
+                          disabled={isGeneratingAuthClient}
+                        />
+                        <span className="text-sm text-gray-300">Best Available</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-gray-600">
+                  <h4 className="text-sm font-semibold text-teal-300 mb-3">Performance Profile</h4>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Window Type
+                    </label>
+                    <select
+                      value={windowType}
+                      onChange={(e) => setWindowType(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white text-sm"
+                      disabled={isGeneratingAuthClient}
+                    >
+                      <option value="quality">Quality</option>
+                      <option value="speed">Speed</option>
+                      <option value="balanced">Balanced</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Window Size Min
+                      </label>
+                      <input
+                        type="number"
+                        value={windowSizeMin}
+                        onChange={(e) => setWindowSizeMin(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Window Size Min P2P Only
+                      </label>
+                      <input
+                        type="number"
+                        value={windowSizeMinP2pOnly}
+                        onChange={(e) => setWindowSizeMinP2pOnly(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Window Size Max
+                      </label>
+                      <input
+                        type="number"
+                        value={windowSizeMax}
+                        onChange={(e) => setWindowSizeMax(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Window Size Hard Max
+                      </label>
+                      <input
+                        type="number"
+                        value={windowSizeHardMax}
+                        onChange={(e) => setWindowSizeHardMax(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Window Size Reconnect Scale
+                      </label>
+                      <input
+                        type="number"
+                        value={windowSizeReconnectScale}
+                        onChange={(e) => setWindowSizeReconnectScale(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Keep Healthiest Count
+                      </label>
+                      <input
+                        type="number"
+                        value={keepHealthiestCount}
+                        onChange={(e) => setKeepHealthiestCount(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        ULimit
+                      </label>
+                      <input
+                        type="number"
+                        value={ulimit}
+                        onChange={(e) => setUlimit(e.target.value)}
+                        placeholder="0"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
+                        disabled={isGeneratingAuthClient}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <button
