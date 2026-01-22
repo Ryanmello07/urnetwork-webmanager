@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Search, MapPin, Users, Globe, Loader2 } from 'lucide-react';
 import { fetchProviderLocations, findProviderLocations } from '../services/api';
@@ -98,8 +98,8 @@ const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
     }
   }, [isLoading]);
 
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
+  const debouncedSearch = useMemo(
+    () => debounce((query: string) => {
       if (query.trim().length >= 2) {
         loadLocations(query.trim());
       }
@@ -114,7 +114,7 @@ const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
     return () => {
       debouncedSearch.cancel();
     };
-  }, [isOpen]);
+  }, [isOpen, loadLocations, debouncedSearch]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
