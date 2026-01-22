@@ -1139,7 +1139,7 @@ const AccountSettingsSection: React.FC = () => {
 
       {/* Password Reset */}
       <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.15s' }}>
-        <div className="bg-gradient-to-r from-red-600 to-red-600 px-6 py-4 border-b border-gray-600">
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4 border-b border-gray-600">
           <div className="flex items-center gap-3">
             <Lock size={20} className="text-white" />
             <div>
