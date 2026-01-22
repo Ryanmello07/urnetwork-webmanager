@@ -1137,53 +1137,8 @@ const AccountSettingsSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Password Reset */}
-      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.15s' }}>
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4 border-b border-gray-600">
-          <div className="flex items-center gap-3">
-            <Lock size={20} className="text-white" />
-            <div>
-              <h3 className="font-medium text-white">Password Reset</h3>
-              <p className="text-blue-100 text-sm mt-1">Request a password reset link to change your account password</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6">
-          <p className="text-gray-300 mb-4">
-            If you need to change your password, we can send a reset link to your registered email address.
-            Click the button below to request a password reset email.
-          </p>
-
-          <button
-            onClick={() => setIsPasswordResetModalOpen(true)}
-            disabled={isLoadingUserEmail || !userEmail}
-            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-              isLoadingUserEmail || !userEmail
-                ? 'bg-gray-600 cursor-not-allowed border border-gray-600 text-gray-400'
-                : 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-500 hover:shadow-lg transform hover:scale-[1.02]'
-            }`}
-          >
-            {isLoadingUserEmail ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Loading...
-              </>
-            ) : (
-              <>
-                <Lock size={18} />
-                Reset Password
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
       {/* Subscription Management */}
-      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.2s' }}>
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.15s' }}>
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 border-b border-gray-600">
           <div className="flex items-center gap-3">
             <CreditCard size={20} className="text-white" />
@@ -1209,6 +1164,51 @@ const AccountSettingsSection: React.FC = () => {
             Open Subscription Portal
             <ExternalLink size={16} />
           </a>
+        </div>
+      </div>
+
+      {/* Password Reset */}
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.2s' }}>
+        <div className="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 border-b border-gray-600">
+          <div className="flex items-center gap-3">
+            <Lock size={20} className="text-white" />
+            <div>
+              <h3 className="font-medium text-white">Password Reset</h3>
+              <p className="text-red-100 text-sm mt-1">Request a password reset link to change your account password</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-300 mb-4">
+            If you need to change your password, we can send a reset link to your registered email address.
+            Click the button below to request a password reset email.
+          </p>
+
+          <button
+            onClick={() => setIsPasswordResetModalOpen(true)}
+            disabled={isLoadingUserEmail || !userEmail}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              isLoadingUserEmail || !userEmail
+                ? 'bg-gray-600 cursor-not-allowed border border-gray-600 text-gray-400'
+                : 'bg-red-600 hover:bg-red-700 text-white border border-red-500 hover:shadow-lg transform hover:scale-[1.02]'
+            }`}
+          >
+            {isLoadingUserEmail ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading...
+              </>
+            ) : (
+              <>
+                <Lock size={18} />
+                Reset Password
+              </>
+            )}
+          </button>
         </div>
       </div>
 
