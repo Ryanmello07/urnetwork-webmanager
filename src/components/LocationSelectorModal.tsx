@@ -153,14 +153,15 @@ const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="location-selector-title"
+      style={{ position: 'fixed' }}
     >
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-gray-700 animate-fadeIn">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-gray-700 animate-fadeIn my-auto">
         <div className="bg-gradient-to-r from-teal-600 to-cyan-600 px-6 py-4 border-b border-gray-600 flex items-center justify-between rounded-t-xl">
           <div className="flex items-center gap-3">
             <MapPin size={24} className="text-white" />

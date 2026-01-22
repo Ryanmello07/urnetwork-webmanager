@@ -583,22 +583,6 @@ const AccountSettingsSection: React.FC = () => {
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 mb-3"
               disabled={isGeneratingAuthClient}
             />
-            <div className="flex flex-wrap gap-2 mb-3">
-              {['us', 'gb', 'ca', 'au', 'de', 'fr', 'jp', 'sg', 'nl', 'se'].map((code) => (
-                <button
-                  key={code}
-                  onClick={() => setCountryCode(code)}
-                  className={`px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
-                    countryCode === code
-                      ? 'bg-teal-600 text-white border border-teal-500'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
-                  }`}
-                  disabled={isGeneratingAuthClient}
-                >
-                  {code.toUpperCase()}
-                </button>
-              ))}
-            </div>
             <button
               onClick={() => setIsLocationSelectorOpen(true)}
               disabled={isGeneratingAuthClient}
