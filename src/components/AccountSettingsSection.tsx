@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { createAuthCode, fetchNetworkUser } from '../services/api';
-import type { CreateAuthCodeResponse } from '../services/api';
+import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
+import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
 import toast from 'react-hot-toast';
 import PasswordResetModal from './PasswordResetModal';
 
@@ -16,6 +16,13 @@ const AccountSettingsSection: React.FC = () => {
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [isLoadingUserEmail, setIsLoadingUserEmail] = useState(true);
+
+  const [description, setDescription] = useState('');
+  const [deviceSpec, setDeviceSpec] = useState('');
+  const [countryCode, setCountryCode] = useState('us');
+  const [isGeneratingAuthClient, setIsGeneratingAuthClient] = useState(false);
+  const [authClientResponse, setAuthClientResponse] = useState<AuthClientResponse | null>(null);
+  const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
 
 
   useEffect(() => {
@@ -99,6 +106,53 @@ const AccountSettingsSection: React.FC = () => {
       } else {
         return `${days}d ${remainingHours}h`;
       }
+    }
+  };
+
+  const handleGenerateAuthClient = async () => {
+    if (!token) return;
+
+    setIsGeneratingAuthClient(true);
+    setAuthClientResponse(null);
+    setCopiedFields({});
+
+    try {
+      const request = {
+        description,
+        device_spec: deviceSpec,
+        proxy_config: {
+          initial_device_state: {
+            country_code: countryCode,
+          },
+        },
+      };
+
+      const response = await createAuthClient(token, request);
+      setAuthClientResponse(response);
+
+      if (response.error) {
+        toast.error(response.error.message);
+      } else {
+        toast.success('Auth client generated successfully!');
+      }
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to generate auth client');
+    } finally {
+      setIsGeneratingAuthClient(false);
+    }
+  };
+
+  const handleCopyField = async (fieldName: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedFields({ ...copiedFields, [fieldName]: true });
+      toast.success(`${fieldName} copied to clipboard!`);
+
+      setTimeout(() => {
+        setCopiedFields(prev => ({ ...prev, [fieldName]: false }));
+      }, 3000);
+    } catch {
+      toast.error('Failed to copy to clipboard');
     }
   };
 
@@ -319,6 +373,303 @@ const AccountSettingsSection: React.FC = () => {
                       </div>
                       <p className="text-xs text-green-300 mt-2">
                         This code can be used to authenticate and access your account. Keep it secure and don't share it publicly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Generate Auth Client */}
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.125s' }}>
+        <div className="bg-gradient-to-r from-teal-600 to-cyan-600 px-6 py-4 border-b border-gray-600">
+          <div className="flex items-center gap-3">
+            <Server size={20} className="text-white" />
+            <div>
+              <h3 className="font-medium text-white">Generate Auth Client</h3>
+              <p className="text-teal-100 text-sm mt-1">Create authenticated proxy clients for secure network access</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="bg-teal-900/30 p-4 rounded-lg border border-teal-700/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield size={16} className="text-teal-400" />
+              <span className="text-sm font-medium text-teal-300">What is an Auth Client?</span>
+            </div>
+            <p className="text-xs text-teal-200 mb-2">
+              Auth clients provide secure proxy access to the BringYour network. Generate credentials to connect applications, scripts, or devices through HTTPS or SOCKS5 proxies.
+            </p>
+            <div className="text-xs text-teal-300">
+              <strong>Use Cases:</strong>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>Route application traffic through specific geographic locations</li>
+                <li>Access secure proxy credentials for development and testing</li>
+                <li>Configure network clients with custom device specifications</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Description (optional)
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="e.g., Development proxy"
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400"
+                disabled={isGeneratingAuthClient}
+              />
+              <p className="text-xs text-gray-400 mt-1">Human-readable description for this client</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Device Spec (optional)
+              </label>
+              <input
+                type="text"
+                value={deviceSpec}
+                onChange={(e) => setDeviceSpec(e.target.value)}
+                placeholder="e.g., Linux x64"
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400"
+                disabled={isGeneratingAuthClient}
+              />
+              <p className="text-xs text-gray-400 mt-1">Technical specifications of the device</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-3">
+              Country Code
+            </label>
+            <input
+              type="text"
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value.toLowerCase())}
+              placeholder="us"
+              maxLength={2}
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 mb-3"
+              disabled={isGeneratingAuthClient}
+            />
+            <div className="flex flex-wrap gap-2">
+              {['us', 'gb', 'ca', 'au', 'de', 'fr', 'jp', 'sg', 'nl', 'se'].map((code) => (
+                <button
+                  key={code}
+                  onClick={() => setCountryCode(code)}
+                  className={`px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
+                    countryCode === code
+                      ? 'bg-teal-600 text-white border border-teal-500'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                  }`}
+                  disabled={isGeneratingAuthClient}
+                >
+                  {code.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-2">2-letter ISO country code for proxy location</p>
+          </div>
+
+          <button
+            onClick={handleGenerateAuthClient}
+            disabled={isGeneratingAuthClient}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg font-medium transition-all duration-200 ${
+              isGeneratingAuthClient
+                ? 'bg-gray-600 cursor-not-allowed border border-gray-600 text-gray-400'
+                : 'bg-teal-600 hover:bg-teal-700 text-white border border-teal-500 hover:shadow-lg transform hover:scale-[1.02]'
+            }`}
+          >
+            {isGeneratingAuthClient ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating Auth Client...
+              </>
+            ) : (
+              <>
+                <Server size={20} />
+                Generate Auth Client
+              </>
+            )}
+          </button>
+
+          {authClientResponse && (
+            <div className="mt-6 space-y-4">
+              {authClientResponse.error ? (
+                <div className="bg-red-900/50 border border-red-700 p-4 rounded-xl flex items-start gap-3">
+                  <AlertCircle size={20} className="text-red-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-red-300">Error generating auth client</h4>
+                    <p className="text-red-200 text-sm mt-1">{authClientResponse.error.message}</p>
+                    {authClientResponse.error.client_limit_exceeded && (
+                      <p className="text-red-200 text-sm mt-2">
+                        <strong>Rate Limit:</strong> You have exceeded the client creation limit. Please remove unused clients before creating new ones.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : authClientResponse.proxy_config_result && (
+                <div className="bg-teal-900/50 border border-teal-700 p-4 rounded-xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle size={20} className="text-teal-400" />
+                    <h4 className="font-medium text-teal-300">Auth Client Generated Successfully</h4>
+                  </div>
+
+                  <div className="space-y-3">
+                    {authClientResponse.by_client_jwt && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-sm font-medium text-teal-300">Client JWT Token</label>
+                          <button
+                            onClick={() => handleCopyField('Client JWT', authClientResponse.by_client_jwt!)}
+                            className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
+                              copiedFields['Client JWT']
+                                ? 'bg-teal-600 text-white border border-teal-500'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                            }`}
+                          >
+                            {copiedFields['Client JWT'] ? (
+                              <>
+                                <CheckCircle size={14} />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={14} />
+                                Copy
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <div className="bg-gray-900 p-3 rounded-lg border border-gray-600 font-mono text-xs break-all">
+                          <code className="text-teal-400 select-all">
+                            {authClientResponse.by_client_jwt}
+                          </code>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-teal-300">HTTPS Proxy URL</label>
+                        <button
+                          onClick={() => handleCopyField('HTTPS Proxy URL', authClientResponse.proxy_config_result!.https_proxy_url)}
+                          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
+                            copiedFields['HTTPS Proxy URL']
+                              ? 'bg-teal-600 text-white border border-teal-500'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                          }`}
+                        >
+                          {copiedFields['HTTPS Proxy URL'] ? (
+                            <>
+                              <CheckCircle size={14} />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={14} />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="bg-gray-900 p-3 rounded-lg border border-gray-600 font-mono text-xs break-all">
+                        <code className="text-teal-400 select-all">
+                          {authClientResponse.proxy_config_result.https_proxy_url}
+                        </code>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-teal-300">SOCKS Proxy URL</label>
+                        <button
+                          onClick={() => handleCopyField('SOCKS Proxy URL', authClientResponse.proxy_config_result!.socks_proxy_url)}
+                          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
+                            copiedFields['SOCKS Proxy URL']
+                              ? 'bg-teal-600 text-white border border-teal-500'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                          }`}
+                        >
+                          {copiedFields['SOCKS Proxy URL'] ? (
+                            <>
+                              <CheckCircle size={14} />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={14} />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="bg-gray-900 p-3 rounded-lg border border-gray-600 font-mono text-xs break-all">
+                        <code className="text-teal-400 select-all">
+                          {authClientResponse.proxy_config_result.socks_proxy_url}
+                        </code>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-teal-300">Auth Token</label>
+                        <button
+                          onClick={() => handleCopyField('Auth Token', authClientResponse.proxy_config_result!.auth_token)}
+                          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
+                            copiedFields['Auth Token']
+                              ? 'bg-teal-600 text-white border border-teal-500'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                          }`}
+                        >
+                          {copiedFields['Auth Token'] ? (
+                            <>
+                              <CheckCircle size={14} />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={14} />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="bg-gray-900 p-3 rounded-lg border border-gray-600 font-mono text-xs break-all">
+                        <code className="text-teal-400 select-all">
+                          {authClientResponse.proxy_config_result.auth_token}
+                        </code>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-teal-800/30 p-3 rounded border border-teal-600">
+                        <div className="text-teal-300 text-sm">Instance ID</div>
+                        <div className="text-teal-100 font-medium text-sm font-mono break-all">
+                          {authClientResponse.proxy_config_result.instance_id}
+                        </div>
+                      </div>
+                      <div className="bg-teal-800/30 p-3 rounded border border-teal-600">
+                        <div className="text-teal-300 text-sm">Keepalive (seconds)</div>
+                        <div className="text-teal-100 font-medium">
+                          {authClientResponse.proxy_config_result.keepalive_seconds}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-teal-900/30 p-3 rounded-lg border border-teal-700/50">
+                      <p className="text-xs text-teal-300">
+                        <strong>Usage Note:</strong> Use these credentials to configure your applications to route traffic through the BringYour network. Keep these credentials secure and don't share them publicly.
                       </p>
                     </div>
                   </div>
