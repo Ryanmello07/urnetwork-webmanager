@@ -232,9 +232,9 @@ const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto px-2 py-1">
               {locations.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-1">
                   {locations.map((location) => (
                     <button
                       key={location.location_id}
