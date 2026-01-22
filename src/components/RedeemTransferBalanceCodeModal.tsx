@@ -113,8 +113,11 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
 
   if (!isOpen) return null;
 
+  const portalRoot = document.getElementById('portal-root');
+  if (!portalRoot) return null;
+
   return createPortal(
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
       <div
         ref={modalRef}
         className="bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-auto animate-scaleIn border border-gray-700"
@@ -236,7 +239,7 @@ const RedeemTransferBalanceCodeModal: React.FC<RedeemTransferBalanceCodeModalPro
         </div>
       </div>
     </div>,
-    document.body
+    portalRoot
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Search, MapPin, Users, Globe, Loader2 } from 'lucide-react';
 import { fetchProviderLocations, findProviderLocations } from '../services/api';
 import type { Location } from '../services/types';
@@ -151,15 +152,17 @@ const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const portalRoot = document.getElementById('portal-root');
+  if (!portalRoot) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={handleBackdropClick}
       onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="location-selector-title"
-      style={{ position: 'fixed' }}
     >
       <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-gray-700 animate-fadeIn my-auto">
         <div className="bg-gradient-to-r from-teal-600 to-cyan-600 px-6 py-4 border-b border-gray-600 flex items-center justify-between rounded-t-xl">
@@ -300,7 +303,8 @@ const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    portalRoot
   );
 };
 
