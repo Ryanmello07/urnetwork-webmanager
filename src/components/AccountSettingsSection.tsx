@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
 import toast from 'react-hot-toast';
 import PasswordResetModal from './PasswordResetModal';
+import LocationSelectorModal from './LocationSelectorModal';
 
 const AccountSettingsSection: React.FC = () => {
   const { token } = useAuth();
@@ -14,6 +15,7 @@ const AccountSettingsSection: React.FC = () => {
   const [authCodeResponse, setAuthCodeResponse] = useState<CreateAuthCodeResponse | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
+  const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [isLoadingUserEmail, setIsLoadingUserEmail] = useState(true);
 
@@ -272,6 +274,10 @@ const AccountSettingsSection: React.FC = () => {
     } catch {
       toast.error('Failed to copy to clipboard');
     }
+  };
+
+  const handleLocationSelect = (countryCode: string, locationName: string) => {
+    setCountryCode(countryCode.toLowerCase());
   };
 
   return (
@@ -577,7 +583,7 @@ const AccountSettingsSection: React.FC = () => {
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 mb-3"
               disabled={isGeneratingAuthClient}
             />
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {['us', 'gb', 'ca', 'au', 'de', 'fr', 'jp', 'sg', 'nl', 'se'].map((code) => (
                 <button
                   key={code}
@@ -593,7 +599,15 @@ const AccountSettingsSection: React.FC = () => {
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-2">2-letter ISO country code for proxy location. Use one of country_code or location settings below.</p>
+            <button
+              onClick={() => setIsLocationSelectorOpen(true)}
+              disabled={isGeneratingAuthClient}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-200 border border-gray-600 hover:border-teal-500 text-sm w-full justify-center mb-2"
+            >
+              <MapPin size={16} />
+              Browse All Locations
+            </button>
+            <p className="text-xs text-gray-400">2-letter ISO country code for proxy location. Use one of country_code or location settings below.</p>
           </div>
 
           <div className="border-t border-gray-700 pt-4">
@@ -1218,6 +1232,13 @@ const AccountSettingsSection: React.FC = () => {
         isOpen={isPasswordResetModalOpen}
         onClose={() => setIsPasswordResetModalOpen(false)}
         userEmail={userEmail}
+      />
+
+      <LocationSelectorModal
+        isOpen={isLocationSelectorOpen}
+        onClose={() => setIsLocationSelectorOpen(false)}
+        onSelectLocation={handleLocationSelect}
+        currentCountryCode={countryCode}
       />
     </div>
   );
