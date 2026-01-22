@@ -1126,7 +1126,7 @@ const AccountSettingsSection: React.FC = () => {
 
                     <div className="bg-teal-900/30 p-3 rounded-lg border border-teal-700/50">
                       <p className="text-xs text-teal-300">
-                        <strong>Usage Note:</strong> Use these credentials to configure your applications to route traffic through the BringYour network. Keep these credentials secure and don't share them publicly.
+                        <strong>Usage Note:</strong> Use these credentials to configure your applications to route traffic through URnetwork. Keep these credentials secure and don't share them publicly.
                       </p>
                     </div>
                   </div>
