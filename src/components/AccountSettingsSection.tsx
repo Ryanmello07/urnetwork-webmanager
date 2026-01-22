@@ -545,7 +545,7 @@ const AccountSettingsSection: React.FC = () => {
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400"
                 disabled={isGeneratingAuthClient}
               />
-              <p className="text-xs text-gray-400 mt-1">Human-readable description for this client</p>
+              <p className="text-xs text-gray-400 mt-1">Sets the device name for new devices</p>
             </div>
 
             <div>
@@ -560,7 +560,7 @@ const AccountSettingsSection: React.FC = () => {
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400"
                 disabled={isGeneratingAuthClient}
               />
-              <p className="text-xs text-gray-400 mt-1">Technical specifications of the device</p>
+              <p className="text-xs text-gray-400 mt-1">Sets the device specification for new devices</p>
             </div>
           </div>
 
@@ -593,7 +593,7 @@ const AccountSettingsSection: React.FC = () => {
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-2">2-letter ISO country code for proxy location</p>
+            <p className="text-xs text-gray-400 mt-2">2-letter ISO country code for proxy location. Use one of country_code or location settings below.</p>
           </div>
 
           <div className="border-t border-gray-700 pt-4">
@@ -624,6 +624,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. Must currently exist in the network. Omit to assign a new client id.</p>
                     </div>
 
                     <div>
@@ -638,6 +639,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. The source client id when creating an ancillary client id.</p>
                     </div>
 
                     <div>
@@ -652,6 +654,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. The client that the new client is derived from. If called with a client JWT, the derived client id is inferred from the JWT.</p>
                     </div>
                   </div>
                 </div>
@@ -660,27 +663,33 @@ const AccountSettingsSection: React.FC = () => {
                   <h4 className="text-sm font-semibold text-teal-300 mb-3">Proxy Configuration</h4>
 
                   <div className="space-y-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={lockCallerIp}
-                        onChange={(e) => setLockCallerIp(e.target.checked)}
-                        className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
-                        disabled={isGeneratingAuthClient}
-                      />
-                      <span className="text-sm text-gray-300">Lock Caller IP</span>
-                    </label>
+                    <div>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={lockCallerIp}
+                          onChange={(e) => setLockCallerIp(e.target.checked)}
+                          className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
+                          disabled={isGeneratingAuthClient}
+                        />
+                        <span className="text-sm text-gray-300">Lock Caller IP</span>
+                      </label>
+                      <p className="text-xs text-gray-400 mt-1 ml-7">Allow only the caller's IP subnet to access the proxy</p>
+                    </div>
 
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={httpsRequireAuth}
-                        onChange={(e) => setHttpsRequireAuth(e.target.checked)}
-                        className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
-                        disabled={isGeneratingAuthClient}
-                      />
-                      <span className="text-sm text-gray-300">HTTPS Require Auth</span>
-                    </label>
+                    <div>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={httpsRequireAuth}
+                          onChange={(e) => setHttpsRequireAuth(e.target.checked)}
+                          className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
+                          disabled={isGeneratingAuthClient}
+                        />
+                        <span className="text-sm text-gray-300">HTTPS Require Auth</span>
+                      </label>
+                      <p className="text-xs text-gray-400 mt-1 ml-7">Not needed if the client supports ECH</p>
+                    </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -694,6 +703,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Allow only IPs/subnets in the list. Converted to internal IP subnet width.</p>
                     </div>
                   </div>
                 </div>
@@ -714,6 +724,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. Specific client ID for location targeting</p>
                     </div>
 
                     <div>
@@ -728,6 +739,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. Specific location identifier</p>
                     </div>
 
                     <div>
@@ -742,6 +754,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. Group of locations to target</p>
                     </div>
 
                     <div>
@@ -756,6 +769,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Optional. Human-readable location name</p>
                     </div>
 
                     <div>
@@ -772,19 +786,23 @@ const AccountSettingsSection: React.FC = () => {
                         <option value="region">Region</option>
                         <option value="city">City</option>
                       </select>
+                      <p className="text-xs text-gray-400 mt-1">Granularity level for location targeting</p>
                     </div>
 
                     <div className="flex items-center">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={bestAvailable}
-                          onChange={(e) => setBestAvailable(e.target.checked)}
-                          className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
-                          disabled={isGeneratingAuthClient}
-                        />
-                        <span className="text-sm text-gray-300">Best Available</span>
-                      </label>
+                      <div>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={bestAvailable}
+                            onChange={(e) => setBestAvailable(e.target.checked)}
+                            className="w-4 h-4 bg-gray-700 border-gray-600 rounded focus:ring-2 focus:ring-teal-500"
+                            disabled={isGeneratingAuthClient}
+                          />
+                          <span className="text-sm text-gray-300">Best Available</span>
+                        </label>
+                        <p className="text-xs text-gray-400 mt-1 ml-7">Automatically select the best available location</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -805,6 +823,7 @@ const AccountSettingsSection: React.FC = () => {
                       <option value="quality">Quality</option>
                       <option value="speed">Speed</option>
                     </select>
+                    <p className="text-xs text-gray-400 mt-1">Default is 'quality'. Choose between quality and speed optimization.</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -820,6 +839,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Minimum connection window size</p>
                     </div>
 
                     <div>
@@ -834,6 +854,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Min items connected via P2P only. Leave 0 for default.</p>
                     </div>
 
                     <div>
@@ -848,6 +869,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Inclusive soft limit. When max equals min, fixed size mode is enabled.</p>
                     </div>
 
                     <div>
@@ -862,6 +884,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Leave 0 to disable (no hard limit)</p>
                     </div>
 
                     <div>
@@ -876,6 +899,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Clients per source per stream</p>
                     </div>
 
                     <div>
@@ -890,6 +914,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Leave 0 to disable</p>
                     </div>
 
                     <div>
@@ -904,6 +929,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 text-sm"
                         disabled={isGeneratingAuthClient}
                       />
+                      <p className="text-xs text-gray-400 mt-1">Leave 0 to disable (no limit)</p>
                     </div>
                   </div>
                 </div>
