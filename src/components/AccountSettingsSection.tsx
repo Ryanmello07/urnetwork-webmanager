@@ -508,7 +508,7 @@ const AccountSettingsSection: React.FC = () => {
             <Server size={20} className="text-white" />
             <div>
               <h3 className="font-medium text-white">Generate Auth Client</h3>
-              <p className="text-teal-100 text-sm mt-1">Create authenticated proxy clients for secure network access</p>
+              <p className="text-teal-100 text-sm mt-1">Create authenticated proxy client URLs for network access</p>
             </div>
           </div>
         </div>
