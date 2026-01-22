@@ -804,7 +804,6 @@ const AccountSettingsSection: React.FC = () => {
                     >
                       <option value="quality">Quality</option>
                       <option value="speed">Speed</option>
-                      <option value="balanced">Balanced</option>
                     </select>
                   </div>
 
