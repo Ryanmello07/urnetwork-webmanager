@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download, Smartphone } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
 import toast from 'react-hot-toast';
 import PasswordResetModal from './PasswordResetModal';
 import LocationSelectorModal from './LocationSelectorModal';
+import WireGuardQRModal from './WireGuardQRModal';
 
 const AccountSettingsSection: React.FC = () => {
   const { token } = useAuth();
@@ -26,6 +27,7 @@ const AccountSettingsSection: React.FC = () => {
   const [authClientResponse, setAuthClientResponse] = useState<AuthClientResponse | null>(null);
   const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showWgQR, setShowWgQR] = useState(false);
 
   const [clientId, setClientId] = useState('');
   const [sourceClientId, setSourceClientId] = useState('');
@@ -1307,21 +1309,30 @@ const AccountSettingsSection: React.FC = () => {
 
                           <div>
                             <p className="text-xs text-cyan-400 mb-2">WireGuard Config File</p>
-                            <button
-                              onClick={() => {
-                                const blob = new Blob([authClientResponse.proxy_config_result!.wg_config!.config], { type: 'text/plain' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = 'urnetwork.conf';
-                                a.click();
-                                URL.revokeObjectURL(url);
-                              }}
-                              className="flex items-center gap-2 w-full justify-center px-4 py-2.5 bg-cyan-700/40 hover:bg-cyan-700/60 text-cyan-200 rounded-lg border border-cyan-600/60 transition-all duration-200 text-sm font-medium"
-                            >
-                              <Download size={15} />
-                              Download urnetwork.conf
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  const blob = new Blob([authClientResponse.proxy_config_result!.wg_config!.config], { type: 'text/plain' });
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = 'urnetwork.conf';
+                                  a.click();
+                                  URL.revokeObjectURL(url);
+                                }}
+                                className="flex items-center gap-2 flex-1 justify-center px-4 py-2.5 bg-cyan-700/40 hover:bg-cyan-700/60 text-cyan-200 rounded-lg border border-cyan-600/60 transition-all duration-200 text-sm font-medium"
+                              >
+                                <Download size={15} />
+                                Download .conf
+                              </button>
+                              <button
+                                onClick={() => setShowWgQR(true)}
+                                className="flex items-center gap-2 flex-1 justify-center px-4 py-2.5 bg-gray-700/60 hover:bg-gray-600/60 text-gray-200 rounded-lg border border-gray-600/60 transition-all duration-200 text-sm font-medium"
+                              >
+                                <Smartphone size={15} />
+                                QR Code
+                              </button>
+                            </div>
                             <p className="text-xs text-gray-400 mt-1.5">Contains private key — import directly into any WireGuard client.</p>
                           </div>
                         </div>
@@ -1428,6 +1439,13 @@ const AccountSettingsSection: React.FC = () => {
         onSelectLocation={handleLocationSelect}
         currentCountryCode={countryCode}
       />
+
+      {showWgQR && authClientResponse?.proxy_config_result?.wg_config?.config && (
+        <WireGuardQRModal
+          config={authClientResponse.proxy_config_result.wg_config.config}
+          onClose={() => setShowWgQR(false)}
+        />
+      )}
     </div>
   );
 };
