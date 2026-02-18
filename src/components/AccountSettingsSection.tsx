@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
@@ -51,6 +51,8 @@ const AccountSettingsSection: React.FC = () => {
   const [keepHealthiestCount, setKeepHealthiestCount] = useState('');
   const [ulimit, setUlimit] = useState('');
 
+  const [enableWg, setEnableWg] = useState(false);
+  const [showWgPrivateKey, setShowWgPrivateKey] = useState(false);
 
   useEffect(() => {
     const loadUserEmail = async () => {
@@ -188,9 +190,11 @@ const AccountSettingsSection: React.FC = () => {
       if (deviceSpec) request.device_spec = deviceSpec;
       if (derivedClientId) request.derived_client_id = derivedClientId;
 
-      const hasProxyConfig = showAdvanced || countryCode;
+      const hasProxyConfig = showAdvanced || countryCode || enableWg;
       if (hasProxyConfig) {
         request.proxy_config = {};
+
+        if (enableWg) request.proxy_config.enable_wg = true;
 
         if (showAdvanced) {
           if (lockCallerIp) request.proxy_config.lock_caller_ip = lockCallerIp;
@@ -594,6 +598,38 @@ const AccountSettingsSection: React.FC = () => {
             <p className="text-xs text-gray-400">2-letter ISO country code for proxy location. Use one of country_code or location settings below.</p>
           </div>
 
+          <div className="bg-gray-700/40 rounded-lg border border-gray-600 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-cyan-900/50 rounded-lg border border-cyan-700/50">
+                  <Wifi size={16} className="text-cyan-400" />
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer" htmlFor="enableWgToggle">
+                    <span className="text-sm font-medium text-gray-200">Enable WireGuard</span>
+                  </label>
+                  <p className="text-xs text-gray-400 mt-0.5">Generate a WireGuard VPN configuration alongside proxy credentials</p>
+                </div>
+              </div>
+              <button
+                id="enableWgToggle"
+                role="switch"
+                aria-checked={enableWg}
+                onClick={() => setEnableWg(!enableWg)}
+                disabled={isGeneratingAuthClient}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                  enableWg ? 'bg-cyan-600' : 'bg-gray-600'
+                } ${isGeneratingAuthClient ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                    enableWg ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           <div className="border-t border-gray-700 pt-4">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
@@ -702,6 +738,57 @@ const AccountSettingsSection: React.FC = () => {
                         disabled={isGeneratingAuthClient}
                       />
                       <p className="text-xs text-gray-400 mt-1">Allow only IPs/subnets in the list. Converted to internal IP subnet width.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-gray-600">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Network size={16} className="text-cyan-400" />
+                    <h4 className="text-sm font-semibold text-cyan-300">WireGuard Settings</h4>
+                  </div>
+
+                  <div className="bg-cyan-900/20 border border-cyan-700/40 rounded-lg p-3">
+                    <p className="text-xs text-cyan-200">
+                      When WireGuard is enabled above, the server will return a complete WireGuard configuration including client keys, assigned IPv4 address, and a ready-to-use config file that can be imported directly into any WireGuard client.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-gray-700/50 rounded-lg p-3 border border-gray-600">
+                    <div>
+                      <p className="text-sm text-gray-300 font-medium">WireGuard Status</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Controlled by the toggle above</p>
+                    </div>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
+                      enableWg
+                        ? 'bg-cyan-900/50 text-cyan-300 border-cyan-700'
+                        : 'bg-gray-700 text-gray-400 border-gray-600'
+                    }`}>
+                      {enableWg ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+
+                  <div className="bg-gray-700/30 rounded-lg p-3 border border-gray-600/50 space-y-1.5">
+                    <p className="text-xs font-medium text-gray-300 mb-2">When enabled, the response will include:</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
+                      WireGuard proxy port number
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
+                      Client key pair (private + public)
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
+                      Assigned IPv4 address for the tunnel
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
+                      Server public key for peer configuration
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
+                      Ready-to-import .conf file contents
                     </div>
                   </div>
                 </div>
@@ -1123,6 +1210,124 @@ const AccountSettingsSection: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {authClientResponse.proxy_config_result.wg_config && (
+                      <div className="border border-cyan-700/60 rounded-xl overflow-hidden">
+                        <div className="bg-gradient-to-r from-cyan-800/60 to-cyan-700/40 px-4 py-3 flex items-center gap-2">
+                          <Wifi size={16} className="text-cyan-300" />
+                          <span className="text-sm font-semibold text-cyan-200">WireGuard Configuration</span>
+                        </div>
+                        <div className="bg-gray-800/60 p-4 space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-cyan-900/20 p-3 rounded-lg border border-cyan-700/40">
+                              <div className="text-xs text-cyan-400 mb-1">Proxy Port</div>
+                              <div className="text-sm font-mono text-cyan-100 font-medium">
+                                {authClientResponse.proxy_config_result.wg_config.wg_proxy_port}
+                              </div>
+                            </div>
+                            <div className="bg-cyan-900/20 p-3 rounded-lg border border-cyan-700/40">
+                              <div className="text-xs text-cyan-400 mb-1">Client IPv4</div>
+                              <div className="text-sm font-mono text-cyan-100 font-medium">
+                                {authClientResponse.proxy_config_result.wg_config.client_ipv4}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs text-cyan-400">Client Public Key</span>
+                              <button
+                                onClick={() => handleCopyField('WG Client Public Key', authClientResponse.proxy_config_result!.wg_config!.client_public_key)}
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-all duration-200 ${
+                                  copiedFields['WG Client Public Key']
+                                    ? 'bg-cyan-600 text-white border border-cyan-500'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                }`}
+                              >
+                                {copiedFields['WG Client Public Key'] ? <CheckCircle size={12} /> : <Copy size={12} />}
+                                {copiedFields['WG Client Public Key'] ? 'Copied!' : 'Copy'}
+                              </button>
+                            </div>
+                            <div className="bg-gray-900 px-3 py-2 rounded border border-gray-600 font-mono text-xs break-all text-cyan-300 select-all">
+                              {authClientResponse.proxy_config_result.wg_config.client_public_key}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs text-cyan-400">Client Private Key</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setShowWgPrivateKey(!showWgPrivateKey)}
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600 transition-all duration-200"
+                                >
+                                  {showWgPrivateKey ? <EyeOff size={12} /> : <Eye size={12} />}
+                                  {showWgPrivateKey ? 'Hide' : 'Show'}
+                                </button>
+                                <button
+                                  onClick={() => handleCopyField('WG Client Private Key', authClientResponse.proxy_config_result!.wg_config!.client_private_key)}
+                                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-all duration-200 ${
+                                    copiedFields['WG Client Private Key']
+                                      ? 'bg-cyan-600 text-white border border-cyan-500'
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                  }`}
+                                >
+                                  {copiedFields['WG Client Private Key'] ? <CheckCircle size={12} /> : <Copy size={12} />}
+                                  {copiedFields['WG Client Private Key'] ? 'Copied!' : 'Copy'}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="bg-gray-900 px-3 py-2 rounded border border-gray-600 font-mono text-xs break-all text-cyan-300 select-all">
+                              {showWgPrivateKey
+                                ? authClientResponse.proxy_config_result.wg_config.client_private_key
+                                : '•'.repeat(44)}
+                            </div>
+                            <p className="text-xs text-amber-400 mt-1">Keep this key secret. Do not share it.</p>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs text-cyan-400">Server Public Key (Peer)</span>
+                              <button
+                                onClick={() => handleCopyField('WG Proxy Public Key', authClientResponse.proxy_config_result!.wg_config!.proxy_public_key)}
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-all duration-200 ${
+                                  copiedFields['WG Proxy Public Key']
+                                    ? 'bg-cyan-600 text-white border border-cyan-500'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                }`}
+                              >
+                                {copiedFields['WG Proxy Public Key'] ? <CheckCircle size={12} /> : <Copy size={12} />}
+                                {copiedFields['WG Proxy Public Key'] ? 'Copied!' : 'Copy'}
+                              </button>
+                            </div>
+                            <div className="bg-gray-900 px-3 py-2 rounded border border-gray-600 font-mono text-xs break-all text-cyan-300 select-all">
+                              {authClientResponse.proxy_config_result.wg_config.proxy_public_key}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs text-cyan-400">WireGuard Config File</span>
+                              <button
+                                onClick={() => handleCopyField('WG Config', authClientResponse.proxy_config_result!.wg_config!.config)}
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-all duration-200 ${
+                                  copiedFields['WG Config']
+                                    ? 'bg-cyan-600 text-white border border-cyan-500'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                                }`}
+                              >
+                                {copiedFields['WG Config'] ? <CheckCircle size={12} /> : <Copy size={12} />}
+                                {copiedFields['WG Config'] ? 'Copied!' : 'Copy Config'}
+                              </button>
+                            </div>
+                            <pre className="bg-gray-900 px-3 py-2 rounded border border-gray-600 font-mono text-xs text-cyan-300 whitespace-pre-wrap break-all select-all max-h-48 overflow-y-auto">
+                              {authClientResponse.proxy_config_result.wg_config.config}
+                            </pre>
+                            <p className="text-xs text-gray-400 mt-1">Import this config into any WireGuard client (e.g., save as <code className="text-cyan-400">urnetwork.conf</code>).</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="bg-teal-900/30 p-3 rounded-lg border border-teal-700/50">
                       <p className="text-xs text-teal-300">

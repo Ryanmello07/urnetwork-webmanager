@@ -612,6 +612,7 @@ export interface ProxyConfig {
   lock_caller_ip?: boolean;
   lock_ip_list?: string[];
   https_require_auth?: boolean;
+  enable_wg?: boolean;
   initial_device_state?: InitialDeviceState;
 }
 
@@ -677,12 +678,30 @@ export interface AuthClientResponse {
 }
 
 /**
+ * WireGuard configuration returned when enable_wg is true
+ */
+export interface WgConfig {
+  wg_proxy_port: number;
+  client_private_key: string;
+  client_public_key: string;
+  client_ipv4: string;
+  proxy_public_key: string;
+  config: string;
+}
+
+/**
  * Proxy configuration result from auth client creation
  */
 export interface ProxyConfigResult {
   keepalive_seconds: number;
+  http_proxy_url?: string;
   https_proxy_url: string;
   socks_proxy_url: string;
   auth_token: string;
   instance_id: string;
+  proxy_host?: string;
+  socks_proxy_port?: number;
+  http_proxy_port?: number;
+  https_proxy_port?: number;
+  wg_config?: WgConfig;
 }
