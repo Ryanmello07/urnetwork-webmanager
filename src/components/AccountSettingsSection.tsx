@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
@@ -1306,24 +1306,23 @@ const AccountSettingsSection: React.FC = () => {
                           </div>
 
                           <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs text-cyan-400">WireGuard Config File</span>
-                              <button
-                                onClick={() => handleCopyField('WG Config', authClientResponse.proxy_config_result!.wg_config!.config)}
-                                className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs transition-all duration-200 ${
-                                  copiedFields['WG Config']
-                                    ? 'bg-cyan-600 text-white border border-cyan-500'
-                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
-                                }`}
-                              >
-                                {copiedFields['WG Config'] ? <CheckCircle size={12} /> : <Copy size={12} />}
-                                {copiedFields['WG Config'] ? 'Copied!' : 'Copy Config'}
-                              </button>
-                            </div>
-                            <pre className="bg-gray-900 px-3 py-2 rounded border border-gray-600 font-mono text-xs text-cyan-300 whitespace-pre-wrap break-all select-all max-h-48 overflow-y-auto">
-                              {authClientResponse.proxy_config_result.wg_config.config}
-                            </pre>
-                            <p className="text-xs text-gray-400 mt-1">Import this config into any WireGuard client (e.g., save as <code className="text-cyan-400">urnetwork.conf</code>).</p>
+                            <p className="text-xs text-cyan-400 mb-2">WireGuard Config File</p>
+                            <button
+                              onClick={() => {
+                                const blob = new Blob([authClientResponse.proxy_config_result!.wg_config!.config], { type: 'text/plain' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'urnetwork.conf';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                              className="flex items-center gap-2 w-full justify-center px-4 py-2.5 bg-cyan-700/40 hover:bg-cyan-700/60 text-cyan-200 rounded-lg border border-cyan-600/60 transition-all duration-200 text-sm font-medium"
+                            >
+                              <Download size={15} />
+                              Download urnetwork.conf
+                            </button>
+                            <p className="text-xs text-gray-400 mt-1.5">Contains private key — import directly into any WireGuard client.</p>
                           </div>
                         </div>
                       </div>
