@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Smartphone } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -21,7 +22,7 @@ export default function WireGuardQRModal({ config, onClose }: WireGuardQRModalPr
     }).catch(() => setError(true));
   }, [config]);
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={onClose}
@@ -61,6 +62,7 @@ export default function WireGuardQRModal({ config, onClose }: WireGuardQRModalPr
           Keep this QR code private — it contains your private key.
         </p>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
