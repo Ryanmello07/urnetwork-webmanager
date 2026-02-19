@@ -22,7 +22,7 @@ const AccountSettingsSection: React.FC = () => {
 
   const [description, setDescription] = useState('');
   const [deviceSpec, setDeviceSpec] = useState('');
-  const [countryCode, setCountryCode] = useState('');
+  const [countryCode, setCountryCode] = useState('us');
   const [isGeneratingAuthClient, setIsGeneratingAuthClient] = useState(false);
   const [authClientResponse, setAuthClientResponse] = useState<AuthClientResponse | null>(null);
   const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
@@ -213,6 +213,8 @@ const AccountSettingsSection: React.FC = () => {
         if (hasInitialDeviceState) {
           request.proxy_config.initial_device_state = {};
 
+          if (countryCode) request.proxy_config.initial_device_state.country_code = countryCode;
+
           const hasLocation = locationClientId || locationId || locationGroupId || bestAvailable || locationName || locationType;
           if (hasLocation) {
             request.proxy_config.initial_device_state.location = {};
@@ -228,8 +230,6 @@ const AccountSettingsSection: React.FC = () => {
 
             if (locationName) request.proxy_config.initial_device_state.location.name = locationName;
             if (locationType) request.proxy_config.initial_device_state.location.location_type = locationType;
-          } else if (countryCode) {
-            request.proxy_config.initial_device_state.country_code = countryCode;
           }
 
           const hasPerformanceProfile = windowType || windowSizeMin || windowSizeMinP2pOnly || windowSizeMax || windowSizeHardMax || windowSizeReconnectScale || keepHealthiestCount || ulimit;
