@@ -42,7 +42,7 @@ const AccountSettingsSection: React.FC = () => {
   const [locationGroupId, setLocationGroupId] = useState('');
   const [bestAvailable, setBestAvailable] = useState(false);
   const [locationName, setLocationName] = useState('');
-  const [locationType, setLocationType] = useState('country');
+  const [locationType, setLocationType] = useState('');
 
   const [windowType, setWindowType] = useState('quality');
   const [windowSizeMin, setWindowSizeMin] = useState('');
@@ -55,6 +55,8 @@ const AccountSettingsSection: React.FC = () => {
 
   const [enableWg, setEnableWg] = useState(false);
   const [showWgPrivateKey, setShowWgPrivateKey] = useState(false);
+
+  const hasAdvancedLocation = !!(locationClientId || locationId || locationGroupId || bestAvailable || locationName || locationType);
 
   useEffect(() => {
     const loadUserEmail = async () => {
@@ -209,14 +211,15 @@ const AccountSettingsSection: React.FC = () => {
           if (httpsRequireAuth) request.proxy_config.https_require_auth = httpsRequireAuth;
         }
 
-        const hasInitialDeviceState = countryCode || locationClientId || locationId || locationGroupId || bestAvailable || locationName || locationType || windowType || windowSizeMin || windowSizeMinP2pOnly || windowSizeMax || windowSizeHardMax || windowSizeReconnectScale || keepHealthiestCount || ulimit;
+        const hasInitialDeviceState = (!hasAdvancedLocation && countryCode) || hasAdvancedLocation || windowType || windowSizeMin || windowSizeMinP2pOnly || windowSizeMax || windowSizeHardMax || windowSizeReconnectScale || keepHealthiestCount || ulimit;
         if (hasInitialDeviceState) {
           request.proxy_config.initial_device_state = {};
 
-          if (countryCode) request.proxy_config.initial_device_state.country_code = countryCode;
+          if (!hasAdvancedLocation && countryCode) {
+            request.proxy_config.initial_device_state.country_code = countryCode;
+          }
 
-          const hasLocation = locationClientId || locationId || locationGroupId || bestAvailable || locationName || locationType;
-          if (hasLocation) {
+          if (hasAdvancedLocation) {
             request.proxy_config.initial_device_state.location = {};
 
             const hasConnectLocationId = locationClientId || locationId || locationGroupId || bestAvailable;
@@ -282,8 +285,14 @@ const AccountSettingsSection: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = (countryCode: string) => {
-    setCountryCode(countryCode.toLowerCase());
+  const handleLocationSelect = (code: string) => {
+    setCountryCode(code.toLowerCase());
+    setLocationClientId('');
+    setLocationId('');
+    setLocationGroupId('');
+    setLocationName('');
+    setLocationType('');
+    setBestAvailable(false);
   };
 
   return (
@@ -586,18 +595,22 @@ const AccountSettingsSection: React.FC = () => {
               onChange={(e) => setCountryCode(e.target.value.toLowerCase())}
               placeholder="us"
               maxLength={2}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 mb-3"
-              disabled={isGeneratingAuthClient}
+              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white placeholder-gray-400 mb-3 ${hasAdvancedLocation ? 'opacity-40 cursor-not-allowed' : ''}`}
+              disabled={isGeneratingAuthClient || hasAdvancedLocation}
             />
             <button
               onClick={() => setIsLocationSelectorOpen(true)}
-              disabled={isGeneratingAuthClient}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-200 border border-gray-600 hover:border-teal-500 text-sm w-full justify-center mb-2"
+              disabled={isGeneratingAuthClient || hasAdvancedLocation}
+              className={`flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-200 border border-gray-600 hover:border-teal-500 text-sm w-full justify-center mb-2 ${hasAdvancedLocation ? 'opacity-40 cursor-not-allowed hover:bg-gray-700 hover:border-gray-600' : ''}`}
             >
               <MapPin size={16} />
               Browse All Locations
             </button>
-            <p className="text-xs text-gray-400">2-letter ISO country code for proxy location. Use one of country_code or location settings below.</p>
+            {hasAdvancedLocation ? (
+              <p className="text-xs text-amber-400">Disabled -- advanced location settings are active below. Clear them to use country code instead.</p>
+            ) : (
+              <p className="text-xs text-gray-400">2-letter ISO country code for proxy location. Use advanced location settings below for finer control.</p>
+            )}
           </div>
 
           <div className="bg-gray-700/40 rounded-lg border border-gray-600 p-4">
@@ -796,7 +809,15 @@ const AccountSettingsSection: React.FC = () => {
                 </div>
 
                 <div className="space-y-4 pt-4 border-t border-gray-600">
-                  <h4 className="text-sm font-semibold text-teal-300 mb-3">Location Settings</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-teal-300">Location Settings</h4>
+                    {hasAdvancedLocation && (
+                      <span className="text-xs bg-amber-900/50 text-amber-300 border border-amber-700/50 px-2 py-0.5 rounded-full">Overrides country code</span>
+                    )}
+                  </div>
+                  {hasAdvancedLocation && (
+                    <p className="text-xs text-amber-400 -mt-2">These settings override the country code field above. Only the location object will be sent.</p>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -869,6 +890,7 @@ const AccountSettingsSection: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 text-white text-sm"
                         disabled={isGeneratingAuthClient}
                       >
+                        <option value="">-- Select --</option>
                         <option value="country">Country</option>
                         <option value="region">Region</option>
                         <option value="city">City</option>
