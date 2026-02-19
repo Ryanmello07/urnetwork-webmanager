@@ -63,7 +63,7 @@ async function safeJsonParse<T>(response: Response): Promise<T> {
       return JSON.parse(text) as T;
     } catch (error) {
       console.error('JSON parse error:', error);
-      throw new Error('Failed to parse response as JSON');
+      throw new Error('Failed to parse response as JSON', { cause: error });
     }
   }
 
