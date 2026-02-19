@@ -3,6 +3,7 @@ import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lo
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
+import type { Location } from '../services/types';
 import toast from 'react-hot-toast';
 import PasswordResetModal from './PasswordResetModal';
 import LocationSelectorModal from './LocationSelectorModal';
@@ -285,14 +286,23 @@ const AccountSettingsSection: React.FC = () => {
     }
   };
 
-  const handleLocationSelect = (code: string) => {
-    setCountryCode(code.toLowerCase());
-    setLocationClientId('');
-    setLocationId('');
-    setLocationGroupId('');
-    setLocationName('');
-    setLocationType('');
-    setBestAvailable(false);
+  const handleLocationSelect = (location: Location) => {
+    if (location.location_type === 'country') {
+      setCountryCode(location.country_code?.toLowerCase() || '');
+      setLocationClientId('');
+      setLocationId('');
+      setLocationGroupId('');
+      setLocationName('');
+      setLocationType('');
+      setBestAvailable(false);
+    } else {
+      setLocationId(location.location_id);
+      setLocationType(location.location_type);
+      setLocationName(location.name);
+      setLocationClientId('');
+      setLocationGroupId('');
+      setBestAvailable(false);
+    }
   };
 
   return (
@@ -600,16 +610,16 @@ const AccountSettingsSection: React.FC = () => {
             />
             <button
               onClick={() => setIsLocationSelectorOpen(true)}
-              disabled={isGeneratingAuthClient || hasAdvancedLocation}
-              className={`flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-200 border border-gray-600 hover:border-teal-500 text-sm w-full justify-center mb-2 ${hasAdvancedLocation ? 'opacity-40 cursor-not-allowed hover:bg-gray-700 hover:border-gray-600' : ''}`}
+              disabled={isGeneratingAuthClient}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-200 border border-gray-600 hover:border-teal-500 text-sm w-full justify-center mb-2"
             >
               <MapPin size={16} />
               Browse All Locations
             </button>
             {hasAdvancedLocation ? (
-              <p className="text-xs text-amber-400">Disabled -- advanced location settings are active below. Clear them to use country code instead.</p>
+              <p className="text-xs text-amber-400">Country code disabled -- advanced location settings are active. Selecting a country above will clear them.</p>
             ) : (
-              <p className="text-xs text-gray-400">2-letter ISO country code for proxy location. Use advanced location settings below for finer control.</p>
+              <p className="text-xs text-gray-400">2-letter ISO country code for proxy location. Selecting a city or region will use advanced location settings instead.</p>
             )}
           </div>
 
@@ -1460,6 +1470,7 @@ const AccountSettingsSection: React.FC = () => {
         onClose={() => setIsLocationSelectorOpen(false)}
         onSelectLocation={handleLocationSelect}
         currentCountryCode={countryCode}
+        currentLocationId={locationId}
       />
 
       {showWgQR && authClientResponse?.proxy_config_result?.wg_config?.config && (
