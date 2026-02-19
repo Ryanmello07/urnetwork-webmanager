@@ -532,7 +532,7 @@ const AccountSettingsSection: React.FC = () => {
               <span className="text-sm font-medium text-teal-300">What is an Auth Client?</span>
             </div>
             <p className="text-xs text-teal-200 mb-2">
-              Auth clients provide secure proxy access to URnetwork. Generate credentials to connect applications, scripts, or devices through HTTPS or SOCKS5 proxies.
+              Auth clients provide secure proxy access to URnetwork. Generate credentials to connect applications, scripts, or devices through HTTPS, SOCKS5 or WireGuard.
             </p>
             <div className="text-xs text-teal-300">
               <strong>Use Cases:</strong>
