@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download, Smartphone } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download, Smartphone, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
 import type { Location } from '../services/types';
 import toast from 'react-hot-toast';
 import PasswordResetModal from './PasswordResetModal';
+import DeleteAccountModal from './DeleteAccountModal';
 import LocationSelectorModal from './LocationSelectorModal';
 import WireGuardQRModal from './WireGuardQRModal';
 
 const AccountSettingsSection: React.FC = () => {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [uses, setUses] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [authCodeResponse, setAuthCodeResponse] = useState<CreateAuthCodeResponse | null>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
   const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [isLoadingUserEmail, setIsLoadingUserEmail] = useState(true);
@@ -1459,10 +1461,45 @@ const AccountSettingsSection: React.FC = () => {
         </div>
       </div>
 
+      {/* Delete Account */}
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.3s' }}>
+        <div className="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 border-b border-gray-600">
+          <div className="flex items-center gap-3">
+            <Trash2 size={20} className="text-white" />
+            <div>
+              <h3 className="font-medium text-white">Delete Account</h3>
+              <p className="text-red-100 text-sm mt-1">Permanently delete your account and all associated data</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-300 mb-4">
+            Once your account is deleted, all of your data will be permanently removed. This action cannot be undone.
+            Please make sure you want to proceed before continuing.
+          </p>
+
+          <button
+            onClick={() => setIsDeleteAccountModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-red-600 hover:bg-red-700 text-white border border-red-500 hover:shadow-lg transform hover:scale-[1.02]"
+          >
+            <Trash2 size={18} />
+            Delete Account
+          </button>
+        </div>
+      </div>
+
       <PasswordResetModal
         isOpen={isPasswordResetModalOpen}
         onClose={() => setIsPasswordResetModalOpen(false)}
         userEmail={userEmail}
+      />
+
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+        token={token}
+        onDeleteSuccess={logout}
       />
 
       <LocationSelectorModal

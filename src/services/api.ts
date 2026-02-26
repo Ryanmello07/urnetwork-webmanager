@@ -1072,6 +1072,44 @@ export const createAuthClient = async (
   }
 };
 
+interface NetworkDeleteResponse {
+  error?: {
+    message: string;
+  };
+}
+
+export const deleteNetwork = async (
+  token: string
+): Promise<NetworkDeleteResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/network-delete`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return {};
+  } catch (error) {
+    console.error("Network delete error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error ? error.message : "Failed to delete account",
+      },
+    };
+  }
+};
+
 // Export types for convenience
 export type {
   AuthResponse,
