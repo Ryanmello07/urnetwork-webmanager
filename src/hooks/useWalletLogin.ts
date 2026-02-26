@@ -9,8 +9,6 @@ function encodeBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-const SIGN_MESSAGE = "Sign in to URnetwork";
-
 export type SolanaWalletType = "phantom" | "solflare";
 
 interface UseWalletLoginResult {
@@ -47,7 +45,7 @@ export function useWalletLogin(): UseWalletLoginResult {
       }
 
       const walletAddress = provider.publicKey.toString();
-      const walletMessage = SIGN_MESSAGE;
+      const walletMessage = `Sign in to URnetwork ${Math.floor(Date.now() / 1000)}`;
       const messageBytes = new TextEncoder().encode(walletMessage);
 
       const result = await provider.signMessage(messageBytes, "utf8");
