@@ -1,28 +1,12 @@
 import { useCallback } from "react";
 import type { WalletAuthPayload } from "../services/types";
 
-const BASE58_ALPHABET =
-  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-
-function encodeBase58(bytes: Uint8Array): string {
-  let num = BigInt(0);
-  for (const byte of bytes) {
-    num = num * BigInt(256) + BigInt(byte);
+function encodeBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
   }
-
-  let encoded = "";
-  while (num > BigInt(0)) {
-    const remainder = Number(num % BigInt(58));
-    num = num / BigInt(58);
-    encoded = BASE58_ALPHABET[remainder] + encoded;
-  }
-
-  for (const byte of bytes) {
-    if (byte === 0) encoded = "1" + encoded;
-    else break;
-  }
-
-  return encoded;
+  return btoa(binary);
 }
 
 const SIGN_MESSAGE = "Sign in to URnetwork";
@@ -67,7 +51,7 @@ export function useWalletLogin(): UseWalletLoginResult {
       const messageBytes = new TextEncoder().encode(walletMessage);
 
       const result = await provider.signMessage(messageBytes, "utf8");
-      const walletSignature = encodeBase58(result.signature);
+      const walletSignature = encodeBase64(result.signature);
 
       return {
         wallet_address: walletAddress,
