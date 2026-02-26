@@ -37,6 +37,8 @@ import type {
   SubscriptionBalanceResponse,
   AuthClientRequest,
   AuthClientResponse,
+  WalletAuthPayload,
+  WalletLoginResponse,
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
@@ -160,6 +162,49 @@ export const loginWithPassword = async (
           error instanceof Error
             ? error.message
             : "Password authentication failed",
+      },
+    };
+  }
+};
+
+/**
+ * Wallet-based login using Solana signature verification
+ * @param payload - Wallet address, signed message, and signature
+ * @returns WalletLoginResponse with network JWT or error
+ */
+export const loginWithWallet = async (
+  payload: WalletAuthPayload
+): Promise<WalletLoginResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        wallet_auth: payload,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Wallet login failed:", response.status, response.statusText);
+      const errorData = await response.text();
+      console.error("Error response:", errorData);
+
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<WalletLoginResponse>(response);
+  } catch (error) {
+    console.error("Wallet login error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error ? error.message : "Wallet authentication failed",
       },
     };
   }
@@ -1140,4 +1185,6 @@ export type {
   NetworkReliabilityResponse,
   AuthClientRequest,
   AuthClientResponse,
+  WalletAuthPayload,
+  WalletLoginResponse,
 };

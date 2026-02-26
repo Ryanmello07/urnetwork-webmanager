@@ -417,6 +417,34 @@ export interface PasswordLoginResponse {
 }
 
 /**
+ * Wallet authentication payload for Solana-based login
+ */
+export interface WalletAuthPayload {
+  wallet_address: string;
+  wallet_message: string;
+  wallet_signature: string;
+  blockchain: "solana";
+}
+
+/**
+ * Response from wallet-based login
+ * Mirrors the /auth/login endpoint response shape
+ */
+export interface WalletLoginResponse {
+  user_name?: string;
+  user_auth?: string;
+  auth_allowed?: string[];
+  network?: {
+    by_jwt: string;
+  };
+  wallet_auth?: WalletAuthPayload;
+  error?: {
+    suggested_user_auth?: string;
+    message: string;
+  };
+}
+
+/**
  * Response from fetching network user information
  */
 export interface NetworkUserResponse {
