@@ -39,6 +39,11 @@ import type {
   AuthClientResponse,
   WalletAuthPayload,
   WalletLoginResponse,
+  NetworkCreateRequest,
+  NetworkCreateResponse,
+  NetworkCheckResponse,
+  VerifySendResponse,
+  VerifyResponse,
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
@@ -1155,6 +1160,130 @@ export const deleteNetwork = async (
   }
 };
 
+export const createNetwork = async (
+  request: NetworkCreateRequest
+): Promise<NetworkCreateResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/network-create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Create network error response:", errorData);
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<NetworkCreateResponse>(response);
+  } catch (error) {
+    console.error("Create network error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error ? error.message : "Failed to create account",
+      },
+    };
+  }
+};
+
+export const checkNetworkName = async (
+  networkName: string
+): Promise<NetworkCheckResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/network-check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ network_name: networkName }),
+    });
+
+    if (!response.ok) {
+      return { available: false };
+    }
+
+    return await safeJsonParse<NetworkCheckResponse>(response);
+  } catch (error) {
+    console.error("Check network name error:", error);
+    return { available: false };
+  }
+};
+
+export const sendVerificationCode = async (
+  userAuth: string
+): Promise<VerifySendResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_auth: userAuth }),
+    });
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<VerifySendResponse>(response);
+  } catch (error) {
+    console.error("Send verification code error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to send verification code",
+      },
+    };
+  }
+};
+
+export const verifyCode = async (
+  userAuth: string,
+  verifyCode: string
+): Promise<VerifyResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_auth: userAuth, verify_code: verifyCode }),
+    });
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<VerifyResponse>(response);
+  } catch (error) {
+    console.error("Verify code error:", error);
+    return {
+      error: {
+        message:
+          error instanceof Error ? error.message : "Failed to verify code",
+      },
+    };
+  }
+};
+
 // Export types for convenience
 export type {
   AuthResponse,
@@ -1187,4 +1316,9 @@ export type {
   AuthClientResponse,
   WalletAuthPayload,
   WalletLoginResponse,
+  NetworkCreateRequest,
+  NetworkCreateResponse,
+  NetworkCheckResponse,
+  VerifySendResponse,
+  VerifyResponse,
 };

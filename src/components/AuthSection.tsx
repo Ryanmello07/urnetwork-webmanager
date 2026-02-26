@@ -1,7 +1,9 @@
 import React, { FormEvent, useRef, useState } from "react";
-import { KeyRound, Shield, Lock, Mail, Eye, EyeOff, Check, Wallet } from "lucide-react";
+import { KeyRound, Shield, Lock, Mail, Eye, EyeOff, Check, Wallet, UserPlus } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useWalletLogin, SolanaWalletType } from "../hooks/useWalletLogin";
+import SignUpModal from "./SignUpModal";
+import toast from "react-hot-toast";
 
 type TabType = "code" | "password" | "wallet";
 
@@ -33,7 +35,8 @@ const SolflareLogo = () => (
 const AuthSection: React.FC = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [activeTab, setActiveTab] = useState<TabType>("code");
-	const { login, loginWithPassword, loginWithWallet, isLoading, isAutoLoginAttempted, isTransitioning, isLoggingOut } = useAuth();
+	const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+	const { login, loginWithPassword, loginWithWallet, isLoading, isAutoLoginAttempted, isTransitioning, isLoggingOut, setToken } = useAuth();
 	const { connectAndSign, isPhantomAvailable, isSolflareAvailable } = useWalletLogin();
 	const authCodeInputRef = useRef<HTMLInputElement>(null);
 	const [isAuthCodeValid, setIsAuthCodeValid] = useState(false);
@@ -113,6 +116,12 @@ const AuthSection: React.FC = () => {
 		} finally {
 			setWalletLoading(null);
 		}
+	};
+
+	const handleSignUpSuccess = (jwt: string) => {
+		localStorage.setItem("byToken", jwt);
+		setToken(jwt);
+		toast.success("Account created! Welcome to URnetwork.");
 	};
 
 	const headerIcon = () => {
@@ -532,16 +541,30 @@ const AuthSection: React.FC = () => {
 						)}
 					</div>
 
-					<div className="mt-6 text-center">
-						<p className="text-xs text-gray-500">
-							Beta Application
-						</p>
-						<p className="text-xs text-gray-600 mt-1">
-							Unfinished Product. Major Changes Expected.
+					<div className="mt-6 pt-5 border-t border-gray-700">
+						<div className="text-center mb-4">
+							<p className="text-xs text-gray-500 mb-3">Don&apos;t have an account?</p>
+							<button
+								type="button"
+								onClick={() => setIsSignUpOpen(true)}
+								className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-teal-400 border border-teal-500/40 bg-teal-500/10 hover:bg-teal-500/20 hover:border-teal-500/60 transition-all duration-200 active:scale-[0.98]"
+							>
+								<UserPlus size={15} />
+								Create Account
+							</button>
+						</div>
+						<p className="text-xs text-gray-600 text-center">
+							Beta Application &mdash; Major Changes Expected
 						</p>
 					</div>
 				</div>
 			</div>
+
+			<SignUpModal
+				isOpen={isSignUpOpen}
+				onClose={() => setIsSignUpOpen(false)}
+				onSuccess={handleSignUpSuccess}
+			/>
 		</div>
 	);
 };
