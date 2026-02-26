@@ -51,9 +51,11 @@ interface Props {
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: (jwt: string) => void;
+	initialStep?: ModalStep;
+	initialUserAuth?: string;
 }
 
-const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
+const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess, initialStep, initialUserAuth }) => {
 	const [step, setStep] = useState<ModalStep>("form");
 	const [method, setMethod] = useState<SignUpMethod>("email");
 
@@ -98,8 +100,11 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 	useEffect(() => {
 		if (!isOpen) {
 			resetForm();
+		} else if (initialStep && initialUserAuth) {
+			setPendingUserAuth(initialUserAuth);
+			setStep(initialStep);
 		}
-	}, [isOpen, resetForm]);
+	}, [isOpen, resetForm, initialStep, initialUserAuth]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {

@@ -36,6 +36,7 @@ const AuthSection: React.FC = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [activeTab, setActiveTab] = useState<TabType>("code");
 	const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+	const [verificationUserAuth, setVerificationUserAuth] = useState<string | null>(null);
 	const { login, loginWithPassword, loginWithWallet, isLoading, isAutoLoginAttempted, isTransitioning, isLoggingOut, setToken } = useAuth();
 	const { connectAndSign, isPhantomAvailable, isSolflareAvailable } = useWalletLogin();
 	const authCodeInputRef = useRef<HTMLInputElement>(null);
@@ -97,7 +98,11 @@ const AuthSection: React.FC = () => {
 			return;
 		}
 
-		await loginWithPassword(username, password);
+		const result = await loginWithPassword(username, password);
+		if (result?.verification_required) {
+			setVerificationUserAuth(result.verification_required.user_auth);
+			setIsSignUpOpen(true);
+		}
 	};
 
 	const handleWalletLogin = async (walletType: SolanaWalletType) => {
@@ -562,8 +567,10 @@ const AuthSection: React.FC = () => {
 
 			<SignUpModal
 				isOpen={isSignUpOpen}
-				onClose={() => setIsSignUpOpen(false)}
+				onClose={() => { setIsSignUpOpen(false); setVerificationUserAuth(null); }}
 				onSuccess={handleSignUpSuccess}
+				initialStep={verificationUserAuth ? "verify" : undefined}
+				initialUserAuth={verificationUserAuth ?? undefined}
 			/>
 		</div>
 	);

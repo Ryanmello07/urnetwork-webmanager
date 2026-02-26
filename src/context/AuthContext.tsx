@@ -86,8 +86,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsLoading(false);
 
 		if (response.verification_required) {
-			toast.error(`Login failed: Verification required`);
-			return null;
+			return response;
 		}
 
 		if (response.error || !response.network?.by_jwt) {
