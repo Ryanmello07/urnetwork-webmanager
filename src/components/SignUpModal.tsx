@@ -57,7 +57,6 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 	const [step, setStep] = useState<ModalStep>("form");
 	const [method, setMethod] = useState<SignUpMethod>("email");
 
-	const [userName, setUserName] = useState("");
 	const [networkName, setNetworkName] = useState("");
 	const [userAuth, setUserAuth] = useState("");
 	const [password, setPassword] = useState("");
@@ -81,7 +80,6 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 	const resetForm = useCallback(() => {
 		setStep("form");
 		setMethod("email");
-		setUserName("");
 		setNetworkName("");
 		setUserAuth("");
 		setPassword("");
@@ -135,16 +133,15 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 		e.preventDefault();
 		setError(null);
 
-		if (!userName.trim()) { setError("Username is required"); return; }
-		if (!userAuth.trim()) { setError("Email or phone is required"); return; }
-		if (!password.trim()) { setError("Password is required"); return; }
 		if (!networkName.trim()) { setError("Network name is required"); return; }
 		if (networkAvailable === false) { setError("That network name is not available"); return; }
+		if (!userAuth.trim()) { setError("Email or phone is required"); return; }
+		if (!password.trim()) { setError("Password is required"); return; }
 		if (!termsAccepted) { setError("You must accept the Terms of Service and Privacy Policy"); return; }
 
 		setIsSubmitting(true);
 		const result = await createNetwork({
-			user_name: userName.trim(),
+			user_name: networkName.trim(),
 			user_auth: userAuth.trim(),
 			password: password.trim(),
 			network_name: networkName.trim(),
@@ -175,7 +172,6 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 	const handleWalletSignUp = async (walletType: SolanaWalletType) => {
 		setError(null);
 
-		if (!userName.trim()) { setError("Username is required"); return; }
 		if (!networkName.trim()) { setError("Network name is required"); return; }
 		if (networkAvailable === false) { setError("That network name is not available"); return; }
 		if (!termsAccepted) { setError("You must accept the Terms of Service and Privacy Policy"); return; }
@@ -198,7 +194,7 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 		}
 
 		const result = await createNetwork({
-			user_name: userName.trim(),
+			user_name: networkName.trim(),
 			network_name: networkName.trim(),
 			terms: true,
 			wallet_auth: payload,
@@ -399,17 +395,6 @@ const SignUpModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 							</div>
 
 							<div className="space-y-4">
-								<div>
-									<label className="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
-									<input
-										type="text"
-										value={userName}
-										onChange={(e) => setUserName(e.target.value)}
-										placeholder="Choose a username"
-										className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-sm"
-									/>
-								</div>
-
 								<div>
 									<label className="block text-sm font-medium text-gray-300 mb-1.5">Network Name</label>
 									<div className="relative">
