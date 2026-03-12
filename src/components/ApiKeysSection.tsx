@@ -80,7 +80,7 @@ const ApiKeysSection: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      const result = await deleteApiKey(token, deleteTarget.api_key_id);
+      const result = await deleteApiKey(token, deleteTarget.id);
       if (result.error) {
         toast.error(result.error.message);
       } else {
@@ -285,7 +285,7 @@ const ApiKeysSection: React.FC = () => {
             <div className="space-y-3">
               {keys.map((key) => (
                 <div
-                  key={key.api_key_id}
+                  key={key.id}
                   className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0 flex-1">

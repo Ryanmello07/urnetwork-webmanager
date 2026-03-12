@@ -1370,7 +1370,7 @@ export const deleteApiKey = async (
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ api_key_id: apiKeyId }),
+      body: JSON.stringify({ id: apiKeyId }),
     });
 
     if (!response.ok) {

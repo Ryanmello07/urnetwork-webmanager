@@ -784,15 +784,16 @@ export interface CreateApiKeyArgs {
 }
 
 export interface CreateApiKeyResult {
-  api_key_id?: string;
+  id?: string;
   api_key?: string;
+  name?: string;
   error?: {
     message: string;
   };
 }
 
 export interface ApiKeyMetadata {
-  api_key_id: string;
+  id: string;
   name: string;
   create_time: string;
 }
@@ -805,7 +806,7 @@ export interface GetApiKeysResult {
 }
 
 export interface DeleteApiKeyArgs {
-  api_key_id: string;
+  id: string;
 }
 
 export interface DeleteApiKeyResult {
