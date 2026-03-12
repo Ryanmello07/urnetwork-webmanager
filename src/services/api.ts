@@ -44,6 +44,10 @@ import type {
   NetworkCheckResponse,
   VerifySendResponse,
   VerifyResponse,
+  CreateApiKeyResult,
+  GetApiKeysResult,
+  DeleteApiKeyResult,
+  ApiKeyMetadata,
 } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "https://api.bringyour.com";
@@ -1284,6 +1288,110 @@ export const verifyCode = async (
   }
 };
 
+export const createApiKey = async (
+  token: string,
+  name: string
+): Promise<CreateApiKeyResult> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/account/api-key`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<CreateApiKeyResult>(response);
+  } catch (error) {
+    return {
+      error: {
+        message:
+          error instanceof Error ? error.message : "Failed to create API key",
+      },
+    };
+  }
+};
+
+export const fetchApiKeys = async (
+  token: string
+): Promise<GetApiKeysResult> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/account/api-keys`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        api_keys: [],
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    const data = await safeJsonParse<GetApiKeysResult>(response);
+
+    return {
+      api_keys: Array.isArray(data.api_keys) ? data.api_keys : [],
+      error: data.error,
+    };
+  } catch (error) {
+    return {
+      api_keys: [],
+      error: {
+        message:
+          error instanceof Error ? error.message : "Failed to fetch API keys",
+      },
+    };
+  }
+};
+
+export const deleteApiKey = async (
+  token: string,
+  apiKeyId: string
+): Promise<DeleteApiKeyResult> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/account/api-key/remove`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ api_key_id: apiKeyId }),
+    });
+
+    if (!response.ok) {
+      return {
+        error: {
+          message: `HTTP error! status: ${response.status}`,
+        },
+      };
+    }
+
+    return await safeJsonParse<DeleteApiKeyResult>(response);
+  } catch (error) {
+    return {
+      error: {
+        message:
+          error instanceof Error ? error.message : "Failed to delete API key",
+      },
+    };
+  }
+};
+
 // Export types for convenience
 export type {
   AuthResponse,
@@ -1321,4 +1429,8 @@ export type {
   NetworkCheckResponse,
   VerifySendResponse,
   VerifyResponse,
+  CreateApiKeyResult,
+  GetApiKeysResult,
+  DeleteApiKeyResult,
+  ApiKeyMetadata,
 };

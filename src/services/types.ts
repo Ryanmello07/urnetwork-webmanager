@@ -778,3 +778,38 @@ export interface VerifyResponse {
     message: string;
   };
 }
+
+export interface CreateApiKeyArgs {
+  name: string;
+}
+
+export interface CreateApiKeyResult {
+  api_key_id?: string;
+  api_key?: string;
+  error?: {
+    message: string;
+  };
+}
+
+export interface ApiKeyMetadata {
+  api_key_id: string;
+  name: string;
+  create_time: string;
+}
+
+export interface GetApiKeysResult {
+  api_keys: ApiKeyMetadata[];
+  error?: {
+    message: string;
+  };
+}
+
+export interface DeleteApiKeyArgs {
+  api_key_id: string;
+}
+
+export interface DeleteApiKeyResult {
+  error?: {
+    message: string;
+  };
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download, Smartphone, Trash2 } from 'lucide-react';
+import { Settings, Key, Copy, Clock, Users, AlertCircle, CheckCircle, Shield, Lock, CreditCard, ExternalLink, Server, ChevronDown, ChevronUp, MapPin, Wifi, Eye, EyeOff, Network, Download, Smartphone, Trash2, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { createAuthCode, fetchNetworkUser, createAuthClient } from '../services/api';
 import type { CreateAuthCodeResponse, AuthClientResponse } from '../services/api';
@@ -12,6 +13,7 @@ import WireGuardQRModal from './WireGuardQRModal';
 
 const AccountSettingsSection: React.FC = () => {
   const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [uses, setUses] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1383,6 +1385,34 @@ const AccountSettingsSection: React.FC = () => {
               )}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* API Key Management */}
+      <div className="bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700 animate-staggerFadeUp" style={{ animationDelay: '0.135s' }}>
+        <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4 border-b border-gray-600">
+          <div className="flex items-center gap-3">
+            <Key size={20} className="text-white" />
+            <div>
+              <h3 className="font-medium text-white">API Key Management</h3>
+              <p className="text-amber-100 text-sm mt-1">Create and manage API keys for programmatic access</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-300 mb-4">
+            Generate API keys to authenticate programmatic requests to the URnetwork API. Manage existing keys, create new ones, or revoke access as needed.
+          </p>
+
+          <button
+            onClick={() => navigate('/account/api-keys')}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-amber-600 hover:bg-amber-700 text-white border border-amber-500 hover:shadow-lg transform hover:scale-[1.02]"
+          >
+            <Key size={18} />
+            Manage API Keys
+            <ArrowRight size={16} />
+          </button>
         </div>
       </div>
 
